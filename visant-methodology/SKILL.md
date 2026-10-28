@@ -1,5 +1,5 @@
 ---
-name: metodologia-visant
+name: visant-methodology
 description: 'Visant''s official brand-building methodology: 9 stages in 3 phases and the dependency cascade between them. Use to generate or audit a full branding, or to write the prompt for one stage. Use on "Visant methodology", "full branding", "audit branding", "metodologia Visant", "branding completo", "auditar branding".'
 ---
 

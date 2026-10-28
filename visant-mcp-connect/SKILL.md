@@ -99,7 +99,7 @@ The tools show up with the `mcp__visant__` prefix in the next session.
 ### Branding Machine (5 tools)
 | Tool | What it does |
 |------|-----------|
-| `branding-generate` | Generate a visual identity from a prompt (steps: full/market-research/swot/persona/archetype/concept-ideas/color-palettes/moodboard). Follows `metodologia-visant` |
+| `branding-generate` | Generate a visual identity from a prompt (steps: full/market-research/swot/persona/archetype/concept-ideas/color-palettes/moodboard). Follows `visant-methodology` |
 | `branding-list` | List branding projects |
 | `branding-get` | Project details |
 | `branding-save` | Save/update a project |

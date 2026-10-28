@@ -96,7 +96,7 @@ hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 
 | Skill | What it does | Needs |
 |---|---|---|
-| [`metodologia-visant`](metodologia-visant/SKILL.md) | Visant's 9-stage brand-building method and the dependency cascade between stages | nothing |
+| [`visant-methodology`](visant-methodology/SKILL.md) | Visant's 9-stage brand-building method and the dependency cascade between stages | nothing |
 | [`visant-preflight`](visant-preflight/SKILL.md) | Preflight for a big project: one question round plus five premise checks (source of truth, fonts, photo resolution, brand files, sourced numbers) | Node 20+ |
 | [`visant-mcp-connect`](visant-mcp-connect/SKILL.md) | Connects and runs the Visant Labs MCP | a Visant Labs account |
 
