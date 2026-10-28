@@ -16,8 +16,9 @@ description: 'Assembles a rough cut in Premiere Pro via premiere-pro-mcp from a 
 | `figma_cards.py` | Python 3 (stdlib only) + Figma MCP (`use_figma`, `get_screenshot`) with skills `figma-use`, `figma-use-slides` | `python --version` |
 
 Works with Premiere in English or Portuguese (PT-BR). The XML holds no effect names; the MCP calls
-take the UI names, mapped in `PREMIERE_NAMES` in `scripts/premiere_xml.py`. Another UI language:
-add its column there. Unsure which names this Premiere uses: save a `get_effect_properties`
+take the UI names, mapped in `PREMIERE_NAMES` in `scripts/premiere_xml.py` (EN and PT-BR labels read
+from Premiere 2026's own `Dictionaries/en_US` and `pt_BR`). Another UI language: read the same keys
+from its folder and add a column. Unsure which names this Premiere uses: save a `get_effect_properties`
 readback and run `python scripts/premiere_xml.py --names <file>`.
 
 **Shipped here:** `scripts/premiere_xml.py` (plan → FCP7 XML, motion table, checker),

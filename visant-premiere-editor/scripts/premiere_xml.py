@@ -57,11 +57,12 @@ OLD_FLAGS = {"--saida": "--out", "--conferir": "--check"}
 # FCP7 XML effectid/parameterid (locale-independent; None when not used here).
 # The Opacity effect and its property share the name in both languages.
 # To support another UI language: add its column and run --self-test.
-# Measured on a live PT-BR Premiere: Movimento, Posição, Escala, Ponto de
-# ancoragem. Not yet checked on a live install: the PT names for rotation,
-# opacity, level and both transitions. Before trusting a row, save a
-# get_effect_properties readback and run `--names <readback.json>`: it prints
-# the names that Premiere actually uses.
+# Every EN/PT label below was read from Premiere Pro 2026's own localization
+# dictionaries (Dictionaries/en_US and pt_BR, zdictionary_PPRO and
+# zdictionary_FI): find the key whose en_US value is the English label, read
+# the same key in pt_BR. The *_legacy columns are the "(Legacy)" transitions
+# Premiere 2026 still ships. To check another version or language, run
+# `--names <readback.json>` on a saved get_effect_properties readback.
 PREMIERE_NAMES = {
     "motion":         {"fcp7": "basic",          "en": "Motion",         "pt": "Movimento"},
     "position":       {"fcp7": "center",         "en": "Position",       "pt": "Posição"},
@@ -71,8 +72,10 @@ PREMIERE_NAMES = {
     "opacity":        {"fcp7": "opacity",        "en": "Opacity",        "pt": "Opacidade"},
     "volume":         {"fcp7": "audiolevels",    "en": "Volume",         "pt": "Volume"},
     "level":          {"fcp7": "level",          "en": "Level",          "pt": "Nível"},
-    "cross_dissolve": {"fcp7": "Cross Dissolve", "en": "Cross Dissolve", "pt": "Dissolução cruzada"},
-    "dip_to_black":   {"fcp7": None,             "en": "Dip to Black",   "pt": "Mergulhar no preto"},
+    "cross_dissolve": {"fcp7": "Cross Dissolve", "en": "Cross Dissolve", "pt": "Dissolução cruzada",
+                       "en_legacy": "Cross Dissolve (Legacy)", "pt_legacy": "Dissolução cruzada (herdada)"},
+    "dip_to_black":   {"fcp7": None,             "en": "Dip to Black",   "pt": "Transição para preto",
+                       "en_legacy": "Dip to Black (Legacy)", "pt_legacy": "Para preto (herdado)"},
 }
 UI_LANGS = ("en", "pt")
 
@@ -344,7 +347,9 @@ def self_test() -> bool:
               resolve("Motion") == resolve("movimento") == resolve("basic") == "motion"
               and resolve("Nível") == resolve("Level") == "level"
               and resolve("Dissolução cruzada") == resolve("Cross Dissolve") == "cross_dissolve"
-              and resolve("Mergulhar no preto") == resolve("Dip to Black") == "dip_to_black"
+              and resolve("Transição para preto") == resolve("Dip to Black") == "dip_to_black"
+              and resolve("Para preto (herdado)") == resolve("Dip to Black (Legacy)") == "dip_to_black"
+              and resolve("Dissolução cruzada (herdada)") == "cross_dissolve"
               and resolve("Lumetri Color") is None),
              ("the XML carries no effect or property name (locale-independent)",
               "<effect>" not in xml[0] and "<filter>" not in xml[0])]
