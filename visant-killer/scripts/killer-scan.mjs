@@ -26,7 +26,7 @@ import { spawnSync } from 'node:child_process';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir, homedir } from 'node:os';
-import { scanRuido } from './ruido-scan.mjs';
+import { scanRuido } from './noise-scan.mjs';
 import { montarGrafo, fanOut, normP, semComentario } from './grafo.mjs';
 
 const args = process.argv.slice(2);
@@ -1274,14 +1274,14 @@ function runSelfTest() {
   }
 
   /*
-   * The `--init-report` route reader, against `fixtures/rotas/`: imported page,
+   * The `--init-report` route reader, against `fixtures/routes/`: imported page,
    * lazy page behind a gate, page defined in the router itself, redirect,
    * layout route without a path, commented-out route, and the `/*` trap inside
    * a line comment in navConfig.
    */
   const rotasFalhas = [];
   {
-    const raiz = join(here, 'fixtures', 'rotas');
+    const raiz = join(here, 'fixtures', 'routes');
     const lidas = lerRotas(raiz);
     const nav = lerNav(raiz);
     const fim = (f) => f.split('/').slice(-2).join('/');
@@ -1314,10 +1314,10 @@ function runSelfTest() {
        and new ids both waive, and that an exception for one rule does not
        waive another. The `brand-marks` pair proves the brand-mark exemption. */
     const sujos = [
-      'token-fallback-sujo.tsx', 'token-fallback-sujo.css', 'token-fallback-ids.tsx',
+      'token-fallback-dirty.tsx', 'token-fallback-dirty.css', 'token-fallback-ids.tsx',
       'token-layer/brand-marks/components/icons/brand.tsx', 'token-layer/brand-marks/components/home/gauge.tsx',
     ].map(fx);
-    const limpos = ['token-fallback-limpo.tsx', 'token-fallback-limpo.css', 'token-fallback-theme.css'].map(fx);
+    const limpos = ['token-fallback-clean.tsx', 'token-fallback-clean.css', 'token-fallback-theme.css'].map(fx);
     for (const f of [...sujos, ...limpos]) if (!existsSync(f)) tokenFalhas.push(`fixture missing: ${f}`);
     if (!tokenFalhas.length) {
       const got = scanTokenFallback(sujos);

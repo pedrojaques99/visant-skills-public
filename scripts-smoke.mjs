@@ -142,7 +142,7 @@ const CASES = [
  * not a pass either.
  */
 const SELF_TESTS = [
-  { name: "ruido-scan", script: join(REPO, "visant-killer", "scripts", "ruido-scan.mjs"), args: ["--self-test"] },
+  { name: "noise-scan", script: join(REPO, "visant-killer", "scripts", "noise-scan.mjs"), args: ["--self-test"] },
   { name: "corta-scan", script: join(REPO, "visant-killer", "scripts", "corta-self-test.mjs"), args: [] },
 ];
 

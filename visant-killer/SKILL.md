@@ -114,7 +114,7 @@ what happened. Read [environment.md](references/environment.md) first: the dev s
 **token** (the repo's `audit:design`-like gate, else a labeled built-in FALLBACK
 for raw hex/rgb/hsl and palette classes, aware of the repo's token layer); **copy** (voice, only on
 strings that reach the eye: JSX text, `label`, `title`, `placeholder`,
-`aria-label`, `alt`); **chrome noise** (`ruido-scan`: each line defensible, the
+`aria-label`, `alt`); **chrome noise** (`noise-scan`: each line defensible, the
 sum unreadable). Details and the 24 noise rules: [gates.md](references/gates.md).
 
 **Discover the target repo's gates.** The four detectors are the floor. Look at

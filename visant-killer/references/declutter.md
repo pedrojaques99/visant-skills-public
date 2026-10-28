@@ -24,7 +24,7 @@ something else: go back to `SKILL.md`.
 ## Step 1: Measure before you opine
 
 ```bash
-node ~/.claude/skills/visant-killer/scripts/ruido-scan.mjs <target>
+node ~/.claude/skills/visant-killer/scripts/noise-scan.mjs <target>
 ```
 
 Runs on any repo with `.tsx`/`.jsx`. Bilingual (Portuguese and English). Needs
@@ -48,7 +48,7 @@ Nine rules, all with the same output format (`file:line`):
 the only one that actually guides.
 
 The last two aren't about text, and that's why they exist: the case that
-produced them was a screen *without* leftover prose. `ruido-scan` returned zero,
+produced them was a screen *without* leftover prose. `noise-scan` returned zero,
 and the user looked at the screenshot and said "still a lot of AI slop". What was
 there was **accumulated decisions**: two identical forms on the same tab, three
 out of three covers lit in cyan, and a word cut in half. Prose was the old
@@ -102,7 +102,7 @@ The detector honors the exception **if the reason is written**: a comment within
 the eight lines above the finding, naming the rule.
 
 ```tsx
-/* EXCEÇÃO ao `ruido-scan/usage-instruction`: o `shift` para ajuste fino é invisível
+/* EXCEÇÃO ao `noise-scan/usage-instruction`: o `shift` para ajuste fino é invisível
    por natureza, não existe pixel que anuncie um modificador de teclado. */
 <span>arrasta pra cima e pra baixo, shift para fino</span>
 ```
@@ -130,8 +130,8 @@ Real cases and what each one taught:
 After fixing the rule, **lock the case in the fixture**:
 
 ```bash
-# add the case to scripts/fixtures/ruido-casos.tsx with the EXPECTED result
-node ~/.claude/skills/visant-killer/scripts/ruido-scan.mjs --self-test
+# add the case to scripts/fixtures/noise-cases.tsx with the EXPECTED result
+node ~/.claude/skills/visant-killer/scripts/noise-scan.mjs --self-test
 ```
 
 ## Step 6: Porting to a new repo

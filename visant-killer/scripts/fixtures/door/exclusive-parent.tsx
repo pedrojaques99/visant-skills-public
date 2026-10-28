@@ -1,4 +1,4 @@
-import { FilhoExclusivo } from './filho-exclusivo';
+import { FilhoExclusivo } from './exclusive-child';
 
 /* NEGATIVE: the parent returns the child in an early `return`, so the two
  * doors never coexist. Real case from round 1: BudgetForm × VisantBudgetForm.

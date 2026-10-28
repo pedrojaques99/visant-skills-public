@@ -1,7 +1,7 @@
 /*
  * Fixture for the design-slop signals 47-57 (slop-catalog.md): every block
  * here MUST fire. Each block says how many hits it promises (EXPECTED). The
- * clean twin is `sinais-limpo.tsx`, which must stay silent for the same rules.
+ * clean twin is `signals-clean.tsx`, which must stay silent for the same rules.
  *
  * Run: node ruido-scan.mjs --self-test
  */

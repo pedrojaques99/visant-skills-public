@@ -180,7 +180,7 @@ photo, the animated background of the home page. A `bg-card` (opaque) with
 **Verification.** Open the screen and look at what is behind; no grep solves it.
 Found in the boxy-app audit (2026-08-06): 49 occurrences, ~20 with nothing
 behind.
-**Detector.** `ruido-scan`, rule `blur-on-card` (2026-10-05): flags blur on an
+**Detector.** `noise-scan`, rule `blur-on-card` (2026-10-05): flags blur on an
 element in the flow and lets through what overlaps (`fixed`/`sticky`/`absolute`,
 Dialog, Sheet, Popover and the like by name).
 
@@ -251,14 +251,14 @@ Two legitimate exceptions, and only two:
    ordinal.
 
 The exception stays **with the reason written on the line**, naming the rule.
-`ruido-scan` reads that comment and releases the hit; it is the only way to
+`noise-scan` reads that comment and releases the hit; it is the only way to
 silence the detector, and it forces whoever silences it to say why.
 
 **Test.** Count the blocks of text before the first pixel of content. More than
 three, the screen is explaining itself. And read the thesis, the opening and the
 first note in sequence: if all three say the same thing, two die.
 
-**Detector.** `node ~/.claude/skills/visant-killer/scripts/ruido-scan.mjs <target>`.
+**Detector.** `node ~/.claude/skills/visant-killer/scripts/noise-scan.mjs <target>`.
 It runs alone and also enters the `killer-scan` scoreboard as the fourth gate.
 
 ## 21. Two doors for the same gesture
@@ -286,7 +286,7 @@ as a bonus, was the only tab with no way to add a record.
 **Test.** Count the doors of the same kind per screen. Two, ask out loud which is
 which. If the answer needs the code, the screen does not answer.
 
-**Detector.** `ruido-scan`, rule `repeated-door`, the only rule in the skill
+**Detector.** `noise-scan`, rule `repeated-door`, the only rule in the skill
 that runs ACROSS files, because this defect does not fit in one. Since
 2026-10-05 it only flags the two doors **on the same screen** (common ancestor in
 the import graph, with no early `return` or ternary separating them): from 25
@@ -321,7 +321,7 @@ highlight per region.
 **Test.** Count the pieces lit at the same time. More than one per region, the
 highlight means nothing, and "meaning" is its only job.
 
-**Detector.** `ruido-scan`, rule `highlight-at-rest`.
+**Detector.** `noise-scan`, rule `highlight-at-rest`.
 
 ## 23. The word cut in half
 
@@ -366,7 +366,7 @@ design system's `MediaTile` exists for this; a media card rewritten by hand is
 what lets the synthetic cover come back.
 **Test.** Two synthetic covers side by side in different colors: the user will
 look for what the color means.
-**Detector.** `ruido-scan`, rule `synthetic-cover` (hue from a hash of the name,
+**Detector.** `noise-scan`, rule `synthetic-cover` (hue from a hash of the name,
 or data colors turned into a gradient near a missing image). A gradient that
 SHOWS the brand palette (a guideline swatch) is brand data and passes.
 
@@ -382,7 +382,7 @@ machine, dead on any other).
 and reserves the box; whoever needs to react to the failure (drop the item from
 the list) uses the tile's `onImageError`, not a `div` around it. And the filter
 lives on the server: an item without a servable image does not enter the grid.
-**Detector.** `ruido-scan`, rule `tile-img-no-onerror` (`<img>` with
+**Detector.** `noise-scan`, rule `tile-img-no-onerror` (`<img>` with
 `object-cover`/`aspect-*` and no `onError`; upload preview, blob and build asset
 stay out).
 
@@ -441,7 +441,7 @@ to the page.
 `delay: index * 0.05`.
 **Fix.** The list comes in whole, at once (or only the container animates). A
 work screen does not stage a show.
-**Detector.** `ruido-scan`, rule `stagger-by-index`.
+**Detector.** `noise-scan`, rule `stagger-by-index`.
 
 ## 31. The card that jumps
 
@@ -452,7 +452,7 @@ AdminPage with the same `-translate-y-1`.
 **Fix.** Hover changes color, border or shadow. It does not exist on touch and
 says nothing the border would not. A scale below 1 on `active:` (sinking) is
 something else and stays.
-**Detector.** `ruido-scan`, rule `hover-lift`.
+**Detector.** `noise-scan`, rule `hover-lift`.
 
 ## 32. Dot grid background
 
@@ -462,7 +462,7 @@ circles or `<GridDots>` behind a page, panel or empty cover.
 noise. In the 2026-10 round it lived in `PageShell` and came out on every route.
 **Fix.** Flat token background. A large radial glow (an ellipse without
 `background-size`) is something else and passes.
-**Detector.** `ruido-scan`, rule `dot-grid`.
+**Detector.** `noise-scan`, rule `dot-grid`.
 
 ## 33. Primitive rewritten by hand
 
@@ -636,7 +636,7 @@ badge above the title, three tags under the description.
 **Fix.** A tag only when it filters or changes a user decision. The rest becomes
 running text or goes. Related to 13 and 45.
 **Test.** Delete them all. If nothing was lost, they do not come back.
-**Detector.** `ruido-scan`, rule `tag-everywhere` (6+ badges, chips or hand-made
+**Detector.** `noise-scan`, rule `tag-everywhere` (6+ badges, chips or hand-made
 pills in one file; a clickable chip is a filter and passes).
 
 ### 48. One word in italics in the headline
@@ -647,7 +647,7 @@ on one word of the title.
 language asks for it (a work's title, a foreign word).
 **Test.** Read aloud, does the italic word change the meaning? If not, it is a
 tic.
-**Detector.** `ruido-scan`, rule `italic-headline-word` (`<em>`, `<i>` or
+**Detector.** `noise-scan`, rule `italic-headline-word` (`<em>`, `<i>` or
 `italic` inside an h1/h2 or display-size text; a heading italic as a whole
 passes).
 
@@ -660,7 +660,7 @@ moment) with `tracking-tight`, `tracking-[-0.04em]` or a negative
 for it at that size, measured on the screenshot, never by default.
 **Test.** Swap in the brand font. If the page loses its "look", the look was
 borrowed.
-**Detector.** `ruido-scan`, rule `display-serif-tight` (Instrument Serif or
+**Detector.** `noise-scan`, rule `display-serif-tight` (Instrument Serif or
 `font-serif` plus negative tracking on the same element).
 
 ### 50. Over-detailed UI
@@ -678,7 +678,7 @@ spacing already separated.
 **Fix.** Space and alignment group. A line only in a table and a dense list.
 **Test.** Delete the dividers. If the grouping stays readable, they stay
 deleted.
-**Detector.** `ruido-scan`, rule `divider-everywhere` (8+ in one file; table
+**Detector.** `noise-scan`, rule `divider-everywhere` (8+ in one file; table
 rows, list items, sticky bars, vertical separators and toolbar, sidebar or menu
 files pass).
 
@@ -691,7 +691,7 @@ that is it. Hierarchy by transparency is a raw color under another name (15).
 Related to 1.
 **Test.** More than three levels of gray in the same block: none of them means
 anything.
-**Detector.** `ruido-scan`, rule `opacity-ladder` (one color utility in 4+
+**Detector.** `noise-scan`, rule `opacity-ladder` (one color utility in 4+
 opacity steps in one file; `hover:`/`focus:` states and `text-sm/6` line height
 do not count).
 
@@ -701,7 +701,7 @@ do not count).
 **Fix.** One level of container. Group by space; a border only where there is a
 real limit (input, table, clickable area). Related to 35.
 **Test.** A box inside a box is always one too many.
-**Detector.** `ruido-scan`, rule `box-in-box` (2+ in one file; fields, buttons,
+**Detector.** `noise-scan`, rule `box-in-box` (2+ in one file; fields, buttons,
 links, tags, tabs, swatches and anything inside a `fixed`/`absolute` layer
 pass).
 
@@ -721,7 +721,7 @@ sentence.
 **Fix.** Only in a product for developers, and only when it is a real command
 someone copies. Related to 2.
 **Test.** Does whoever reads this page open a terminal? If not, it goes.
-**Detector.** `ruido-scan`, rule `code-crumb` (visible text only; inside
+**Detector.** `noise-scan`, rule `code-crumb` (visible text only; inside
 `pre`/`code`/`kbd`, as a code-block caption or next to a copy button it passes).
 
 ### 56. Numbered section
@@ -729,7 +729,7 @@ someone copies. Related to 2.
 **Symptom.** "01 — Serviços", "/02", "§3" above each section.
 **Fix.** A number only where the order matters (steps of a process).
 **Test.** Swap two sections. If the number does not change the meaning, it goes.
-**Detector.** `ruido-scan`, rule `numbered-section` (2+ in one file; numbers
+**Detector.** `noise-scan`, rule `numbered-section` (2+ in one file; numbers
 generated in a `.map` stay with the eye).
 
 ### 57. Mono on everything
@@ -739,16 +739,16 @@ caption: the code font becomes the page's second font.
 **Fix.** Mono only on what is really code: serial, hash, ID, command, a snippet
 someone copies. The rest uses the text font, with `tabular-nums` where numbers
 need to align. Generalizes 2 (money) and 55 (code breadcrumb); uppercase mono on
-a label is already the `shouting-label` rule of `ruido-scan`.
+a label is already the `shouting-label` rule of `noise-scan`.
 **Test.** Swap all mono for the text font. Whatever got worse (ID, hash,
 command) comes back; the rest stays.
-**Detector.** `ruido-scan`, rule `mono-everywhere` (10+ in one file, outside
+**Detector.** `noise-scan`, rule `mono-everywhere` (10+ in one file, outside
 `pre`/`code`/`kbd` and ID-like content).
 
 ## Quick sweep
 
 ```bash
-# new signals (47–57): candidates, never a verdict (ruido-scan has rules for all but 50 and 54)
+# new signals (47–57): candidates, never a verdict (noise-scan has rules for all but 50 and 54)
 rg -c '<Badge|rounded-full[^"]*text-(xs|\[1[01]px\])' --glob '*.tsx'      # tag on everything (47): look at the high-count file
 rg '<em\b|italic' --glob '*.tsx' | rg '<h[12]|text-[4-7]xl'               # italics in the headline (48)
 rg -i 'instrument.?serif|tracking-tighter|tracking-\[-|letter-spacing: *-' --glob '*.{tsx,css}'   # (49)
@@ -786,5 +786,5 @@ For entries 20, 21, 22 and 23 do not use grep, and the reason is the same for
 all four: the defect does not live in any line. 20 lives in the sum of the
 lines; 21, BETWEEN two files; 22, in the repetition of a correct line; 23, in
 the width that only exists after the font loads. Grep takes one line at a time;
-that is why the first three are rules of `ruido-scan.mjs` and the last one is
+that is why the first three are rules of `noise-scan.mjs` and the last one is
 `corta-scan.js`, which runs in the browser with the screen open.

@@ -1,4 +1,4 @@
-import { CampoMorto } from './campo-morto';
+import { CampoMorto } from './dead-field';
 
 /* NEGATIVE: a dead import puts nobody on screen. Real case from round 1:
  * BudgetMachinePage imported BrandCustomizationPanel and never rendered it.

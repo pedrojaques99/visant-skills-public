@@ -1,9 +1,9 @@
-import { BuscaA } from './irmaos-busca-a';
-import { BuscaB } from './irmaos-busca-b';
-import { ImportarJson } from './irmaos-json';
-import { CampoPreset } from './irmaos-preset';
-import { CampoSala } from './irmaos-sala';
-import { CampoCaixa } from './irmaos-caixa';
+import { BuscaA } from './siblings-search-a';
+import { BuscaB } from './siblings-search-b';
+import { ImportarJson } from './siblings-json';
+import { CampoPreset } from './siblings-preset';
+import { CampoSala } from './siblings-room';
+import { CampoCaixa } from './siblings-box';
 
 /* One parent, five children on the same screen.
  *   - BuscaA × BuscaB: `t('common.search')` is common vocabulary, deliberate

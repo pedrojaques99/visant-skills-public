@@ -28,7 +28,7 @@ A scoped rule needs a **reason written inside the rule**, with the case that
 created it. An exclusion with no justification is `audit-ignore` under another
 name, and whoever reads it later cannot tell a decision from giving up.
 
-Third-party repos are the cheapest calibration. On 2026-10-28 `ruido-scan` ran
+Third-party repos are the cheapest calibration. On 2026-10-28 `noise-scan` ran
 on vercel/commerce, shadcn-ui/taxonomy and steven-tey/precedent: 17 findings,
 11 of them `hand-drawn-icon` on tech logos (Simple Icons ships on the same 24
 grid as UI glyphs) and on a dedicated `icons/` folder, plus 2 `hover-lift` on an
@@ -69,7 +69,7 @@ Gates (all must stay at zero **in the target**, never in the whole repo):
 | `impeccable detect` | no generic-AI tell: gradient text, template purple, bounce, glow, accent on rounded |
 | token (`audit:design` errors, or the built-in fallback) | no raw color and no value outside the token |
 | copy (voice) | no em-dash, bullet separator, "não é X, é Y", "é sobre X", emoji, semicolon, guru opener, repeated credibility badge |
-| chrome noise (`ruido-scan`) | no screen explaining itself to death |
+| chrome noise (`noise-scan`) | no screen explaining itself to death |
 
 If the repo has no token gate of its own, `killer-scan` runs its built-in
 fallback and says so. **A skipped gate is reported, never omitted.** After the

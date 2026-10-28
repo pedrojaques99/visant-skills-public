@@ -49,7 +49,7 @@ the rule, not the screen. It now separates scroll, ellipsis/`line-clamp` and a
 horizontal rail from a real cut. And a small badge (< 25% of the area) over an
 `inset-0` background with nothing interactive is not a stacked overlay (a
 "Pública" badge over a brand card cover). All locked in
-`scripts/fixtures/corta-casos.html`.
+`scripts/fixtures/clip-cases.html`.
 
 ## Noisy gate on legacy code
 

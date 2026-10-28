@@ -1,5 +1,5 @@
 /*
- * Clean twin of `sinais-sujo.tsx`: the legitimate use of each signal 47-57.
+ * Clean twin of `signals-dirty.tsx`: the legitimate use of each signal 47-57.
  * EXPECTED: zero hits for every one of those rules in this file. Each block
  * locks one way the rule could turn into noise.
  *

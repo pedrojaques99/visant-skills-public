@@ -49,7 +49,7 @@ It separates three things the eye confuses, and the separation is the value:
 - and a small badge (< 25% of the area) over an `inset-0` background with
   nothing interactive is **not** a stacked overlay.
 
-Locked in `scripts/fixtures/corta-casos.html`:
+Locked in `scripts/fixtures/clip-cases.html`:
 
 ```bash
 node ~/.claude/skills/visant-killer/scripts/corta-self-test.mjs

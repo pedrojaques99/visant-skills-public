@@ -12,7 +12,7 @@
  */
 
 /* The room renders the box: that is what puts both doors on the same screen (R9). */
-import { PortaDaCaixa } from './ruido-porta-b';
+import { PortaDaCaixa } from './noise-door-b';
 
 /* ============================================================== */
 /* FALSE POSITIVE 1: TypeScript generic read as a tag             */
@@ -395,7 +395,7 @@ export function PlanoAtual() {
 /* R9 · TWO DOORS FOR THE SAME GESTURE (across files)             */
 /* ============================================================== */
 /* The label of the door here is, LITERALLY, the placeholder of the door in
- * `ruido-porta-b.tsx`. Real case: jukebox × record box, 2026-09-11:
+ * `noise-door-b.tsx`. Real case: jukebox × record box, 2026-09-11:
  * same shape, same icons, different stores, and nothing on screen said which
  * was which. No per-file rule sees this.
  *

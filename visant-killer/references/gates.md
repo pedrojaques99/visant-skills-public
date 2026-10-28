@@ -75,7 +75,10 @@ node scripts/scan-lightmode-breakage.mjs --summary   # what disappears in light 
 node scripts/sync-craft-tokens.mjs --check   # did the token layer reach index.css?
 ```
 
-## The fourth detector: chrome noise (`ruido-scan`)
+## The fourth detector: chrome noise (`noise-scan`)
+
+Formerly `ruido-scan`: `node ruido-scan.mjs`, imports of it, and exceptions or
+ignores naming `ruido-scan/<rule>` still work.
 
 It exists because the other three look at one line at a time and none of them
 adds up. The defect left over was the whole screen correct and unreadable from
@@ -135,7 +138,7 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
-| `ruido-scan` (this skill) | `EXCEPTION to ruido-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 24 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
+| `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 24 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
 | token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `raw-hex`, `raw-rgb-hsl`, `tailwind-palette` (legacy `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` still accepted) |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
 | repo `scan-ui-scale` | `EXCEÇÃO ao ui-scale/<rule>: reason` | `// ui-scale-ignore-file: <rule> — reason` | `micro-label`, `px-cru`, `peso-pesado`, `raio-sortido`, `accent-repouso`, `matiz-cru`, `opacidade-cru` |
@@ -145,10 +148,10 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 In the repo scanners' whole-file form the dash is literal syntax those scripts
 parse; keep it as written.
 
-This skill's own scanners (`ruido-scan`, token fallback) accept `EXCEPTION to`
+This skill's own scanners (`noise-scan`, token fallback) accept `EXCEPTION to`
 and the original Portuguese `EXCEÇÃO ao` (`EXCECAO` without accents also
 counts), and `ruido-ignore-file:` as well as `noise-ignore-file:`, so markers
-already written keep working. `ruido-scan` rule ids were Portuguese until
+already written keep working. `noise-scan` rule ids were Portuguese until
 2026-10-28 (`hover-que-levanta`, `blur-em-card`...); both markers still accept
 the old id as an alias of the English one (map `LEGADO` in the script), while
 findings always print the new id. The repo scanners in the last four rows match only
@@ -164,7 +167,7 @@ findings always print the new id. The repo scanners in the last four rows match 
   flag takes two comments (scrim with `text-white`: `ui-scale/opacidade-cru` and
   `lightmode/light-only-text`).
 - **A real reason:** at least 8 letters, may continue on the next comment line.
-  An exception below the finding does not count. `ruido-scan` checks only the
+  An exception below the finding does not count. `noise-scan` checks only the
   word and the rule name; the reason is still mandatory by contract.
 - **`--fix` never touches an excepted line** (`scan-design-violations`).
 - The contract is locked in `--self-test` in the repo's scripts that implement

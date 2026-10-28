@@ -1,7 +1,7 @@
 /**
  * The `corta-scan.js` self-test: the three geometries locked in a fixture.
  *
- * It exists for the same reason as `ruido-scan`'s `--self-test`: whoever touches
+ * It exists for the same reason as `noise-scan`'s `--self-test`: whoever touches
  * the thresholds (the 40% coverage, the 2px overflow) needs to find out right
  * away that they loosened the rule until it finds nothing. A detector that
  * returns zero passes as a clean screen, and that is a gate's worst failure mode.
@@ -18,7 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const aqui = path.dirname(fileURLToPath(import.meta.url));
-const fixture = path.join(aqui, 'fixtures', 'corta-casos.html');
+const fixture = path.join(aqui, 'fixtures', 'clip-cases.html');
 const snippet = fs.readFileSync(path.join(aqui, 'corta-scan.js'), 'utf8');
 
 /*

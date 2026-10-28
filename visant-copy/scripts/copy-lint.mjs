@@ -30,6 +30,8 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const L = '(?<![\\p{L}\\p{N}])'; // word start, unicode
 const R = '(?![\\p{L}\\p{N}])'; // word end, unicode
@@ -413,6 +415,13 @@ if (args.includes('--self-test')) {
   for (const [velho, novo] of Object.entries(LEGACY_IDS)) {
     if (!ids.has(novo)) falhas.push(`LEGACY_IDS maps ${velho} to ${novo}, which is not a rule`);
   }
+  /* What counts as copy in code and Markdown, both ways: the clean fixtures
+     hold code and docs that are not copy (arithmetic, logs, calc(), lists,
+     fences, frontmatter) and must pass; the dirty one must fail. */
+  const fx = (f) => fileURLToPath(new URL(`./fixtures/${f}`, import.meta.url));
+  const run = (...f) => spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--quiet', ...f.map(fx)]).status;
+  if (run('clean-code.tsx', 'clean-docs.md') !== 0) falhas.push('fixtures/clean-* flagged code or docs that are not copy');
+  if (run('dirty.tsx') !== 1) falhas.push('fixtures/dirty.tsx passed: JSX text is not being linted');
   if (falhas.length) {
     console.error(`✗ copy-lint --self-test\n  ${falhas.join('\n  ')}`);
     process.exit(1);
@@ -503,11 +512,64 @@ function mascaraComentarios(raw) {
 
 /* Returns [{ loc, text }], the unit we lint. In json the unit is the key
    (because that is what the author edits), in text it is the line. */
+/* In code, copy is what reaches the eye: string literals and JSX text. Linting
+   the whole line read `activeIndex - 1` as a hyphen used as a dash (measured on
+   shadcn-ui/taxonomy). Template `${...}` expressions are dropped; a line with no
+   code punctuation inside JSX is taken as text. */
+const STRING_RE = /(['"])((?:\\.|(?!\1).)*)\1|`((?:\\.|[^`])*)`/g;
+const JSX_TEXT_RE = />([^<>{}]*\p{L}[^<>{}]*)</gu;
+function textOfCode(line) {
+  const out = [];
+  // Developer logs never reach the screen (measured on vercel/commerce).
+  if (/\bconsole\.(log|warn|error|info|debug)\(/.test(line)) return out;
+  for (const m of line.matchAll(STRING_RE)) {
+    const s = (m[2] ?? m[3] ?? '').replace(/\$\{[^}]*\}/g, ' ');
+    // CSS math and variables inside a string are code, not copy.
+    if (/\p{L}/u.test(s) && !/calc\(|var\(--/.test(s)) out.push(s);
+  }
+  for (const m of line.matchAll(JSX_TEXT_RE)) out.push(m[1]);
+  const bare = line.trim();
+  if (!out.length && /^\p{L}/u.test(bare) && !/[=;(){}<>\[\]]|=>|^(import|export|const|let|var|return|if|else|for|while|function|type|interface)\b/.test(bare)
+      && bare.split(/\s+/).length >= 3) out.push(bare);
+  return out;
+}
+
+/* In Markdown, copy is the prose: frontmatter, fenced code, inline code and the
+   list marker are not text (a nested `  - item` read as a dash). */
+function textOfMarkdown(raw) {
+  const lines = raw.split('\n');
+  let fence = null;
+  let front = lines[0]?.trim() === '---';
+  return lines.map((line, i) => {
+    if (front) {
+      if (i > 0 && line.trim() === '---') front = false;
+      return '';
+    }
+    const f = line.match(/^\s*(```|~~~)/);
+    if (f) {
+      fence = fence ? null : f[1];
+      return '';
+    }
+    if (fence || /^( {4}|\t)/.test(line)) return '';
+    // Blockquote markers first, then the list marker (`> - item`).
+    return line
+      .replace(/`[^`]*`/g, ' ')
+      .replace(/^\s*(?:>\s*)*/, '')
+      .replace(/^(?:[-*+]|\d+[.)])\s+/, '');
+  });
+}
+
 function units(file) {
   const raw = readFileSync(file, 'utf8');
   if (!file.endsWith('.json')) {
-    const fonte = CODIGO.test(file) && !comentarios ? mascaraComentarios(raw) : raw;
-    return fonte.split('\n').map((text, i) => ({ loc: `L${i + 1}`, text }));
+    if (CODIGO.test(file)) {
+      if (comentarios) return raw.split('\n').map((text, i) => ({ loc: `L${i + 1}`, text }));
+      return mascaraComentarios(raw)
+        .split('\n')
+        .flatMap((line, i) => textOfCode(line).map((text) => ({ loc: `L${i + 1}`, text })));
+    }
+    const fonte = /\.mdx?$/i.test(file) ? textOfMarkdown(raw) : raw.split('\n');
+    return fonte.map((text, i) => ({ loc: `L${i + 1}`, text }));
   }
   const out = [];
   const walk = (node, path) => {
