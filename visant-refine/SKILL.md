@@ -66,11 +66,14 @@ por isso que quase todo pedido de refino é composição e não construção:
 | barra de razão | `components/ui/progress.tsx` |
 | esqueleto | `components/ui/skeleton.tsx` |
 | easing e duração | `lib/motion.ts` e os tokens `--ease-*` e `--dur-*` |
-| item compartilhado entre projetos | o registry da Visant, ver `visant-registry` |
+| peça já refinada, de qualquer projeto | a library da Visant, [ui.visantlabs.com](https://ui.visantlabs.com/llms.txt): `gauge`, `sim-slider`, `measure-bar`, `activity-heatmap`, `streamgraph`, `count-up`, `elastic-slider`, `skeleton-rail` |
 
 Componente de design system não se cria nem se edita sem autorização explícita.
-Falta primitivo de verdade: instalar o oficial (`npx shadcn@latest add ...`) e
-avisar antes. Sobrescrita de default de primitivo vai **no consumidor**.
+Falta a peça: procure primeiro na library da Visant
+(`npx shadcn@latest add @visant/<nome>`, com
+`"@visant": "https://ui.visantlabs.com/r/{name}.json"` no `components.json`;
+a ficha de cada uma em `/r/<nome>.md`), depois o primitivo oficial
+(`npx shadcn@latest add ...`). Avise antes. Sobrescrita de default de primitivo vai **no consumidor**.
 
 ## A anatomia única
 

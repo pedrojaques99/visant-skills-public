@@ -44,7 +44,7 @@ Decide in this order. Full numeric catalog + severity for audits → **`referenc
 
 ## 2b. Sound (SFX) — analog clicks, only where the person acts
 
-Sound is motion for the ear and obeys the same ceilings. The house engine is `sfx-bus` (Web Audio synthesis, zero files, zero requests; in the `@visant/ui` registry). What a long round of owner reports converged on:
+Sound is motion for the ear and obeys the same ceilings. The house engine is `sfx-bus` (Web Audio synthesis, zero files, zero requests; `npx shadcn@latest add @visant/sfx-bus` from the Visant library at [ui.visantlabs.com](https://ui.visantlabs.com/llms.txt), which also ships ready motion pieces: `motion-layer`, `fold-motion`, `line-reveal`, `text-morph`, `count-up`, `toast-stack`). What a long round of owner reports converged on:
 
 - **Model each timbre on a real analog object, never a synth note.** Filtered noise bursts through high-Q band-passes (modal synthesis), several hits at different instants for a mechanism. The palette: `click` (camera button), `detent` (knob/selector tooth), `toggle` (lever with body), `focus` (lens focus ring ratchet, for continuous drags), `complete` (shutter arming and releasing, for a confirmed action), `drop` (needle landing/soft air, for a strong action). No pitch, no tail: pitched sounds with reverb tire in an interface.
 - **Map gesture → timbre:** discrete step (knob, tab, dock icon crossed) → `detent`; continuous drag (slider) → `focus` per 1/20–1/40 of travel; switch → `toggle`; hold/slide to confirm reaching the end → `complete`. A drag must not play on every pixel and a parametric curve the owner tweaks for minutes should stay silent ("tirar sfx de arrastar aqui").

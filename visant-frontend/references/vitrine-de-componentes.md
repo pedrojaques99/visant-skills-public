@@ -1,6 +1,7 @@
 # Vitrine de componentes (library, registry, showcase)
 
-A superfície onde a peça É o produto: o catálogo do `@visant/ui`, a ficha de
+A superfície onde a peça É o produto: o catálogo do `@visant/ui`
+([ui.visantlabs.com](https://ui.visantlabs.com)), a ficha de
 uma peça, a demo de um kit. Destilado de ~100 bug reports do dono numa sessão só
 (2026-10-20), abrindo peça por peça na vitrine. Cada regra abaixo nasceu de um
 report que se repetiu em várias peças, então vale como padrão, não como gosto.

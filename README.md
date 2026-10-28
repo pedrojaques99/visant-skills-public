@@ -19,6 +19,20 @@ Ou na mão: copie a pasta da skill pra `~/.claude/skills/`. No Windows,
 `mklink /J %USERPROFILE%\.claude\skills\visant-killer <repo>\visant-killer`
 mantém uma cópia só e o `git pull` atualiza.
 
+## Junto com a library
+
+As skills de interface mandam buscar peça pronta antes de escrever uma:
+[**@visant/ui**](https://ui.visantlabs.com), 150+ componentes React num registry
+shadcn, já passados pela `visant-killer`. O código vem pro seu projeto, não é
+pacote npm.
+
+```bash
+# components.json → "registries": { "@visant": "https://ui.visantlabs.com/r/{name}.json" }
+npx shadcn@latest add @visant/gauge
+```
+
+Índice pra agente: [ui.visantlabs.com/llms.txt](https://ui.visantlabs.com/llms.txt).
+
 ## Interface
 
 | Skill | Pra quê |
