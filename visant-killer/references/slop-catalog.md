@@ -583,9 +583,107 @@ cursor de seta; arrasto sem `grab`. Reports: "cursor pointer tb obviamente",
 **Conserto.** Uma regra na casca (`:is(button,[role=button],a[href],summary)
 :not(:disabled){cursor:pointer}`); `grab`/`grabbing` no que se arrasta.
 
+## Sinais externos, ainda não medidos na casa (47–56)
+
+Lista de dez sinais de slop de design que circulou fora (recebida em
+2026-10-28). Diferente das 46 acima, nenhuma foi pega numa rodada da Visant
+ainda: valem como suspeita e como teste, não como veredito. Quando uma aparecer
+num report real, ganha o caso e sobe pra cima.
+
+O fio comum: **enfeite que imita cuidado**. Cada um é o que uma LP feita com
+capricho tem, copiado sem o motivo que fazia ele estar lá.
+
+### 47. Tag em tudo
+
+**Sintoma.** Chip ou pill em cada card ("Novo", "IA", "Beta", a categoria),
+badge em cima do título, três tags embaixo da descrição.
+**Conserto.** Tag só quando filtra ou muda uma decisão do usuário. O resto vira
+texto corrido ou some. Parente da 13 e da 45.
+**Teste.** Apague todas. Se nada se perdeu, não voltam.
+
+### 48. Uma palavra em itálico na headline
+
+**Sintoma.** "Design que *converte*": um `<em>` (quase sempre serif itálica)
+numa palavra do título.
+**Conserto.** A ênfase vem da frase, não da fonte. Itálico só onde a língua pede
+(título de obra, palavra estrangeira).
+**Teste.** Lida em voz alta, a palavra em itálico muda o sentido? Se não, é tique.
+
+### 49. Instrument Serif com tracking negativo
+
+**Sintoma.** Headline em Instrument Serif (ou a serif display gratuita da vez)
+com `tracking-tight`, `tracking-[-0.04em]` ou `letter-spacing` negativo. Virou o
+uniforme de LP gerada.
+**Conserto.** A fonte é a da marca. Tracking negativo só onde aquela fonte pede
+naquele tamanho, medido no print, nunca por padrão.
+**Teste.** Troque pela fonte da marca. Se a página perde a "cara", a cara era
+emprestada.
+
+### 50. UI detalhada demais
+
+**Sintoma.** Mock de dashboard na hero com quarenta elementos minúsculos,
+micro-ícones, sparkline em todo canto, números inventados.
+**Conserto.** Mostre a uma coisa que o produto faz, em tamanho que se lê.
+Densidade simula sofisticação e não prova nada. Parente da 20 e da 24.
+**Teste.** Reduza o print a 50%. O que virou textura sai.
+
+### 51. Divisor entre tudo
+
+**Sintoma.** `<hr>`, `border-t`, `divide-y`, `<Separator>` separando blocos que
+o espaço já separava.
+**Conserto.** Espaço e alinhamento agrupam. Linha só em tabela e lista densa.
+**Teste.** Apague os divisores. Se o agrupamento continua legível, ficam apagados.
+
+### 52. Escada de opacidade
+
+**Sintoma.** `text-white/90`, `/70`, `/50`, `/40` no mesmo bloco;
+`bg-primary/5`, `/10`, `/20` em cards vizinhos.
+**Conserto.** Dois ou três tons de texto do token (`foreground`, `muted`) e
+pronto. Hierarquia por transparência é cor crua com outro nome (15). Parente da 1.
+**Teste.** Mais de três níveis de cinza no mesmo bloco: nenhum significa nada.
+
+### 53. Caixa com borda em volta de tudo
+
+**Sintoma.** Cada grupo numa caixa `border rounded-xl`; caixa dentro de caixa.
+**Conserto.** Um nível de contêiner. Agrupe por espaço; borda só onde existe
+limite de verdade (input, tabela, área clicável). Parente da 35.
+**Teste.** Caixa dentro de caixa é sempre uma a mais.
+
+### 54. Diagrama, e quanto mais detalhado pior
+
+**Sintoma.** Fluxograma de nós e setas, isométrico, "arquitetura" explicando o
+que cabia numa frase.
+**Conserto.** Diagrama só quando a relação não cabe numa frase e o leitor vai
+voltar pra consultar. Fora isso, a frase.
+**Teste.** Descreva o diagrama em uma frase. Se coube, troque pela frase.
+
+### 55. Migalha de código como enfeite
+
+**Sintoma.** `~/projects/app`, `$ npm install`, `// serviços`, `<Hero />`,
+`src/app/page.tsx` decorando página que não é pra dev.
+**Conserto.** Só em produto pra dev, e só quando é comando real que se copia.
+Parente da 2.
+**Teste.** Quem lê essa página abre terminal? Se não, sai.
+
+### 56. Seção numerada
+
+**Sintoma.** "01 — Serviços", "/02", "§3" em cima de cada seção.
+**Conserto.** Número só onde a ordem importa (passos de um processo).
+**Teste.** Troque duas seções de lugar. Se o número não muda o sentido, sai.
+
 ## Varredura rápida
 
 ```bash
+# sinais externos (47–56): candidatos, nunca veredito
+rg -c '<Badge|rounded-full[^"]*text-(xs|\[1[01]px\])' --glob '*.tsx'      # tag em tudo (47): olhe o arquivo de contagem alta
+rg '<em\b|italic' --glob '*.tsx' | rg '<h[12]|text-[4-7]xl'               # itálico na headline (48)
+rg -i 'instrument.?serif|tracking-tighter|tracking-\[-|letter-spacing: *-' --glob '*.{tsx,css}'   # (49)
+rg -c 'divide-y|<hr|<Separator|border-t\b' --glob '*.tsx'                 # divisor entre tudo (51)
+rg -o '(text|bg|border)-[a-z-]+/[0-9]{1,2}\b' --glob '*.tsx' | sort | uniq -c | sort -rn   # escada de opacidade (52)
+rg -U 'border[^"]*rounded[\s\S]{0,400}border[^"]*rounded' --glob '*.tsx' # caixa dentro de caixa (53)
+rg '>\s*(~/|\$ |// )|src/app/' --glob '*.tsx'                             # migalha de código (55)
+rg '>\s*(/?0[1-9]\b|§ ?[0-9])' --glob '*.tsx'                             # seção numerada (56)
+
 # vitrine de componentes (35–46): candidatos, nunca veredito
 rg -i '"(passe o (mouse|ponteiro)|mova o ponteiro|clique pra|arraste pra)' --glob '**/demos/*.tsx'   # moldura que fala (35)
 rg 'fixed' --glob '**/demos/*.tsx'                                         # fixed dentro do palco escalado (43)
