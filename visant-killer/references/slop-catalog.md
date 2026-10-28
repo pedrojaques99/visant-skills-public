@@ -583,11 +583,11 @@ cursor de seta; arrasto sem `grab`. Reports: "cursor pointer tb obviamente",
 **Conserto.** Uma regra na casca (`:is(button,[role=button],a[href],summary)
 :not(:disabled){cursor:pointer}`); `grab`/`grabbing` no que se arrasta.
 
-## Sinais externos, ainda não medidos na casa (47–56)
+## Sinais novos, ainda não medidos numa rodada (47–56)
 
-Lista de dez sinais de slop de design que circulou fora (recebida em
-2026-10-28). Diferente das 46 acima, nenhuma foi pega numa rodada da Visant
-ainda: valem como suspeita e como teste, não como veredito. Quando uma aparecer
+Lista de dez sinais de slop de design de Pedro Jaques (2026-10-28).
+Diferente das 46 acima, nenhuma tem ainda o caso de uma rodada com `arquivo:linha`:
+valem como suspeita e como teste, não como veredito. Quando uma aparecer
 num report real, ganha o caso e sobe pra cima.
 
 O fio comum: **enfeite que imita cuidado**. Cada um é o que uma LP feita com
@@ -674,7 +674,7 @@ Parente da 2.
 ## Varredura rápida
 
 ```bash
-# sinais externos (47–56): candidatos, nunca veredito
+# sinais novos (47–56): candidatos, nunca veredito
 rg -c '<Badge|rounded-full[^"]*text-(xs|\[1[01]px\])' --glob '*.tsx'      # tag em tudo (47): olhe o arquivo de contagem alta
 rg '<em\b|italic' --glob '*.tsx' | rg '<h[12]|text-[4-7]xl'               # itálico na headline (48)
 rg -i 'instrument.?serif|tracking-tighter|tracking-\[-|letter-spacing: *-' --glob '*.{tsx,css}'   # (49)
