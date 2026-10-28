@@ -38,8 +38,8 @@ proves the video is whole.
 <a id="1"></a>
 ## 1. Fixed-name temp file between concurrent scripts
 
-**Root cause of the most confusing abort this pipeline ever had.** `roteiro.sh` and
-`decupagem.sh` wrote the same `_build/.edl.tmp`. Running together (one in background, which is
+**Root cause of the most confusing abort this pipeline ever had.** `cutlist.sh` and
+`breakdown.sh` wrote the same `_build/.edl.tmp`. Running together (one in background, which is
 normal here because ingest is slow), one read the other's file half-written, the `join` columns
 misaligned, `printf '%03d'` got a filename, and `set -e` killed the loop midway.
 
@@ -49,7 +49,7 @@ Rule: every temp file gets the script prefix **and `$$`**. `mktemp` works too. N
 shared `.tmp` name.
 
 **It relapsed three times in this codebase**, in different files:
-1. `.edl.tmp` shared between `roteiro.sh` and `decupagem.sh`
+1. `.edl.tmp` shared between `cutlist.sh` and `breakdown.sh`
 2. `concat.txt` shared between two simultaneous builds: 47 entries for a 45-line EDL, i.e. a
    master with cuts from two edits
 3. the fix for (2) itself: the list became per-process **and was deleted on EXIT**, blinding the
@@ -57,7 +57,7 @@ shared `.tmp` name.
 
 The conclusion worth more than the rule: **documenting did not stop the relapse, the test did.**
 Corollary of (3): a work file may be per-process, but always leave a fixed-name copy
-(`concat.ultimo.txt`) for after-the-fact inspection. Without it you lose the check that warns
+(`concat.last.txt`) for after-the-fact inspection. Without it you lose the check that warns
 when a cut goes missing.
 
 ---

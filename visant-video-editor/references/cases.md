@@ -8,7 +8,7 @@ not for instructions.
   say the cost first" rule: ingest took minutes and encoding 2.5 GB took an hour. The "LRA 1.6 LU"
   number first blamed on one-pass loudnorm came from this material and was later shown to be a
   trait of the footage (see `pitfalls.md#11`).
-- **Narrated essay edit.** `planeja.py` used to wrap the b-roll list per block (`i % len`): the
+- **Narrated essay edit.** `plan.py` used to wrap the b-roll list per block (`i % len`): the
   whole video spun on the same 6 clips while 130 files and 342 s of footage sat unused. Hence the
   global no-repeat pool. The breath of ambience between pieces of the same speech "sounded like a
   cut mid-sentence", the fairest complaint received, hence "breath only between different sources".

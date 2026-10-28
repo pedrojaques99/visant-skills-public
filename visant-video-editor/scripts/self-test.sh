@@ -95,7 +95,7 @@ aval "ingest reads every media file in the folder" "$n" "9"
 # It does not test a CAUSE, it tests the CONSEQUENCE: it catches causes we do not know yet.
 edl 'horiz.mp4\t0\t1\nhoriz2.mp4\t0\t1\nhoriz3.mp4\t0\t1\nvert.mp4\t0\t1\nsemaudio.mp4\t0\t1\n'
 roda bash "$AQUI/build.sh"
-n="$(grep -c '^file ' "$PROJ/_build/clips/concat.ultimo.txt" 2>/dev/null || echo 0)"
+n="$(grep -c '^file ' "$PROJ/_build/clips/concat.last.txt" 2>/dev/null || echo 0)"
 aval "every cut in the cut list reaches the concat (5 of 5)" "$n" "5"
 
 # ---------------------------------------------------------------- 3. CACHE
@@ -181,7 +181,7 @@ aval "narration goes into a silent video (mean_volume=${vol:-?} dB)" "$ok" "sim"
 rm -rf "$PROJ/_build/clips"
 edl 'horiz.mp4\t0\t2\n'
 roda bash "$AQUI/build.sh"
-n="$(grep -c '^file ' "$PROJ/_build/clips/concat.ultimo.txt" 2>/dev/null || echo 0)"
+n="$(grep -c '^file ' "$PROJ/_build/clips/concat.last.txt" 2>/dev/null || echo 0)"
 aval "3-column EDL still works (backward compatible)" "$n" "1"
 
 # ---------------------------------------------------------------- 5d. CRLF
@@ -191,7 +191,7 @@ aval "3-column EDL still works (backward compatible)" "$n" "1"
 rm -rf "$PROJ/_build/clips"
 printf 'semaudio.mp4\t0\t3\tdinamica.mp4\t2\r\nhoriz.mp4\t0\t2\r\n' > "$PROJ/_build/edl.txt"
 roda bash "$AQUI/build.sh"
-n="$(grep -c '^file ' "$PROJ/_build/clips/concat.ultimo.txt" 2>/dev/null || echo 0)"
+n="$(grep -c '^file ' "$PROJ/_build/clips/concat.last.txt" 2>/dev/null || echo 0)"
 aval "EDL with CRLF assembles both cuts" "$n" "2"
 vol="$(ffmpeg -nostdin -hide_banner -nostats -i "$PROJ/_out/vlog.mp4" -af volumedetect -f null - 2>&1 \
         | awk -F': ' '/mean_volume/{gsub(/ dB/,"",$2); print $2; exit}')"
@@ -245,57 +245,82 @@ aval "master opens from black (YAVG frame 0 = ${y:-?})" "$ok" "sim"
 # ---------------------------------------------------------------- 9. CUT LIST
 # Duration ceiling respected, and a long take (narrative) never dropped.
 roda bash "$AQUI/ingest.sh"
-TETO_MIN=1 roda bash "$AQUI/roteiro.sh"
+MAX_MIN=1 roda bash "$AQUI/cutlist.sh"
 if grep -q 'longo.mp4' "$PROJ/_build/edl.txt"; then passou "cut list keeps the long take under a tight ceiling"
 else falha "cut list keeps the long take under a tight ceiling" "the narrative take was dropped"; fi
 
 # A CEILING IS A CEILING. Two regressions already made it ignored: (a) the tightening
 # loop only touched the cap while the SLOPE was the limiter; (b) the b-roll thinning
-# rounded down and removed nothing. TETO_MIN=15 delivered 16.0.
+# rounded down and removed nothing. MAX_MIN=15 delivered 16.0.
 # Narrative may exceed the ceiling (it is never sacrificed); b-roll may not.
-TETO_MIN=2 COMP_LONG=0.9 MAX_LONG=90 roda bash "$AQUI/roteiro.sh"
+MAX_MIN=2 COMP_LONG=0.9 MAX_LONG=90 roda bash "$AQUI/cutlist.sh"
 tot="$(grep -v '^#' "$PROJ/_build/edl.txt" | awk -F'\t' '{t+=$3-$2} END{printf "%.1f", t/60}')"
 ok="$(awk -v t="${tot:-99}" 'BEGIN{print (t <= 2.4) ? "sim" : "nao"}')"
 aval "2 min ceiling respected even with an aggressive slope (got ${tot} min)" "$ok" "sim"
 
-TETO_MIN=0 roda bash "$AQUI/roteiro.sh"
+MAX_MIN=0 roda bash "$AQUI/cutlist.sh"
 n="$(grep -vc '^#' "$PROJ/_build/edl.txt")"
 ok="$(awk -v n="$n" 'BEGIN{print (n>=6) ? "sim" : "nao"}')"
 aval "without a ceiling the cut list does not drop all b-roll (got $n cuts)" "$ok" "sim"
+
+# ---------------------------------------------------------------- 9b. OLD NAMES
+# The interface went from Portuguese to English. Projects from before the rename
+# still have old env vars in their notes, old manifests and old folders in _build/.
+# Each old name must keep working, or an old project silently changes behavior.
+k="$(awk -F'\t' '$1=="foto.jpg"{print $2}' "$PROJ/_build/manifest.tsv")"
+aval "manifest writes kind photo" "$k" "photo"
+cp "$PROJ/_build/manifest.tsv" "$PROJ/_build/manifest.new"
+awk -F'\t' 'BEGIN{OFS="\t"} $2=="photo"{$2="foto"} {print}' "$PROJ/_build/manifest.new" > "$PROJ/_build/manifest.tsv"
+MAX_MIN=0 PHOTO_DUR= DUR_FOTO= roda bash "$AQUI/cutlist.sh"
+l="$(awk -F'\t' '$1=="foto.jpg"{print $3; exit}' "$PROJ/_build/edl.txt")"
+aval "old manifest kind foto still read as a photo (photo duration 2.5)" "$l" "2.5"
+mv "$PROJ/_build/manifest.new" "$PROJ/_build/manifest.tsv"
+
+MAX_MIN= TETO_MIN=1 roda bash "$AQUI/roteiro.sh"
+if grep -q '^# PROPOSED cut list: cutlist.sh (MAX_MIN=1 ' "$PROJ/_build/edl.txt"; then
+  passou "old env var TETO_MIN and old script name roteiro.sh still honored"
+else falha "old env var TETO_MIN and old script name roteiro.sh still honored" "$(head -1 "$PROJ/_build/edl.txt")"; fi
+
+rm -rf "$PROJ/_build/transcripts" "$PROJ/_build/transcricao"
+mkdir -p "$PROJ/_build/transcricao"; printf '0.0\t1.0\thello\n' > "$PROJ/_build/transcricao/longo.txt"
+PYTHON=/nonexistent roda bash "$AQUI/transcribe.sh"
+if [ -s "$PROJ/_build/transcripts/longo.txt" ]; then passou "old _build/transcricao/ cache is reused"
+else falha "old _build/transcricao/ cache is reused" "transcripts/ did not pick up the old cache"; fi
+rm -rf "$PROJ/_build/transcripts" "$PROJ/_build/transcricao"
 
 # ---------------------------------------------------------------- 10. BREAKDOWN
 # tile= needs uniform thumb size and numbering with no gaps; this Windows ffmpeg
 # also has no glob. A photo with -ss fails and leaves a gap.
 edl 'horiz.mp4\t0\t1\nvert.mp4\t0\t1\nfoto.jpg\t0\t2\n'
-roda bash "$AQUI/decupagem.sh"
-THUMBS=1 roda bash "$AQUI/decupagem.sh"
-n="$(ls "$PROJ/_build/contato"/[0-9]*.jpg 2>/dev/null | wc -l | tr -d ' ')"
+roda bash "$AQUI/breakdown.sh"
+THUMBS=1 roda bash "$AQUI/breakdown.sh"
+n="$(ls "$PROJ/_build/contact"/[0-9]*.jpg 2>/dev/null | wc -l | tr -d ' ')"
 aval "a thumb for every cut, photo included" "$n" "3"
-if ls "$PROJ/_build/contato"/folha-*.jpg >/dev/null 2>&1; then passou "contact sheet assembles (no glob, uniform thumbs)"
-else falha "contact sheet assembles (no glob, uniform thumbs)" "no folha-*.jpg generated"; fi
-if [ -s "$PROJ/DECUPAGEM.md" ] && grep -q '| 1 |' "$PROJ/DECUPAGEM.md"; then passou "DECUPAGEM.md has a cut row"
-else falha "DECUPAGEM.md has a cut row" "empty table: the file x manifest join failed"; fi
-if [ -s "$PROJ/CAPITULOS.txt" ] && grep -q '00:00:00' "$PROJ/CAPITULOS.txt"; then passou "CAPITULOS.txt starts at 00:00:00"
-else falha "CAPITULOS.txt starts at 00:00:00" "YouTube rejects chapters that do not start at zero"; fi
+if ls "$PROJ/_build/contact"/sheet-*.jpg >/dev/null 2>&1; then passou "contact sheet assembles (no glob, uniform thumbs)"
+else falha "contact sheet assembles (no glob, uniform thumbs)" "no sheet-*.jpg generated"; fi
+if [ -s "$PROJ/BREAKDOWN.md" ] && grep -q '| 1 |' "$PROJ/BREAKDOWN.md"; then passou "BREAKDOWN.md has a cut row"
+else falha "BREAKDOWN.md has a cut row" "empty table: the file x manifest join failed"; fi
+if [ -s "$PROJ/CHAPTERS.txt" ] && grep -q '00:00:00' "$PROJ/CHAPTERS.txt"; then passou "CHAPTERS.txt starts at 00:00:00"
+else falha "CHAPTERS.txt starts at 00:00:00" "YouTube rejects chapters that do not start at zero"; fi
 
 # ---------------------------------------------------------------- 11. CONCURRENCY
-# REAL ROOT CAUSE of the abort in the field: roteiro.sh and decupagem.sh wrote the same
+# REAL ROOT CAUSE of the abort in the field: cutlist.sh and breakdown.sh wrote the same
 # `_build/.edl.tmp`. Running together (one in the background), one read the other's
 # file half-written, the columns misaligned and `set -e` killed the loop midway, with
 # exit 0 and a truncated breakdown. It was not ffmpeg eating stdin, as it looked.
 roda bash "$AQUI/ingest.sh"
 edl 'horiz.mp4\t0\t1\nhoriz2.mp4\t0\t1\nhoriz3.mp4\t0\t1\n'
-( TETO_MIN=0 bash "$AQUI/roteiro.sh" >/dev/null 2>&1 ) &
+( MAX_MIN=0 bash "$AQUI/cutlist.sh" >/dev/null 2>&1 ) &
 p1=$!
-( bash "$AQUI/decupagem.sh" >/dev/null 2>&1 ) &
+( bash "$AQUI/breakdown.sh" >/dev/null 2>&1 ) &
 p2=$!
 wait $p1 $p2
 sobrou="$(ls "$PROJ/_build"/.*.tmp 2>/dev/null | wc -l | tr -d ' ')"
 aval "concurrent scripts leave no orphan temp file" "$sobrou" "0"
-if [ -s "$PROJ/DECUPAGEM.md" ] && grep -q '^| [0-9]' "$PROJ/DECUPAGEM.md"; then
-  passou "breakdown survives roteiro.sh running alongside"
+if [ -s "$PROJ/BREAKDOWN.md" ] && grep -q '^| [0-9]' "$PROJ/BREAKDOWN.md"; then
+  passou "breakdown survives cutlist.sh running alongside"
 else
-  falha "breakdown survives roteiro.sh running alongside" "truncated table: temp file collided"
+  falha "breakdown survives cutlist.sh running alongside" "truncated table: temp file collided"
 fi
 
 # ---------------------------------------------------------------- 12. SOURCE

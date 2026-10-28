@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* copy-lint: hunts language tics in Visant copy (Brazilian Portuguese).
+/* copy-lint: hunts AI language tics in UI and marketing copy, Brazilian
+ * Portuguese AND English. Both rule sets run on every input.
  *
  *   node copy-lint.mjs copy.json copy.ebook.json
  *   node copy-lint.mjs docs/COPY.md src/app/page.tsx
@@ -23,8 +24,9 @@
  * "é"/"são"/"não". Use the L/R boundaries below (unicode lookaround) whenever
  * the edge touches an accented letter, or the rule silently misses.
  *
- * The regexes, the self-test samples and the quoted patterns are Brazilian
- * Portuguese on purpose: that is the language of the copy this lints.
+ * Rule ids are English. Language-specific rules carry a `pt-` or `en-`
+ * prefix; the punctuation ones (dashes, bullets, pipe, emoji, semicolon) carry
+ * none. The old Portuguese ids still resolve through LEGACY_IDS.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -39,12 +41,12 @@ const rx = (src) => new RegExp(src, 'giu');
    warnings do not pile up on the same sentence. */
 const RULES = [
   {
-    id: 'travessao',
+    id: 'em-dash',
     re: /[—–]/gu,
     hint: 'Dashes (travessão) are forbidden. Replace with a period, comma, colon or parentheses.',
   },
   {
-    id: 'bolinha',
+    id: 'bullet-separator',
     /*
      * Only counts as a SEPARATOR when there is a space on at least one side.
      *
@@ -62,57 +64,58 @@ const RULES = [
     hint: 'The bullet separator (alt+7) is forbidden. In a metadata list, use periods and commas ("34 páginas. 9 etapas, 1 case"). In a label, a colon ("Fase 1: A Estratégia"). In a CTA with a price, a preposition ("Quero o e-book por R$ 47").',
   },
   {
-    id: 'hifen-como-travessao',
+    id: 'hyphen-as-dash',
     re: / -{1,2} /gu,
     hint: 'A loose hyphen became a dash. Make it a period or a comma.',
   },
   {
-    id: 'nao-e-x-e-y',
-    family: 'negacao',
+    id: 'pt-not-x-but-y',
+    family: 'negation',
     re: rx(`${L}n[ãa]o\\s+(?:é|s[ãa]o|era|eram|foi|foram)${R}[^.!?;]{0,80}[.,;:]\\s*(?:é|s[ãa]o|era|foi|isso\\s+é)${R}`),
     hint: 'The "não é X, é Y" construction. Cut the negative half and state only the Y. If the X matters, show its consequence instead of denying it.',
   },
   {
-    id: 'nao-e-apenas',
-    family: 'negacao',
+    id: 'pt-not-just',
+    family: 'negation',
     re: rx(`${L}n[ãa]o\\s+(?:é|s[ãa]o|foi)\\s+(?:apenas|s[óo]|somente)${R}`),
     hint: '"não é apenas X, é Y" promises depth without delivering. Say the Y directly.',
   },
   {
-    id: 'nao-e-definicao',
-    family: 'negacao',
+    id: 'pt-defined-by-negation',
+    family: 'negation',
     re: rx(`${L}n[ãa]o\\s+(?:é|s[ãa]o)\\s+(?:um|uma|o|a|os|as)?\\s*[^.!?]{2,40}[.!]`),
     hint: 'A sentence that defines by negation ("Não é um teaser."). Delete the whole sentence and let the next statement carry the weight.',
   },
   {
-    id: 'nao-se-trata',
-    family: 'negacao',
+    id: 'pt-not-about',
+    family: 'negation',
     re: rx(`${L}n[ãa]o\\s+se\\s+trata\\s+de${R}`),
     hint: 'Same family as "não é X, é Y". State it directly.',
   },
   {
-    id: 'x-virgula-nao-y',
-    family: 'negacao',
+    id: 'pt-trailing-negation',
+    family: 'negation',
     re: rx(`,\\s*n[ãa]o\\s+(?:é|foi|s[óo]|apenas|somente|o|a|um|uma|de|pra|para|que)${R}`),
     hint: 'A negation hanging at the end ("feito pra ler, não pra arquivar"). Delete the negative tail. The sentence almost always gets stronger.',
   },
   {
-    id: 'e-sobre',
+    id: 'pt-is-about',
     re: rx(`${L}(?:é|era|s[ãa]o|eram)\\s+sobre${R}`),
     hint: '"é sobre X" asserts nothing. Replace it with a concrete verb: what the thing DOES.',
   },
   {
-    id: 'menos-x-mais-y',
+    id: 'pt-less-x-more-y',
     re: rx(`${L}menos\\s+[^.!?]{1,40}${L}e\\s+mais${R}`),
     hint: 'The "menos X e mais Y" formula. Say only the Y.',
   },
   {
-    id: 'mais-que-apenas',
+    id: 'pt-more-than-just',
     re: rx(`${L}mais\\s+(?:do\\s+)?que\\s+(?:apenas|s[óo]|um\\s+simples|uma\\s+simples)${R}`),
     hint: 'A disguised variant of "não é apenas". Cut it.',
   },
   {
-    id: 'hype',
+    id: 'pt-hype',
+    family: 'hype',
     re: rx(
       `${L}(?:revolucion[áa]ri\\w*|transformador\\w*|desbloqu\\w+|potencial\\s+m[áa]ximo|` +
         `eleve\\s+(?:seu|sua)|nunca\\s+foi\\s+t[ãa]o|no\\s+mundo\\s+de\\s+hoje|` +
@@ -122,7 +125,8 @@ const RULES = [
     hint: 'Brochure word. Replace it with a verifiable fact or a number.',
   },
   {
-    id: 'abertura-de-guru',
+    id: 'pt-guru-opener',
+    family: 'guru',
     re: rx(
       `${L}(?:imagine\\s+(?:que|se|s[óo]|comigo)|e\\s+se\\s+eu\\s+te\\s+dissesse|` +
         `prepare-se|chegou\\s+a\\s+hora|j[áa]\\s+parou\\s+pra\\s+pensar|` +
@@ -131,7 +135,8 @@ const RULES = [
     hint: 'Guru opening ("Imagine que...", "Prepare-se"). Start with the fact or the scene, no warm-up.',
   },
   {
-    id: 'urgencia-cliche',
+    id: 'pt-generic-urgency',
+    family: 'urgency',
     re: rx(
       `${L}(?:[úu]ltimas\\s+vagas|vagas\\s+limitadas|[úu]ltima\\s+chance|` +
         `corre\\s+que\\s+(?:acaba|t[áa]\\s+acabando)|n[ãa]o\\s+perca\\s+(?:essa|a)\\s+chance|` +
@@ -140,7 +145,7 @@ const RULES = [
     hint: 'Generic urgency. The Club\'s scarcity is real and countable: say the number ("este lote tem 30 vagas", "a cota sobe a cada compra").',
   },
   {
-    id: 'pipe-separador',
+    id: 'pipe-separator',
     jsonOnly: true, // in .md the pipe is a table, not a copy separator
     re: /\|/gu,
     hint: 'A pipe separator is the bullet in disguise. Pick the punctuation: period, comma or colon.',
@@ -155,20 +160,140 @@ const RULES = [
     hint: 'Zero emoji in page copy.',
   },
   {
-    id: 'ponto-e-virgula',
+    id: 'semicolon',
     jsonOnly: true,
     re: /;/gu,
     hint: 'A semicolon stalls the read in sales copy. Make it a period.',
   },
   {
-    id: 'conector-de-llm',
+    id: 'pt-llm-connector',
+    family: 'connector',
     re: rx(
       `(?:^|\\n)\\s*(?:Al[ée]m\\s+disso|Por\\s+fim|Em\\s+resumo|` +
         `Vale\\s+(?:a\\s+pena\\s+)?(?:lembrar|ressaltar|destacar)|Em\\s+outras\\s+palavras)${R}`
     ),
     hint: 'AI-essay connector ("Além disso", "Em resumo"). Start the sentence with the subject.',
   },
+
+  /* ---------- English ----------
+   * Same tics, English wording. Both sets run on every input: a PT regex does
+   * not match EN text and vice versa, so there is no language switch to forget.
+   *
+   * Conservative on purpose, because product UI is full of plain verbs that
+   * look like hype out of context: "Unlock account", "Transform" (a tool name),
+   * "More than 30 templates", "Seamless pattern" (a texture feature). Every
+   * hype verb needs a marketing object ("unlock your POTENTIAL", "transform
+   * YOUR", "elevate YOUR") before it fires. Calibrated on visantlabs-os
+   * (en-US.json and src/): "Confirm your email to unlock your full account" is
+   * a feature gate and "seamless white background" is a photo backdrop, so
+   * "unlock your" needs a hype object and bare "seamless" needs a hype noun. */
+  {
+    id: 'en-not-about',
+    family: 'negation',
+    re: rx(
+      `${L}(?:isn['’]t|is\\s+not|wasn['’]t|it['’]s\\s+not|aren['’]t|are\\s+not)\\s+(?:just\\s+|only\\s+|really\\s+)?about${R}` +
+        `[^.!?]{1,80}[,;:.]\\s*(?:it|this|that|they|we)(?:['’]s|['’]re|\\s+is|\\s+are|\\s+was)\\s+(?:all\\s+)?about${R}`
+    ),
+    hint: 'The "isn\'t about X, it\'s about Y" construction. Cut the negative half and say what the thing does.',
+  },
+  {
+    id: 'en-not-x-but-y',
+    family: 'negation',
+    re: rx(
+      `${L}(?:(?:it|this|that)(?:['’]s\\s+not|\\s+is\\s+not|\\s+isn['’]t)|(?:we|they|you)(?:['’]re\\s+not|\\s+are\\s+not|\\s+aren['’]t))${R}` +
+        `[^.!?;]{1,80}[,;:.]\\s*(?:it|this|that|we|they|you)(?:['’]s|['’]re|\\s+is|\\s+are)${R}`
+    ),
+    hint: 'The "it\'s not X, it\'s Y" construction. Cut the negative half and state only the Y.',
+  },
+  {
+    id: 'en-not-just',
+    family: 'negation',
+    re: rx(
+      `${L}(?:(?:isn['’]t|is\\s+not|aren['’]t|are\\s+not|wasn['’]t)\\s+(?:just|only|merely|simply)|` +
+        `not\\s+(?:just|only|merely|simply)${R}[^.!?;]{1,60}?${L}but)${R}`
+    ),
+    hint: '"Not just X, but Y" promises depth without delivering. Say the Y directly.',
+  },
+  {
+    id: 'en-more-than-just',
+    re: rx(`${L}more\\s+than\\s+(?:just|merely|a\\s+simple|an?\\s+ordinary)${R}`),
+    hint: 'A disguised "not just X". Cut it and name what the thing does.',
+  },
+  {
+    id: 'en-all-about',
+    re: rx(`${L}(?:it['’]s|it\\s+is|is|are|was)\\s+all\\s+about${R}`),
+    hint: '"It\'s all about X" asserts nothing. Replace it with what the thing DOES.',
+  },
+  {
+    id: 'en-hype',
+    family: 'hype',
+    re: rx(
+      `${L}(?:unlock\\s+(?:your\\s+(?:full\\s+|true\\s+)?(?:potential|creativ\\w+|power|growth|success|future|genius)|` +
+        `the\\s+(?:full\\s+|true\\s+)?(?:power|potential)|new\\s+possibilities|endless)|` +
+        `(?:full|true)\\s+potential|unleash\\w*|supercharg\\w+|revolutioni[sz]\\w*|revolutionary|` +
+        `game[-\\s]?chang\\w+|next[-\\s]level|cutting[-\\s]edge|` +
+        `seamlessly|seamless\\s+(?:experience|integration|workflow|collaboration|solution|journey)|` +
+        `elevate\\s+your|empower(?:s|ing)?\\s+(?:you|your|teams|businesses|creators|brands)|` +
+        `transform\\s+(?:your|the\\s+way|how)|harness\\s+the\\s+power|` +
+        `in\\s+today['’]s\\s+(?:fast[-\\s]paced|digital|competitive|ever[-\\s]changing)\\s+(?:world|landscape|age|era|market)|` +
+        `ever[-\\s](?:evolving|changing)\\s+landscape|look\\s+no\\s+further)${R}`
+    ),
+    hint: 'Brochure word. Replace it with a verifiable fact or a number.',
+  },
+  {
+    id: 'en-guru-opener',
+    family: 'guru',
+    re: rx(
+      `${L}(?:imagine\\s+(?:a\\s+world|if)|what\\s+if\\s+I\\s+told\\s+you|let['’]s\\s+dive\\s+in(?:to)?|` +
+        `here['’]s\\s+the\\s+thing|picture\\s+this|ever\\s+wondered|buckle\\s+up)${R}`
+    ),
+    hint: 'Guru opening ("Imagine a world...", "Let\'s dive in"). Start with the fact or the scene, no warm-up.',
+  },
+  {
+    id: 'en-llm-connector',
+    family: 'connector',
+    re: rx(
+      `(?:^|[.!?>"“]\\s*)(?:(?:Moreover|Furthermore|Additionally|Ultimately|In\\s+conclusion|In\\s+summary|Notably),|` +
+        `It['’]s\\s+worth\\s+noting|It\\s+is\\s+worth\\s+noting|It\\s+is\\s+important\\s+to\\s+note)`
+    ),
+    hint: 'AI-essay connector ("Moreover,", "It\'s worth noting that"). Start the sentence with the subject.',
+  },
+  {
+    id: 'en-generic-urgency',
+    family: 'urgency',
+    re: rx(
+      `${L}(?:limited\\s+time\\s+only|for\\s+a\\s+limited\\s+time|act\\s+now|don['’]t\\s+miss\\s+out|` +
+        `last\\s+chance|while\\s+supplies\\s+last|before\\s+it['’]s\\s+too\\s+late|spots\\s+are\\s+filling\\s+up)${R}`
+    ),
+    hint: 'Generic urgency. If the scarcity is real, say the number ("30 seats left", "price goes up on Friday").',
+  },
 ];
+
+/* Old (Portuguese) rule ids -> current ids. Anything that READS a rule id from
+   config normalizes through this map, so a config written before the rename
+   keeps working. killer-scan (`.killer-voice.json`) keeps a copy of this map,
+   because it runs copy-lint as a child process instead of importing it; the
+   self-test below checks that every target here is a real rule. */
+const LEGACY_IDS = {
+  travessao: 'em-dash',
+  bolinha: 'bullet-separator',
+  'hifen-como-travessao': 'hyphen-as-dash',
+  'nao-e-x-e-y': 'pt-not-x-but-y',
+  'nao-e-apenas': 'pt-not-just',
+  'nao-e-definicao': 'pt-defined-by-negation',
+  'nao-se-trata': 'pt-not-about',
+  'x-virgula-nao-y': 'pt-trailing-negation',
+  'e-sobre': 'pt-is-about',
+  'menos-x-mais-y': 'pt-less-x-more-y',
+  'mais-que-apenas': 'pt-more-than-just',
+  hype: 'pt-hype',
+  'abertura-de-guru': 'pt-guru-opener',
+  'urgencia-cliche': 'pt-generic-urgency',
+  'pipe-separador': 'pipe-separator',
+  'ponto-e-virgula': 'semicolon',
+  'conector-de-llm': 'pt-llm-connector',
+  'selo-de-credibilidade': 'credibility-seal',
+};
 
 /* Crutches that go unnoticed once and give away AI the second time. They are
    counted over the WHOLE FILE, not the sentence: the problem is repetition.
@@ -177,7 +302,7 @@ const RULES = [
    adjective proves nothing; the number or the scene does. */
 const REPEATS = [
   {
-    id: 'selo-de-credibilidade',
+    id: 'credibility-seal',
     max: 1,
     /* Two exceptions, both from false positives measured in production:
 
@@ -194,14 +319,19 @@ const REPEATS = [
        lookbehind covers the attached number ("47 reais") and the currency
        name; `R$` in the same unit is handled outside the regex, in the
        currency filter below. */
+    /* English joins the same budget (one seal per piece, whichever language):
+       "truly", "genuinely", "authentic", "honestly", "real". "real-time" and
+       "real estate" are the English "tempo real": they say WHAT, not "trust me".
+       `genu[íi]n\\w+` already covers "genuine"/"genuinely" and `honest\\w+`
+       covers "honestly", so the English branch does not repeat them. */
     re: rx(
-      `${L}(?:(?<!tempo\\s)(?<!\\d\\s)(?<!brasileiro\\s)(?:real|reais)|de\\s+verdade|` +
+      `${L}(?:(?<!tempo\\s)(?<!\\d\\s)(?<!brasileiro\\s)(?:real|reais)(?![-\\s]+(?:time|estate)${R})|de\\s+verdade|` +
         `na\\s+pr[áa]tica|de\\s+fato|genu[íi]n\\w+|aut[êe]ntic(?:o|a|os|as|idade)|` +
-        `honest\\w+)${R}`
+        `honest\\w+|truly|authentic(?:ally|ity)?)${R}`
     ),
     /* A unit that talks about money does not count toward the seal. */
     ignoraUnidade: (text) => /R\$|\bBRL\b|\breal brasileiro\b/i.test(text),
-    hint: 'Delete the seal. "Projeto real" is just "projeto"; "de verdade" at the end of a sentence is the defense of someone who does not trust their own argument. If it needs proof, use a number or a scene.',
+    hint: 'Delete the seal. "Projeto real" is just "projeto", "a truly authentic process" is just "the process"; "de verdade" at the end of a sentence is the defense of someone who does not trust their own argument. If it needs proof, use a number or a scene.',
   },
 ];
 
@@ -209,47 +339,88 @@ const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const comentarios = args.includes('--include-comments');
 /* --self-test: proves both directions, like the repo's other detectors. Every
-   rule in RULES must fire on its bad example, and the clean sentence must pass
-   all of them. A rule that went inert shows up here, not in production. */
+   rule in RULES and REPEATS must fire on its bad example, and every clean
+   sentence must pass all of them. A rule that went inert shows up here, not in
+   production. The clean set carries the English false-positive guards: plain
+   UI verbs that only look like hype. */
 if (args.includes('--self-test')) {
   const RUIM = {
-    travessao: 'Rápido — e bonito.',
-    bolinha: 'Marca · Site',
-    'hifen-como-travessao': 'Rápido - e bonito.',
-    'nao-e-x-e-y': 'Não é um site, é uma máquina de venda.',
-    'nao-e-apenas': 'Não é apenas um site.',
-    'nao-e-definicao': 'Não é um teaser.',
-    'nao-se-trata': 'Não se trata de design.',
-    'x-virgula-nao-y': 'Feito pra ler, não pra arquivar.',
-    'e-sobre': 'Branding é sobre pessoas.',
-    'menos-x-mais-y': 'Menos ruído e mais venda.',
-    'mais-que-apenas': 'Mais que apenas um logo.',
-    hype: 'Uma solução revolucionária.',
-    'abertura-de-guru': 'Imagine que seu site vendesse sozinho.',
-    'urgencia-cliche': 'Últimas vagas para o curso.',
-    'pipe-separador': 'Marca | Site',
+    'em-dash': 'Rápido — e bonito.',
+    'bullet-separator': 'Marca · Site',
+    'hyphen-as-dash': 'Rápido - e bonito.',
+    'pt-not-x-but-y': 'Não é um site, é uma máquina de venda.',
+    'pt-not-just': 'Não é apenas um site.',
+    'pt-defined-by-negation': 'Não é um teaser.',
+    'pt-not-about': 'Não se trata de design.',
+    'pt-trailing-negation': 'Feito pra ler, não pra arquivar.',
+    'pt-is-about': 'Branding é sobre pessoas.',
+    'pt-less-x-more-y': 'Menos ruído e mais venda.',
+    'pt-more-than-just': 'Mais que apenas um logo.',
+    'pt-hype': 'Uma solução revolucionária.',
+    'pt-guru-opener': 'Imagine que seu site vendesse sozinho.',
+    'pt-generic-urgency': 'Últimas vagas para o curso.',
+    'pipe-separator': 'Marca | Site',
     emoji: 'Seu site novo 🚀',
-    'ponto-e-virgula': 'Rápido; bonito.',
-    'conector-de-llm': 'Além disso, entregamos rápido.',
+    semicolon: 'Rápido; bonito.',
+    'pt-llm-connector': 'Além disso, entregamos rápido.',
+    'en-not-about': "Branding isn't about logos, it's about trust.",
+    'en-not-x-but-y': "It's not a website, it's a sales machine.",
+    'en-not-just': 'Not just a template, but a system.',
+    'en-more-than-just': 'More than just a logo.',
+    'en-all-about': "Design is all about people.",
+    'en-hype': 'Unlock your full potential with a revolutionary way to ship.',
+    'en-guru-opener': 'Imagine a world where your site sells itself.',
+    'en-llm-connector': 'Moreover, we ship fast.',
+    'en-generic-urgency': "Limited time only, don't miss out.",
+    'credibility-seal': 'A truly authentic process with real results.',
   };
-  const LIMPA = 'Seu site novo fica pronto em uma semana.';
+  const LIMPAS = [
+    'Seu site novo fica pronto em uma semana.',
+    'Your new site ships in one week.',
+    'Unlock account',
+    'Transform tool',
+    'More than 30 templates',
+    'Real-time preview of every mockup.',
+    'Seamless pattern generator',
+    'Confirm your email to unlock your full account.',
+    'A seamless white background behind the product.',
+    'Empower mode is off.',
+    "This isn't available on the free plan.",
+  ];
   const falhas = [];
-  for (const rule of RULES) {
+  const dispara = (rule, text) => {
     rule.re.lastIndex = 0;
-    if (rule.re.test(LIMPA)) falhas.push(`${rule.id} fired on the clean sentence`);
+    return rule.re.test(text);
+  };
+  for (const rule of [...RULES, ...REPEATS]) {
+    for (const limpa of LIMPAS) {
+      if (dispara(rule, limpa)) falhas.push(`${rule.id} fired on the clean sentence "${limpa}"`);
+    }
     const ruim = RUIM[rule.id];
-    if (ruim === undefined) continue;
-    rule.re.lastIndex = 0;
-    if (!rule.re.test(ruim)) falhas.push(`${rule.id} did not fire on "${ruim}"`);
+    if (ruim === undefined) {
+      falhas.push(`${rule.id} has no bad example in the self-test`);
+      continue;
+    }
+    if (rule.max !== undefined) {
+      const n = (ruim.match(rule.re) || []).length;
+      if (n <= rule.max) falhas.push(`${rule.id} counted ${n} on "${ruim}", needs more than ${rule.max}`);
+    } else if (!dispara(rule, ruim)) falhas.push(`${rule.id} did not fire on "${ruim}"`);
   }
+  const ids = new Set([...RULES, ...REPEATS].map((r) => r.id));
   for (const id of Object.keys(RUIM)) {
-    if (!RULES.some((r) => r.id === id)) falhas.push(`rule ${id} is gone from RULES`);
+    if (!ids.has(id)) falhas.push(`rule ${id} is gone from RULES`);
+  }
+  for (const [velho, novo] of Object.entries(LEGACY_IDS)) {
+    if (!ids.has(novo)) falhas.push(`LEGACY_IDS maps ${velho} to ${novo}, which is not a rule`);
   }
   if (falhas.length) {
     console.error(`✗ copy-lint --self-test\n  ${falhas.join('\n  ')}`);
     process.exit(1);
   }
-  console.log(`✓ copy-lint --self-test: ${Object.keys(RUIM).length} rules fire, the clean sentence passes all ${RULES.length}`);
+  console.log(
+    `✓ copy-lint --self-test: ${Object.keys(RUIM).length} rules fire (PT and EN), ` +
+      `${LIMPAS.length} clean sentences pass all ${ids.size}, ${Object.keys(LEGACY_IDS).length} legacy ids map to live rules`
+  );
   process.exit(0);
 }
 
@@ -460,7 +631,8 @@ for (const file of files) {
   if (quiet || !found.length) continue;
   console.log(`\n${file}`);
   for (const f of found) {
-    console.log(`  ${f.rule.id.padEnd(22)} ${f.loc}`);
+    /* Two spaces minimum between id and loc: killer-scan parses this line. */
+    console.log(`  ${f.rule.id.padEnd(22)}  ${f.loc}`);
     console.log(`    ${f.text.length > 160 ? f.text.slice(0, 157) + '...' : f.text}`);
     console.log(`    ↑ matched: "${f.match}"`);
   }

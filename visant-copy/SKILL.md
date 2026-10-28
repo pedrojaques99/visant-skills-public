@@ -1,14 +1,14 @@
 ---
 name: visant-copy
-description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visant''s spoken voice, in any repo (SEO, social card, dash and emoji audits included), and runs copy-lint. Use on "copy", "headline", "landing copy", "remove the AI feel", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy".'
+description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visant''s spoken voice, in any repo, and runs copy-lint, which catches AI tics in PT and English copy. Use on "copy", "headline", "landing copy", "remove the AI feel", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy".'
 ---
 
 # Visant Copy
 
 Two things live here: **how Visant copy sounds** (valid in any repo) and **how it
-is operated**, which depends on where the text lives. The rules below are in
-English; the copy itself, every example and every forbidden pattern is Brazilian
-Portuguese, and stays that way.
+is operated**, which depends on where the text lives. The voice guidance below
+is about Brazilian Portuguese copy. **The linter is bilingual**: it runs a PT and
+an English rule set on every input, so it audits English UI copy too.
 
 - **The repo uses Visant's pipeline** (`copy*.json` at the root and
   `copy:build`/`copy:check` scripts in `package.json`): the JSON is the SSoT and
@@ -104,8 +104,11 @@ What it accepts, exactly:
 - Emoji runs on every file. Semicolon and pipe separator run **only on
   `.json`** (in `.md` the pipe is a table, in code `;` is syntax).
 - Flags: `--quiet` (exit code only, for CI), `--include-comments` (lint code
-  comments too), `--self-test` (all 18 rules fire, a clean sentence passes).
-  Messages are English; rule ids and quoted patterns stay Portuguese.
+  comments too), `--self-test` (every PT and EN rule fires, clean sentences pass).
+- **Ids are English**, `pt-`/`en-` when language-specific (`pt-not-x-but-y`,
+  `en-hype`), bare for punctuation (`em-dash`, `bullet-separator`, `semicolon`).
+  Old PT ids (`travessao`, `bolinha`) still work in config. EN hype needs a
+  marketing object: "Unlock account" passes, "unlock your potential" fails.
 
 Exit 1 with the key, the excerpt and the fix. Two warnings come **outside the
 exit code**, because good copy cannot fail on a detail:
@@ -120,12 +123,9 @@ In code files **comments are not linted** on purpose: a JSDoc is not copy.
 
 ### Repetition budget is per PIECE, and the file is not always the piece
 
-Repetition rules (`selo-de-credibilidade`, limit 1) count per piece, because a
-rule that shouts 11 times across an i18n file teaches people to ignore the
-linter. In JSON the group is the first key segment (`onboarding.*`); in a
-component, the file. "real"/"reais" as money (`R$ 47`) is not a seal. The
-residue is semantic ("produtos reais" vs "projeto real"): confirm at `file:line`
-before touching. The case: [references/cases.md](references/cases.md).
+`credibility-seal` (limit 1, PT and EN words share it) counts per piece: in JSON
+the first key segment (`onboarding.*`), in a component the file. Money (`R$ 47`)
+is not a seal; the rest is semantic, so confirm at `file:line`. [Why](references/cases.md).
 
 ## The voice
 

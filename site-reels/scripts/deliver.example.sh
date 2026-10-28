@@ -4,12 +4,12 @@
 # Each file ends < 95MB (Figma video limit is 100MB): crf goes up by 3 until it fits.
 #
 # usage:  V=/path/to/client/Videos [SHOW=/path/to/showreel/public/plates] sh entrega.sh
-#   V     folder with the client's videos (plates are read from $V/placas60)   REQUIRED
+#   V     folder with the client's videos (plates are read from $V/plates60)   REQUIRED
 #   SHOW  Remotion showreel public/plates folder to copy plates into          optional
 #   LOOP  path to loop.sh (default: next to this script, else ~/.claude/skills/site-reels/scripts)
 # Works on Linux, macOS and Git Bash on Windows (file size via wc -c, no GNU stat).
 V="${V:?set V=<client Videos folder>, e.g. V=\"\$HOME/clients/brand/videos\"}"
-P="$V/placas60"
+P="$V/plates60"
 SHOW="${SHOW:-}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 LOOP="${LOOP:-$HERE/loop.sh}"

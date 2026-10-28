@@ -149,9 +149,12 @@ already written keep working. The repo scanners in the last four rows match only
 - The contract is locked in `--self-test` in the repo's scripts that implement
   it.
 - The **copy** gate has no per-line exception: only `.killer-voice.json` at the
-  target root, `{"dispensa":["bolinha"],"motivo":"..."}`, a reason of 40+
-  characters, and only delimiter rules (`bolinha`, `travessao`,
-  `pipe-separador`, `hifen-como-travessao`).
+  target root, `{"dispensa":["bullet-separator"],"motivo":"..."}`, a reason of
+  40+ characters, and only delimiter rules (`bullet-separator`, `em-dash`,
+  `pipe-separator`, `hyphen-as-dash`). The old copy-lint ids (`bolinha`,
+  `travessao`, `pipe-separador`, `hifen-como-travessao`) still work there.
+- The copy gate reports copy-lint rule ids, which cover PT and English copy
+  (`en-hype`, `en-not-x-but-y`, `pt-hype`...).
 - A light-mode scanner may also suppress files that declare a loose `dark`
   class (always-dark stage) and editor folders. The dark-editor rule for the
   house app is in `visant-frontend/references/ds-visantlabs-os.md`.

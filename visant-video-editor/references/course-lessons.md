@@ -6,7 +6,7 @@ background scream in the middle of a sentence.
 
 ## Find the cut boundary without guessing
 
-Whisper (`transcreve.sh`, uses `faster_whisper` small on CPU) returns segments with
+Whisper (`transcribe.sh`, uses `faster_whisper` small on CPU) returns segments with
 `start`/`end`. Two facts used to cut safely:
 
 1. **Zero gap between segments = a real speech boundary**, not a cut mid-word. When a segment's

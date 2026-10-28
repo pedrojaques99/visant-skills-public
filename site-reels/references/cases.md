@@ -6,7 +6,7 @@ and are not shipped; they only say where the reference implementation lived.
 ## Client Y: site plates for the deck (Oct 2026)
 
 - 7 videos approved. Reference project kept privately (`marca-reels`), with an `entrega.sh` that
-  became `scripts/entrega.example.sh`.
+  became `scripts/deliver.example.sh`.
 - Brand showreel reference project (`marca-showreel`): `src/fx.tsx` held `Mist`, `MistWords`,
   `Grain`, `KenBurns`, `Plate` and the `nevoa()` transition; `brand.ts` held the brand data.
 - The site used Mozilla Text while the visual identity in the deck was Zalando Sans: that is why

@@ -12,7 +12,7 @@ touches the volume twice and leaves.
 | Spotify / podcast | -14 | -1.0 dBTP |
 | Broadcast EBU R128 | -23 | -1.0 dBTP |
 
-`build.sh` uses -16 by default (`ALVO_I=-16`). Streaming turns down what is above target but
+`build.sh` uses -16 by default (`TARGET_I=-16`). Streaming turns down what is above target but
 **does not raise** what is below: erring low is a permanent loss.
 
 ## One pass vs two passes

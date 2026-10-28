@@ -2,7 +2,7 @@
 # Scans the media folder, reads each file's metadata and writes:
 #   _build/manifest.tsv  -> full table (sorted by capture date)
 #   _build/edl.txt       -> editable cut list:  file <TAB> in <TAB> out
-# Usage: bash _tools/ingest.sh
+# Usage: bash ingest.sh
 set -euo pipefail
 
 BASE="${PROJ:-$PWD}"      # project root (_build/ and _out/ live here)
@@ -30,7 +30,7 @@ for f in "${files[@]}"; do
   base="$(basename "$f")"
   ext="${base##*.}"; ext="$(echo "$ext" | tr 'A-Z' 'a-z')"
   case "$ext" in
-    jpg|jpeg|png|heic) kind=foto ;;
+    jpg|jpeg|png|heic) kind=photo ;;
     *) kind=video ;;
   esac
 
@@ -46,7 +46,7 @@ for f in "${files[@]}"; do
   aud="$(printf '%s\n' "$json" | grep -c '^codec_type=audio' || true)"
   cre="$(printf '%s\n' "$json" | awk -F= '/^TAG:creation_time=/{print $2; exit}')"
 
-  [ "$kind" = foto ] && dur="${DUR_FOTO:-3}"
+  [ "$kind" = photo ] && dur="${PHOTO_DUR:-${DUR_FOTO:-3}}"   # DUR_FOTO: old name
   [ -z "${cre:-}" ] && cre="$(date -r "$f" -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo 1970-01-01T00:00:00Z)"
   [ -z "${dur:-}" ] && dur=0
   [ -z "${rot:-}" ] && rot=0

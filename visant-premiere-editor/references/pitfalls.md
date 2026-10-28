@@ -6,7 +6,7 @@ on another locale read them with `get_effect_properties`. Where each was found: 
 | Symptom | Cause | Fix |
 |---|---|---|
 | in/out 1 frame before the plan | `create_subclip` takes seconds and Premiere rounds down (9.2083 × 24 = 220.999 → 220) | XML with whole frames (`premiere_xml.py`) |
-| still lasting 43200 s (12 h) | a PNG subclip ignores in/out | still in the XML with `duracao_s` |
+| still lasting 43200 s (12 h) | a PNG subclip ignores in/out | still in the XML with `duration_s` |
 | 720x480 sequence, screen at 90.9% width | XML without `<format>`: Premiere falls back to NTSC D1 and corrects non-square pixels | `<format><samplecharacteristics>` with w/h, `square`, `fielddominance none` (the script does it) |
 | media `\\\Z:\...` offline + a modal window that freezes everything (Windows) | `pathurl` `file:///Z:/...` | `file://localhost/Z%3A/...` (the script does it; POSIX paths become `file://localhost/Users/...`) |
 | media offline with the RIGHT path | XML import does not resolve the file by itself | `relink_media` to the same path |
@@ -21,7 +21,7 @@ on another locale read them with `get_effect_properties`. Where each was found: 
 | "Legacy CEP cannot safely delete project item" | CEP does not delete items | bin `_descartar` + name `[descartar]` |
 | sequence at 29.9992 fps | iPhone MOV is VFR and the sequence inherits the average | fine for a face shot; for locked 30, the XML sets the timebase |
 | `export_sequence_review_frames` "did not write any frames" | tool failure in this version | `capture_frame(time_seconds)`, which sometimes fails and passes on the second try |
-| sequence 0.3 to 0.7 s shorter than the plan's `duracao_s` | the plan summed fractional seconds and `fonte_in_f/out_f` round each end | under 1 frame per cut; tell the plan generator to sum in frames |
+| sequence 0.3 to 0.7 s shorter than the plan's `duration_s` | the plan summed fractional seconds and `src_in_f/src_out_f` round each end | under 1 frame per cut; tell the plan generator to sum in frames |
 | keyframe applied and the clip does not animate | `add_keyframe(time_seconds)` counts in SOURCE time, not clip time (0 s is before the in) | `inPoint` from `get_clip_properties` |
 | `add_keyframe` refuses Position | numbers only | anchor on the face + fixed Position on the target, animate only Scale |
 | "Clip not found" with an ID that worked; reading a clip from another sequence | the node ID changes when the active sequence changes (the user clicking in Premiere changes it too) | `get_clip_at_position` right before each operation |

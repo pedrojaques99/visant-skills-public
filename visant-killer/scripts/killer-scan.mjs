@@ -455,7 +455,7 @@ const TS_PARAM = /\b\w+\??\s*:\s*(?:string|number|boolean|unknown|null|undefined
  * argument becomes a "tag close" and what is glued right after it is a type
  * suffix or a member access, never screen text:
  *   - `Node<FlowNodeData>[] | ((prev: ...` handed over `[] | ((prev: Node` and
- *     the union pipe flagged pipe-separador (visantlabs-os CollaborativeCanvas);
+ *     the union pipe flagged pipe-separator (visantlabs-os CollaborativeCanvas);
  *   - `(ref as React.MutableRefObject<Konva.Stage | null>).current = node;`
  *     handed over `).current = node;` and flagged a semicolon (KonvaCanvas).
  * Found in wave 4 of the visantlabs-os slop killer (2026-10-05).
@@ -492,7 +492,36 @@ const OBJ_PROP = /^\s*['"]?[A-Za-z_$][\w$-]*['"]?\s*:\s*['"`]/;
    prose and shows up in the Google snippet. */
 const DOC_TITLE_PROP = /^\s*title\s*:\s*['"`]/;
 const DOC_TITLE_MARK = '~doctitle';
-const DELIMITER_RULES = new Set(['pipe-separador', 'hifen-como-travessao']);
+const DELIMITER_RULES = new Set(['pipe-separator', 'hyphen-as-dash']);
+
+/* copy-lint renamed its rule ids from Portuguese to English (`travessao` is now
+   `em-dash`, `bolinha` is `bullet-separator`). Every id this script READS,
+   from copy-lint's output or from a product's `.killer-voice.json`, goes
+   through this map, so a config written before the rename and an older
+   copy-lint install both keep working. Copy of LEGACY_IDS in
+   visant-copy/scripts/copy-lint.mjs: copy-lint runs as a child process, so it
+   cannot be imported without running it. */
+const COPY_LEGACY_IDS = {
+  travessao: 'em-dash',
+  bolinha: 'bullet-separator',
+  'hifen-como-travessao': 'hyphen-as-dash',
+  'nao-e-x-e-y': 'pt-not-x-but-y',
+  'nao-e-apenas': 'pt-not-just',
+  'nao-e-definicao': 'pt-defined-by-negation',
+  'nao-se-trata': 'pt-not-about',
+  'x-virgula-nao-y': 'pt-trailing-negation',
+  'e-sobre': 'pt-is-about',
+  'menos-x-mais-y': 'pt-less-x-more-y',
+  'mais-que-apenas': 'pt-more-than-just',
+  hype: 'pt-hype',
+  'abertura-de-guru': 'pt-guru-opener',
+  'urgencia-cliche': 'pt-generic-urgency',
+  'pipe-separador': 'pipe-separator',
+  'ponto-e-virgula': 'semicolon',
+  'conector-de-llm': 'pt-llm-connector',
+  'selo-de-credibilidade': 'credibility-seal',
+};
+const copyRuleId = (id) => COPY_LEGACY_IDS[id] || id;
 
 /* ---------- product voice: the same principle as DOC_TITLE, one level up ----------
  *
@@ -502,8 +531,8 @@ const DELIMITER_RULES = new Set(['pipe-separador', 'hifen-como-travessao']);
  * WORSE, exactly the argument that already existed for the document title above.
  *
  * Found in the liminal-stage record box audit (2026-08-14): 14 findings, all
- * `bolinha` and `travessao`, 9 of them on lines the audited work did not touch,
- * and 132 uses of `·` in 26 files committed earlier (`ao vivo · 3`,
+ * `bolinha` and `travessao` (today `bullet-separator` and `em-dash`), 9 of them
+ * on lines the audited work did not touch, and 132 uses of `·` in 26 files committed earlier (`ao vivo · 3`,
  * `em breve · 2d`, `55/120 · limpar`). Not an AI tic; it is that product's beat
  * separator.
  *
@@ -517,7 +546,7 @@ const DELIMITER_RULES = new Set(['pipe-separador', 'hifen-como-travessao']);
  * Only DELIMITER rules can be waived. Emoji, guru, seal, sales semicolon and dash
  * in prose still apply: a microcopy convention is a punctuation choice, not a
  * free pass on voice. */
-const VOICE_RULES = new Set(['bolinha', 'travessao', 'pipe-separador', 'hifen-como-travessao']);
+const VOICE_RULES = new Set(['bullet-separator', 'em-dash', 'pipe-separator', 'hyphen-as-dash']);
 const productVoice = () => {
   try {
     const cfg = JSON.parse(readFileSync(join(ROOT, '.killer-voice.json'), 'utf8'));
@@ -525,8 +554,10 @@ const productVoice = () => {
     if (motivo.length < 40) {
       return { rules: new Set(), warn: '.killer-voice.json ignored: `motivo` missing or too short (min. 40 characters)' };
     }
-    const rules = new Set((cfg.dispensa || []).filter((r) => VOICE_RULES.has(r)));
-    const bad = (cfg.dispensa || []).filter((r) => !VOICE_RULES.has(r));
+    // Old Portuguese ids ("bolinha", "travessao") still work: normalized here.
+    const dispensa = (Array.isArray(cfg.dispensa) ? cfg.dispensa : []).map((r) => copyRuleId(String(r)));
+    const rules = new Set(dispensa.filter((r) => VOICE_RULES.has(r)));
+    const bad = dispensa.filter((r) => !VOICE_RULES.has(r));
     return {
       rules,
       warn: bad.length ? `.killer-voice.json: only delimiter rules can be waived; ignored: ${bad.join(', ')}` : null,
@@ -572,7 +603,7 @@ const SO_SEPARADOR_COM_VICIO = /^(?=\s*[·—][\s·—]*$)(?=.*\s)[\s·—]+$/;
 /* TypeScript union written as prop documentation, the design system page kind:
  * `'left' | 'right'`, `"sm" | "md"`,
  * `number | string (default 1; masonry = natural)`. The pipe is a union
- * operator, not a copy separator, and the gate flagged pipe-separador
+ * operator, not a copy separator, and the gate flagged pipe-separator
  * (src/pages/DesignSystemPage.tsx, 2026-10-05).
  *
  * It is a type when EVERY segment between pipes is a quoted literal, a type
@@ -839,7 +870,7 @@ function runCopy() {
     for (const line of out.split(/\r?\n/)) {
       const m = line.match(/^\s{2}([a-z-]+)\s{2,}(.+)$/);
       if (m && !/^(Como consertar|Aviso|How to fix|Warnings)/.test(m[1])) {
-        const rule = m[1];
+        const rule = copyRuleId(m[1]);
         // The product declared this delimiter as its own convention. See productVoice().
         if (voice.rules.has(rule)) continue;
         // A document title does not answer for delimiters. See DOC_TITLE_PROP.
@@ -1182,7 +1213,38 @@ function runSelfTest() {
     console.log('[OK]    token fallback (fires on the dirty fixtures, silent on clean and theme files)');
   }
 
-  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length;
+  /* Legacy rule ids: an old `.killer-voice.json` ("bolinha") must still
+     waive the renamed rule, and this map must not drift from copy-lint's. */
+  const idFalhas = [];
+  if (copyRuleId('bolinha') !== 'bullet-separator' || copyRuleId('em-dash') !== 'em-dash') {
+    idFalhas.push('copyRuleId does not normalize old ids');
+  }
+  for (const id of ['bolinha', 'travessao', 'pipe-separador', 'hifen-como-travessao']) {
+    if (!VOICE_RULES.has(copyRuleId(id))) idFalhas.push(`voice waiver lost legacy id ${id}`);
+  }
+  const copyLintSrc = [
+    join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'visant-copy', 'scripts', 'copy-lint.mjs'),
+    join(homedir(), '.claude', 'skills', 'visant-copy', 'scripts', 'copy-lint.mjs'),
+  ].find((p) => existsSync(p));
+  if (copyLintSrc) {
+    const bloco = readFileSync(copyLintSrc, 'utf8').match(/const LEGACY_IDS = \{([\s\S]*?)\n\};/);
+    const pares = bloco ? [...bloco[1].matchAll(/'?([a-z-]+)'?:\s*'([a-z-]+)'/g)].map((m) => [m[1], m[2]]) : [];
+    if (!pares.length) idFalhas.push(`LEGACY_IDS not found in ${copyLintSrc}`);
+    for (const [velho, novo] of pares) {
+      if (COPY_LEGACY_IDS[velho] !== novo) idFalhas.push(`COPY_LEGACY_IDS drifted from copy-lint: ${velho} -> ${novo}`);
+    }
+    if (pares.length && pares.length !== Object.keys(COPY_LEGACY_IDS).length) {
+      idFalhas.push(`COPY_LEGACY_IDS has ${Object.keys(COPY_LEGACY_IDS).length} entries, copy-lint has ${pares.length}`);
+    }
+  }
+  if (idFalhas.length) {
+    console.log(`[FAIL]  copy-lint rule ids: ${idFalhas.length}`);
+    for (const f of idFalhas) console.log(`          ${f}`);
+  } else {
+    console.log('[OK]    copy-lint rule ids (legacy ids normalize, map matches copy-lint)');
+  }
+
+  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length + idFalhas.length;
   console.log('-'.repeat(64));
   console.log(
     failed

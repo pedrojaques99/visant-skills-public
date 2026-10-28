@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Assembles the vlog from _build/edl.txt
 # Usage:
-#   bash _tools/build.sh                      # 16:9 horizontal (default)
-#   AR=9:16 bash _tools/build.sh              # vertical (reels)
-#   FILL=blur bash _tools/build.sh            # blurred bars instead of cropping
-#   MUSIC="../musica.mp3" bash _tools/build.sh
-#   OUT=v2 bash _tools/build.sh
+#   bash build.sh                      # 16:9 horizontal (default)
+#   AR=9:16 bash build.sh              # vertical (reels)
+#   FILL=blur bash build.sh            # blurred bars instead of cropping
+#   MUSIC="../music.mp3" bash build.sh
+#   OUT=v2 bash build.sh
 set -euo pipefail
 # portable md5: md5sum (Linux/Git Bash), md5 -q (macOS) or openssl
 md5_de() { if command -v md5sum >/dev/null 2>&1; then md5sum | cut -d' ' -f1
@@ -17,7 +17,7 @@ ROOT="${SRC:-$BASE}"          # media folder (SRC= points outside)
 BUILD="$BASE/_build"; CLIPS="$BUILD/clips"; OUTDIR="$BASE/_out"
 mkdir -p "$CLIPS" "$OUTDIR"
 EDL="$BUILD/edl.txt"
-[ -f "$EDL" ] || { echo "No $EDL. Run first: bash _tools/ingest.sh"; exit 1; }
+[ -f "$EDL" ] || { echo "No $EDL. Run first: bash ingest.sh"; exit 1; }
 
 AR="${AR:-16:9}"
 FILL="${FILL:-auto}"          # auto | blur | crop | black
@@ -74,7 +74,7 @@ fill_for() {   # $1 = file
 #
 # 15ms afade at the edges: a hard cut in digital audio clicks. This kills the click.
 LOUD="${LOUD:-2}"
-ALVO_I="${ALVO_I:--16}"
+TARGET_I="${TARGET_I:-${ALVO_I:--16}}"   # ALVO_I: old name
 SR="${SR:-48000}"
 
 # `aresample` AFTER loudnorm is not redundant: loudnorm resamples internally
@@ -85,7 +85,7 @@ SR="${SR:-48000}"
 DESCLICK="afade=t=in:st=0:d=0.015,areverse,afade=t=in:st=0:d=0.015,areverse,aresample=${SR}"
 
 case "$LOUD" in
-  1) AUD_CHAIN="loudnorm=I=${ALVO_I}:TP=-1.5:LRA=11,${DESCLICK}" ;;
+  1) AUD_CHAIN="loudnorm=I=${TARGET_I}:TP=-1.5:LRA=11,${DESCLICK}" ;;
   0) AUD_CHAIN="aresample=${SR}" ;;
   *) AUD_CHAIN="" ;;   # 2 = measured per cut, built inside the loop
 esac
@@ -98,15 +98,15 @@ cadeia_audio_medida() {   # $1=file  $2=in  $3=out
   # ffmpeg swallows the measurement. With -v error this always falls back to one
   # pass and LOUD=2 becomes a silent no-op (it happened).
   m="$(ffmpeg -nostdin -v info -hide_banner "${rec[@]}" -i "$1" \
-        -af "loudnorm=I=${ALVO_I}:TP=-1.5:LRA=11:print_format=json" \
+        -af "loudnorm=I=${TARGET_I}:TP=-1.5:LRA=11:print_format=json" \
         -f null - 2>&1 | tr -d ' ",' || true)"
   i="$(  printf '%s\n' "$m" | awk -F: '/input_i/        {print $2; exit}')"
   tp="$( printf '%s\n' "$m" | awk -F: '/input_tp/       {print $2; exit}')"
   lra="$(printf '%s\n' "$m" | awk -F: '/input_lra/      {print $2; exit}')"
   thr="$(printf '%s\n' "$m" | awk -F: '/input_thresh/   {print $2; exit}')"
   # measurement failed (silent cut, no audio track): fall back to one pass, never break the build
-  case "${i:-}" in ''|*inf*|*nan*) printf '%s' "loudnorm=I=${ALVO_I}:TP=-1.5:LRA=11,${DESCLICK}"; return ;; esac
-  printf '%s' "loudnorm=I=${ALVO_I}:TP=-1.5:LRA=11:linear=true:measured_I=${i}:measured_TP=${tp}:measured_LRA=${lra}:measured_thresh=${thr},${DESCLICK}"
+  case "${i:-}" in ''|*inf*|*nan*) printf '%s' "loudnorm=I=${TARGET_I}:TP=-1.5:LRA=11,${DESCLICK}"; return ;; esac
+  printf '%s' "loudnorm=I=${TARGET_I}:TP=-1.5:LRA=11:linear=true:measured_I=${i}:measured_TP=${tp}:measured_LRA=${lra}:measured_thresh=${thr},${DESCLICK}"
 }
 
 echo "== normalizing cuts -> ${W}x${H} @${FPS} (fill=$FILL, loudnorm=$LOUD)"
@@ -220,7 +220,7 @@ done 9< "$EDL"
 # Stable copy of the list. The working list is per process (concurrency) and
 # dies on EXIT, but without a fixed-name copy there is no way to check what was
 # assembled after the build, and the gate went blind to 3 cases because of that.
-cp -f "$list" "$CLIPS/concat.ultimo.txt" 2>/dev/null || true
+cp -f "$list" "$CLIPS/concat.last.txt" 2>/dev/null || true
 
 echo "== joining $i cuts"
 final="$OUTDIR/${OUT}.mp4"

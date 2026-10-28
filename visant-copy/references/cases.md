@@ -5,7 +5,7 @@ only holds the context, for whoever wants to understand it before disagreeing.
 
 ## Repetition budget per piece
 
-The `selo-de-credibilidade` rule has a limit of 1, and the limit is per page. Run
+The `credibility-seal` rule (formerly `selo-de-credibilidade`) has a limit of 1, and the limit is per page. Run
 on an app's `pt-BR.json` (5173 keys, dozens of independent screens), it flagged
 11 occurrences as if they were the same piece. A rule that shouts 11 times
 teaches people to ignore the linter, which is worse than not having the rule.

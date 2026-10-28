@@ -42,8 +42,9 @@ $ node visant-killer/scripts/killer-scan.mjs demo/src
 [FAIL]    audit:design (token)       1 finding(s)
             src/Pricing.tsx:7  paleta-tailwind  <div className="border rounded-xl p-4 text-purple-500">
             via killer-scan built-in FALLBACK (raw hex/rgb/hsl, Tailwind palette)
-[FAIL]    copy         (tic)         1 finding(s)
-            src/Pricing.tsx:6  travessao
+[FAIL]    copy         (tic)         2 finding(s)
+            src/Pricing.tsx:6  em-dash
+            src/Pricing.tsx:6  en-hype
 [FAIL]    noise        (chrome)      3 finding(s)
             src/Pricing.tsx:5  italic-headline-word  <em> italic inside <h1> headline
             src/Pricing.tsx:5  display-serif-tight  display serif + negative tracking
@@ -65,7 +66,7 @@ argues against its own verdict and scores the result.
 | [`visant-frontend`](visant-frontend/SKILL.md) | Interface decisions: every element names the business variable it moves, or it goes | nothing |
 | [`visant-motion`](visant-motion/SKILL.md) | Easing/duration tokens for CSS and framer-motion, `motion-lint`, URL measurement | Node 20+ |
 | [`visant-refine`](visant-refine/SKILL.md) | Charts, gauges, sparklines, sliders and metric tiles with one shared anatomy | Node 20+ |
-| [`visant-copy`](visant-copy/SKILL.md) | Brazilian Portuguese copy in a spoken voice, with `copy-lint` against AI tells | Node 20+ |
+| [`visant-copy`](visant-copy/SKILL.md) | Brazilian Portuguese copy in a spoken voice, with `copy-lint` against AI tells in PT and English copy | Node 20+ |
 
 ## Video
 

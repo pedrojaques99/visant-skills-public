@@ -11,8 +11,8 @@ description: 'Edits vlogs, event videos and video lessons from raw footage: brea
 |---|---|---|
 | everything | Windows (Git Bash), macOS or Linux, with bash 3.2+ | `bash --version` |
 | everything | ffmpeg + ffprobe on PATH (libx264, aac; `drawtext` for the contact sheet) | `ffmpeg -version` |
-| `planeja.py`, `transcreve.sh` | Python 3 (`PYTHON=` picks the interpreter) | `python --version` |
-| `transcreve.sh` | faster-whisper (`pip install faster-whisper`) | `python -c "import faster_whisper"` |
+| `plan.py`, `transcribe.sh` | Python 3 (`PYTHON=` picks the interpreter) | `python --version` |
+| `transcribe.sh` | faster-whisper (`pip install faster-whisper`) | `python -c "import faster_whisper"` |
 | silence inside a take (optional) | auto-editor (`pip install auto-editor`) | `auto-editor --version` |
 | real photo dates (optional) | exiftool | `exiftool -ver` |
 
@@ -54,8 +54,8 @@ pipeline script, run it again.
 ```
 1. self-test          gate. Without it, do not start.
 2. ingest.sh          reads metadata of everything -> _build/manifest.tsv (sorted by capture)
-3. roteiro.sh         proposes the cut under a ceiling -> _build/edl.txt
-4. decupagem.sh       cut sheet + chapters + contact sheet
+3. cutlist.sh         proposes the cut under a ceiling -> _build/edl.txt
+4. breakdown.sh       cut sheet + chapters + contact sheet
 5. >>> APPROVAL <<<   show the breakdown and the total; wait for the ok
 6. build.sh           normalizes each cut and concatenates -> _out/vlog.mp4
 7. verify             loudness, duration, contact sheet. Only then say ready.
@@ -64,19 +64,20 @@ pipeline script, run it again.
 All at once, when the user already approved the profile:
 
 ```bash
-SRC=/path/media PROJ=/path/project PERFIL=youtube bash scripts/tudo.sh
+SRC=/path/media PROJ=/path/project PROFILE=youtube bash scripts/all.sh
 ```
 
 `PROJ` is where `_build/` and `_out/` are born. `SRC` is the media folder: it is **never
-written**, and the gate tests that.
+written**, and the gate tests that. Old Portuguese names (`tudo.sh`, `roteiro.sh`, `TETO_MIN`,
+`PERFIL`, `_build/transcricao/`...) still work; the scripts' headers list them.
 
 ## Profiles
 
-| `PERFIL` | Format | Speech take | Use |
+| `PROFILE` | Format | Speech take | Use |
 |---|---|---|---|
 | `youtube` (default) | 16:9 1920x1080 | **whole** | event vlog, long record |
 | `reels` | 9:16 1080x1920 | 8 s max | social cut, 1 min ceiling |
-| `registro` | 16:9 | whole, nothing trimmed | organized raw archive |
+| `archive` | 16:9 | whole, nothing trimmed | organized raw archive |
 
 ## Decisions that matter
 
@@ -102,26 +103,26 @@ photo.jpg	0	3         # photo = 3s with a slow zoom (Ken Burns)
 
 Reordering lines reorders the video. Commenting is how you drop a bad take.
 
-`roteiro.sh` classifies by take length and **never sacrifices narrative**: if it busts the
+`cutlist.sh` classifies by take length and **never sacrifices narrative**: if it busts the
 ceiling, it tightens the caps first and only then thins the b-roll by uniform sampling. A long
 take (>25 s) is speech and always goes in.
 
 ```bash
-TETO_MIN=5 bash scripts/roteiro.sh    # 5 min target
-TETO_MIN=0 bash scripts/roteiro.sh    # no ceiling
-MAX_LONG=0 bash scripts/roteiro.sh    # whole speech take
-FOTOS_POR_DIA=0 bash scripts/roteiro.sh
+MAX_MIN=5 bash scripts/cutlist.sh     # 5 min target
+MAX_MIN=0 bash scripts/cutlist.sh     # no ceiling
+MAX_LONG=0 bash scripts/cutlist.sh    # whole speech take
+PHOTOS_PER_DAY=0 bash scripts/cutlist.sh
 ```
 
 ## Breakdown deliverables
 
-`decupagem.sh` produces three things the user actually uses:
+`breakdown.sh` produces three things the user actually uses:
 
-- `DECUPAGEM.md`: one line per cut: timeline position, file, day, how much of the raw was used,
+- `BREAKDOWN.md`: one line per cut: timeline position, file, day, how much of the raw was used,
   type (speech/medium/b-roll) and framing
-- `CAPITULOS.txt`: chapters per day, ready for a YouTube description (the first one **must** be
+- `CHAPTERS.txt`: chapters per day, ready for a YouTube description (the first one **must** be
   `00:00:00`, or YouTube rejects them)
-- `_build/contato/folha-*.jpg`: grid of numbered thumbs. **Open at least one before declaring
+- `_build/contact/sheet-*.jpg`: grid of numbered thumbs. **Open at least one before declaring
   ready.** It is the only way to see the content without watching it all
 
 ## Before saying it is ready
@@ -141,10 +142,10 @@ When the material has speech with content, the order does not come from the date
 the argument. The path (run from the project folder, or set `PROJ`):
 
 ```bash
-bash scripts/transcreve.sh       # sentences with timecode
+bash scripts/transcribe.sh       # sentences with timecode
 bash scripts/frames.sh           # entry point of each clip
-# cut the speech blocks into _build/falas4 (audio) and _build/falasv (video+audio)
-python scripts/planeja.py        # builds the EDL by argument
+# cut the speech blocks into _build/speech_audio (audio) and _build/speech_video (video+audio)
+python scripts/plan.py           # builds the EDL by argument
 bash scripts/build.sh
 ```
 
@@ -154,7 +155,7 @@ bash scripts/build.sh
 broll.MOV   in   out   narration.m4a   voice_in
 ```
 
-**Face moment**: 3 columns pointing to the speech clip itself in `falasv/`, which has video and
+**Face moment**: 3 columns pointing to the speech clip itself in `speech_video/`, which has video and
 audio cut together. Guaranteed sync, seamless narration.
 
 Field-measured rules (detail in [pitfalls.md](references/pitfalls.md)):
@@ -170,11 +171,11 @@ not finding the right take: the recording has minutes of dead silence (screen be
 nobody talking) between good sentences, and sometimes one bad audio event (background scream, mic
 bump).
 
-Flow (does not use `roteiro.sh`/`frames.sh`/`planeja.py`, which separate narration from b-roll;
+Flow (does not use `cutlist.sh`/`frames.sh`/`plan.py`, which separate narration from b-roll;
 here video and audio never separate):
 
 ```
-1. transcreve.sh              sentences with timecode for each raw file
+1. transcribe.sh              sentences with timecode for each raw file
 2. read the transcript        decide which sentences GO IN, in order
 3. write the EDL by hand      file\tin\tout, one per sentence (not per take)
 4. audio anomaly scan         see references/course-lessons.md: peak and drop
@@ -206,7 +207,7 @@ exception. Full detail, with the measured why, in
 
 ## When the material is speech-heavy
 
-`roteiro.sh` picks takes; it does not clean the middle of a take. That is what `auto-editor` is
+`cutlist.sh` picks takes; it does not clean the middle of a take. That is what `auto-editor` is
 for: it cuts silence inside the take. Run it **before** ingest, into a separate folder. See
 [tools.md](references/tools.md).
 
@@ -215,7 +216,7 @@ for: it cuts silence inside the take. Run it **before** ingest, into a separate 
 On a Google Drive for desktop mount the file is virtual until read, and every read forces a
 download. Ingesting ~170 files takes minutes; encoding 2.5 GB takes an hour.
 
-**Run in background and tell the user the cost first**, not after. Never call `tudo.sh` in
+**Run in background and tell the user the cost first**, not after. Never call `all.sh` in
 foreground thinking it is fast.
 
 ## Read when needed

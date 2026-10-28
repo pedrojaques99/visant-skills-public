@@ -15,8 +15,8 @@ python -c "import faster_whisper" && echo "faster_whisper ok"
 
 ## auto-editor: silence cutting (jump cut)
 
-`pip install auto-editor` (tested with v29.3.1). It does what `roteiro.sh` does **not**: cuts the
-silence *inside* a take. `roteiro.sh` decides which takes go in and for how long; `auto-editor`
+`pip install auto-editor` (tested with v29.3.1). It does what `cutlist.sh` does **not**: cuts the
+silence *inside* a take. `cutlist.sh` decides which takes go in and for how long; `auto-editor`
 cleans the middle of each.
 
 ```bash
@@ -38,7 +38,7 @@ Recommended flow for a speech-heavy vlog:
 mkdir -p clean
 for f in TAKE_*.MOV; do auto-editor "$f" --margin 0.25s -o "clean/$f"; done
 # 2. run the normal pipeline pointing to the clean folder
-SRC=./clean bash ingest.sh && bash roteiro.sh && bash build.sh
+SRC=./clean bash ingest.sh && bash cutlist.sh && bash build.sh
 ```
 
 Options that matter: `--margin` (breath before/after speech; 0.2–0.3s sounds natural, 0 sounds
@@ -47,7 +47,7 @@ cutting).
 
 ## whisper: subtitles and transcription
 
-`transcreve.sh` uses **faster-whisper as a Python module** (`pip install faster-whisper`), not the
+`transcribe.sh` uses **faster-whisper as a Python module** (`pip install faster-whisper`), not the
 `whisper` CLI: the openai-whisper CLI has broken on invocation (traceback in `runpy`) on the
 author's Windows setup. Before promising subtitles, test whichever you have:
 

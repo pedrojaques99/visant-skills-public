@@ -35,9 +35,9 @@ PRODUCT + DIFFERENTIATOR + EMOTIONAL LINK = Mensagem Central
 **The 3 Pillars:** core values. A good pillar: if violated, the brand stops being
 itself. A good pillar: the brand can DO it, not just say it.
 
-**Example (Quadraclub):**
-- MC: "App de matchmaking para esportes de raquete com o diferencial da socialização que transmite o sentimento de comunidade."
-- Pillars: Pertencimento | Progresso Compartilhado | Facilidade
+**Example (a racket-sports matchmaking app):**
+- MC: "A matchmaking app for racket sports whose edge is the social side: it makes players feel part of a community."
+- Pillars: Belonging | Shared Progress | Ease
 
 ---
 

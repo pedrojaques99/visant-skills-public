@@ -19,7 +19,9 @@ Effect names in this skill are the PT-BR UI names (`Movimento`, `Escala`, `Posi�
 locale, read them with `get_effect_properties` first.
 
 **Shipped here:** `scripts/premiere_xml.py` (plan → FCP7 XML, motion table, checker),
-`scripts/figma_cards.py` (cards JS for Figma Slides) and `scripts/icones/` (Simple Icons, CC0).
+`scripts/figma_cards.py` (cards JS for Figma Slides) and `scripts/icons/` (Simple Icons, CC0).
+Old Portuguese plan/batch keys, `--saida`/`--conferir` and `Edição N (não apresentar)` rows still
+work (`python scripts/premiere_xml.py --self-test` proves old and new plans give the same XML).
 **Not shipped, project-side:** the scripts named in the tighten, learn, b-roll and delivery
 sections (`aperta_final.py`, `aprende.py`, `fala.py`, `agente.py`, `rampa.py`, `onde.py`,
 `trecho.py`, `fonte_iphone.py`, `entrega.py`, `legenda_whisper.py`, `sensor_export.py`). They live
@@ -49,7 +51,7 @@ This skill does not decide cuts, it only carries the plan into Premiere without 
    close it and fire nothing else until they do.
 2. **Check the source** with `ffprobe`: resolution, fps (`r_frame_rate` and `avg_frame_rate`),
    audio present, rotation. iPhone MOV is VFR and Premiere interprets it at 29.9992.
-3. **Generate the XML**: `python scripts/premiere_xml.py <plan.json> --saida <dir>`.
+3. **Generate the XML**: `python scripts/premiere_xml.py <plan.json> --out <dir>`.
 4. **Import into the open project**: `import_media` with the `.xml` (`suppress_ui: true`). Do not
    use `import_fcp_xml`, which creates ANOTHER project. One lesson per call.
 5. **Relink**: XML media comes in offline even with the right path. `search_project_items` with
@@ -65,7 +67,7 @@ This skill does not decide cuts, it only carries the plan into Premiere without 
 7. **Marker colors**: the XML carries no color. Use `update_marker(time_seconds, color=1)` (red)
    on shot markers; speech stays default (0, green).
 8. **Read back and check**: `get_full_sequence_info`. When the result goes to a file (large
-   output), run `python scripts/premiere_xml.py --conferir <plan.json> <file>`. When it comes
+   output), run `python scripts/premiere_xml.py --check <plan.json> <file>`. When it comes
    inline, check cut count, total frames, markers, format and A1.
 9. **Look at frames**: `capture_frame` at 2 or 3 points (one punch-in of each scale and the most
    suspicious cut) against the reference render, if any. A Position stuck at the clamp limit means
@@ -123,10 +125,10 @@ changes a promise (course mentioned, price, deadline) goes in, but goes to a que
 
 The card is born in the lesson deck (Figma Slides), never drawn in Premiere:
 1. `python scripts/figma_cards.py <batch.json> <batch.js>` (format at the top of the script;
-   icons in `scripts/icones/`, Simple Icons CC0 in the official color; a brand not there goes in
+   icons in `scripts/icons/`, Simple Icons CC0 in the official color; a brand not there goes in
    as text, never an invented logo).
-2. Run the JS with `use_figma`. Each lesson gets a row `Edição N (não apresentar)`; if the row
-   fills up, it opens `Edição N b`.
+2. Run the JS with `use_figma`. Each lesson gets a row `Edit N (do not present)` (an existing
+   `Edição N (não apresentar)` row is reused); if the row fills up, it opens `Edit N b`.
 3. `get_screenshot` with `contentsOnly` of each card → PNG in `_build/aulaN/sobre/`.
 4. In Premiere: `import_media`, `overwrite_clip` on the HIGHEST free track, `set_clip_duration`,
    `set_effect_property` (normalized Position, Scale), house fade (`references/pitfalls.md`).

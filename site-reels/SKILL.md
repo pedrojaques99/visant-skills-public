@@ -119,7 +119,7 @@ FPS=60 OUT=... node scripts/snap.mjs scenes-snap.mjs [scene]
   stretch only shows on the contact sheet. Look.
 - Real smoothness audit: `magick compare -metric MAE` between neighbor frames at full resolution.
   0 = repeated frame.
-- Delivery: `scripts/entrega.example.sh` (copy and rename the plates; `V=` required) builds
+- Delivery: `scripts/deliver.example.sh` (copy and rename the plates; `V=` required) builds
   reveals, loops (`loop.sh`) and clean 3D, raising crf by 3 until < 95MB.
 
 ## Upload to Figma Slides (hidden, without disturbing the team)
