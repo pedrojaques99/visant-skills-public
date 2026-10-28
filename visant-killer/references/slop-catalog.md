@@ -593,6 +593,12 @@ num report real, ganha o caso e sobe pra cima.
 O fio comum: **enfeite que imita cuidado**. Cada um é o que uma LP feita com
 capricho tem, copiado sem o motivo que fazia ele estar lá.
 
+Antes de consertar na mão, veja se a peça já existe refinada na library da
+Visant ([ui.visantlabs.com](https://ui.visantlabs.com), `npx shadcn@latest add
+@visant/<nome>`): tag vira `chip`, divisor e caixa somem num `section-intro` ou
+`step-cards`, painel detalhado demais vira `gauge` ou `measure-bar`. Peça de lá
+já passou por esta auditoria; peça reescrita na hora volta a ser candidata.
+
 ### 47. Tag em tudo
 
 **Sintoma.** Chip ou pill em cada card ("Novo", "IA", "Beta", a categoria),

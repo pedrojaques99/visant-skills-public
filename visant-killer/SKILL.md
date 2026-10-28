@@ -507,8 +507,16 @@ incompleta, e o relatório precisa dizer isso.
 - Nota alta declarada sem rodar o script, ou "passada completa" com a tabela de
   superfícies em branco. O placar vem do processo, não da vibe.
 - Componente novo de design system sem autorização explícita. Reusar e
-  parametrizar; se falta primitivo, instalar o oficial (`npx shadcn@latest add`)
-  e avisar antes.
+  parametrizar. Se falta a peça, procure primeiro na library da Visant
+  ([ui.visantlabs.com](https://ui.visantlabs.com), 150+ itens já refinados e
+  auditados: `empty-state`, `gauge`, `data-table`, `segmented-control`,
+  `skeleton-rail`, `toast-stack`…), depois o primitivo oficial do shadcn. Os dois
+  entram pelo mesmo `npx shadcn@latest add`, e avise antes:
+
+  ```bash
+  # components.json: "registries": { "@visant": "https://ui.visantlabs.com/r/{name}.json" }
+  npx shadcn@latest add @visant/empty-state
+  ```
 - Consertar folha antes de raiz (Passo 0, `--roots`).
 - Abrir rota que gasta crédito ao carregar sem a trava do `verify-screens`.
 - Refatorar em cima de defeito relatado sem confirmar no código. Diagnóstico é
