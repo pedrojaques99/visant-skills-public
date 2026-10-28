@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* preflight-scan — o pré-voo de projeto de cliente num comando.
  *
- *   node preflight-scan.mjs --assets "H:/Meu Drive/@Clientes VSN/Marca"
+ *   node preflight-scan.mjs --assets "H:/Meu Drive/Clientes/Marca"
  *   node preflight-scan.mjs --fonts "Syncopate,Funnel Sans"
  *   node preflight-scan.mjs --assets <dir> --fonts "A,B" --report PREVOO.md
  *   node preflight-scan.mjs --self-test

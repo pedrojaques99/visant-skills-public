@@ -14,6 +14,7 @@
  *
  *   node skills-doctor.mjs                # audita o repo inteiro
  *   node skills-doctor.mjs visant-motion  # audita skills específicas
+ *   node skills-doctor.mjs --root=../x  # audita outro repo de skills
  *   node skills-doctor.mjs --live         # audita ~/.claude/skills (o que roda de verdade)
  *   node skills-doctor.mjs --fix          # conserta o que é mecânico (aspas, dobra de linha)
  *   node skills-doctor.mjs --json
@@ -416,7 +417,9 @@ const doFix = argv.includes("--fix");
 const live = argv.includes("--live");
 const names = argv.filter((a) => !a.startsWith("--"));
 
-const ROOT = live ? join(homedir(), ".claude", "skills") : HERE;
+// --root=<pasta>: outro repo de skills (o privado usa este doctor em vez de manter cópia).
+const rootArg = argv.find((a) => a.startsWith("--root="))?.slice(7);
+const ROOT = live ? join(homedir(), ".claude", "skills") : rootArg ? resolve(rootArg) : HERE;
 
 const skillDirs = (
   names.length

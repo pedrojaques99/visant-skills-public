@@ -22,10 +22,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const REPO = dirname(fileURLToPath(import.meta.url));
+// --root=<pasta>: roda os casos contra outro repo de skills; detector ausente lá é pulado.
+const rootArg = process.argv.slice(2).find((a) => a.startsWith("--root="))?.slice(7);
+const REPO = rootArg ? resolve(rootArg) : dirname(fileURLToPath(import.meta.url));
 
 /* Um alvo fora do repo, com um defeito plantado que cada detector reconhece. */
 const sandbox = mkdtempSync(join(tmpdir(), "visant-smoke-"));
@@ -137,6 +139,7 @@ const SELF_TESTS = [
 
 let failed = 0;
 for (const t of SELF_TESTS) {
+  if (!existsSync(t.script)) continue;
   const r = spawnSync(process.execPath, [t.script, ...t.args], { cwd: foreignCwd, encoding: "utf8", timeout: 180_000 });
   const out = `${r.stdout || ""}${r.stderr || ""}`;
   if (r.status === 0) {

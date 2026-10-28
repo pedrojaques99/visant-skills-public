@@ -517,3 +517,23 @@ incompleta, e o relatório precisa dizer isso.
   existe pra defender.
 - Aplicar em produto de aposta, cassino ou jogo de azar. Recusar e explicar: é
   condição de reuso do `revenue-centric-design`, não gosto.
+
+## Créditos e linhagem
+
+Esta skill é a porta; o julgamento vem das skills da casa que ela carrega:
+`visant-frontend` (cut test, superfícies), `visant-motion` (`motion-lint`),
+`visant-refine` (`refine-scan`) e `visant-copy` (`copy-lint`).
+
+O que veio de fora, usado ou destilado, com o crédito de quem fez:
+
+| O quê | De quem | Como entra aqui |
+|---|---|---|
+| [`impeccable`](https://impeccable.style) | Paul Bakaus ([pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache-2.0) | portão 1 do `killer-scan` (`npx impeccable detect`) |
+| [`revenue-centric-design`](https://github.com/heliocosta-dev/revenue-centric-design) | princípios de Richard ([@richardrx](https://x.com/richardrx)), empacotados por heliocosta-dev | munição do Passo 4; as citações "RCD n" no `devils-advocate` |
+| [Emil Kowalski skills](https://github.com/emilkowalski/skills) (`emil-design-eng`, `apple-design`, `improve-animations`, `review-animations`) | Emil Kowalski, de [animations.dev](https://animations.dev) e do *Designing Fluid Interfaces* da Apple (WWDC 2018) | via `visant-motion`: a origem dos princípios de motion |
+| `vercel-react-view-transitions` | Vercel ([vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)) | via `visant-motion`: transição de rota |
+| `dataviz` | Anthropic (skill do Claude) | via `visant-frontend`: correção de gráfico |
+| [shadcn/ui](https://ui.shadcn.com) e [Radix](https://www.radix-ui.com) | shadcn; WorkOS | primitivo oficial no lugar de componente inventado |
+| [Playwright](https://playwright.dev) | Microsoft | `corta-scan` e `verify-screens` abrem a tela de verdade |
+
+Skill nova que esta passar a usar ou destilar entra nesta tabela no mesmo commit.

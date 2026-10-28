@@ -87,7 +87,7 @@ As duas primeiras são automáticas:
 
 ```bash
 node ~/.claude/skills/visant-preflight/scripts/preflight-scan.mjs \
-  --assets "H:/Meu Drive/@Clientes VSN/<Marca>" \
+  --assets "H:/Meu Drive/Clientes/<Marca>" \
   --fonts "Familia Display,Familia Corpo" \
   --report PREVOO.md
 ```
