@@ -1,0 +1,10 @@
+::view-transition-old(.nav-forward) { animation: 150ms ease-in both fade reverse; }
+:root { --dur-vt-move: 400ms; }
+.skeleton::after { animation: skeleton-sweep var(--dur-shimmer) linear infinite; }
+
+/* A curve on the right of a custom property IS the token. It has to be a
+   literal somewhere, or no token exists at all — reporting THIS line points at
+   the one place that must not change. Judge by the shape of the line, not by
+   whether the filename was on a list: a product that declares its own scale
+   (an embedded e-book, a client theme) never matches the path guesses. */
+:root { --vsn-ease-out: cubic-bezier(0.16, 1, 0.3, 1); }

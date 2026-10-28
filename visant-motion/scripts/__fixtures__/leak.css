@@ -1,0 +1,20 @@
+/* Fixture: suppression must STOP at the end of its own block.
+   The self-test asserts this file reports EXACTLY ONE finding — the second
+   rule, which carries no marker.
+
+   It exists because the fix for "marker above the selector" widened how far the
+   climb walks. Widen it once more and the marker stops being about a line and
+   becomes about a file: every defect below the first marker goes quiet, and the
+   detector reports green on a file nobody re-read. This fixture is the wall. */
+
+/* motion-lint-disable-next-line layout-property-animation
+   Deliberate: native <details> has no transform equivalent. */
+.acc::details-content {
+  height: 0;
+  transition: height var(--dur-base) var(--ease-out);
+}
+
+/* Same defect, one block later, no marker. MUST fire. */
+.unrelated-drawer {
+  transition: width var(--dur-base) var(--ease-out);
+}

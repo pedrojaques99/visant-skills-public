@@ -1,0 +1,16 @@
+{
+  "name": "visant-skills-public",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Skills de Claude Code da Visant: auditoria de UI, motion, frontend, copy. Espelho gerado de um repo privado.",
+  "license": "MIT",
+  "scripts": {
+    "doctor": "node skills-doctor.mjs",
+    "smoke": "node scripts-smoke.mjs",
+    "test": "node skills-doctor.mjs --self-test && node skills-doctor.mjs && node scripts-smoke.mjs && node visant-motion/scripts/codemod-duration.mjs --self-test && node visant-motion/scripts/motion-lint.mjs --self-test && node visant-killer/scripts/dist-scan.mjs --self-test && node visant-killer/scripts/killer-scan.mjs --self-test && node visant-refine/scripts/refine-scan.mjs --self-test && node visant-preflight/scripts/preflight-scan.mjs --self-test"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

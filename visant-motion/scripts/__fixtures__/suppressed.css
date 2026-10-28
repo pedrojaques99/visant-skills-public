@@ -1,0 +1,25 @@
+/* Fixture: every defect here is deliberate AND suppressed with a reason.
+   The self-test asserts this file reports ZERO findings.
+
+   It exists because CSS cannot write a one-line `//` marker above the defect:
+   the reason lives in a block comment, and a reason worth writing wraps. The
+   old suppression read only the single line above the finding, so both shapes
+   silently failed and CSS was effectively unsuppressable. */
+
+/* motion-lint-disable-next-line layout-property-animation
+   Native <details> has no transform equivalent: the content must push the flow,
+   or the items below end up underneath it. This is the multi-line reason that
+   the single-line lookback used to miss. */
+.acc::details-content {
+  /* The plain sibling below matters: the defect is NOT the first property of
+     the rule, which is the ordinary shape of real CSS. An earlier version
+     stopped climbing at this line and the marker covered nothing. */
+  height: 0;
+  overflow: clip;
+  transition: height var(--dur-base) var(--ease-out);
+}
+
+/* motion-lint-disable-next-line hardcoded-curve  one-off brand curve, signed off */
+.brand-swipe {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}

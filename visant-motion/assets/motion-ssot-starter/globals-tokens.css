@@ -1,0 +1,123 @@
+/* ===========================================================================
+   Motion SSoT — CSS side. Mirrors lib/motion.ts 1:1 so framer-motion (JS) and
+   Tailwind/Radix (CSS) stay in lockstep. Drop the :root block into your global
+   stylesheet's :root, and the @layer utilities block anywhere after Tailwind's
+   utilities layer. Emil Kowalski / animations.dev.
+   =========================================================================== */
+
+:root {
+  /* Strong easings — the built-in/Material curves are too weak (read sluggish). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* enter/exit, responds to input */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);  /* move/morph on-screen */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);   /* iOS-like sheets/drawers */
+
+  /* Duration scale (UI < 300ms). */
+  --dur-press: 120ms;   /* button/press feedback */
+  --dur-fast: 160ms;    /* tooltips, hovers, small popovers */
+  --dur-base: 200ms;    /* dropdowns, selects, cards */
+  --dur-slow: 300ms;    /* modals, drawers */
+
+  /* Waiting states. Constant motion → linear, and slow on purpose: a fast
+     shimmer competes with the content it is standing in for. */
+  --dur-shimmer: 1400ms;
+
+  /* Route / view transitions. Above the 300ms UI ceiling by design — a page
+     passage is not a control answering a click (see SKILL §4). */
+  --dur-vt-exit: 150ms;   /* old content leaves fast; it already lost attention */
+  --dur-vt-enter: 210ms;  /* new content arrives gently, delayed by the exit */
+  --dur-vt-move: 400ms;   /* the positional slide/morph — the slowest layer */
+}
+
+@layer utilities {
+  /* Press feedback for any pressable element that isn't the shared Button
+     (which bakes this in). transform+opacity only → GPU. */
+  .press {
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+
+  /* Skeleton — a placeholder shaped like the real thing (SKILL §3.3). Size it
+     with the same width/height/radius as the row it stands in for, or you trade
+     a spinner for a layout jump. The sweep animates `transform` only; animating
+     `background-position` repaints the whole box every frame. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius, 0.5rem);
+    background: color-mix(in oklab, currentColor 8%, transparent);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, currentColor 7%, transparent),
+      transparent
+    );
+    animation: skeleton-sweep var(--dur-shimmer) linear infinite;
+  }
+}
+
+/* The one legitimate @keyframes in the app: nothing ever interrupts a skeleton,
+   so it never has to retarget mid-flight (SKILL §2 rule 7). */
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* --- View transitions -------------------------------------------------------
+   Only these two rules are universal; the directional/morph classes belong to
+   the app. See SKILL §4 and the vercel-react-view-transitions skill.
+------------------------------------------------------------------------------ */
+
+/* The transition overlay swallows clicks while it runs. Let them through, or a
+   fast user's tap during a 400ms passage is silently dropped. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* Reduced-motion safety net — honor it everywhere, including third-party
+   animations components don't gate individually. Keep this near the end. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* The `*` guard above does NOT reach view-transition pseudo-elements — they
+     hang off the document, not off any element. Zero them explicitly, or the
+     one animation motion-sensitive users most need gone is the one that runs. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
+  }
+
+  /* Shimmer is decoration; the skeleton's shape is the information. Keep the
+     box, drop the sweep. */
+  .skeleton::after {
+    display: none;
+  }
+}
+
+/* --- Tailwind usage note -----------------------------------------------------
+   Use the tokens via arbitrary utilities. Use the PROPERTY-EXPLICIT form for
+   duration/easing — `duration-[var(--dur-base)]` triggers a Tailwind "ambiguous"
+   build warning (transition- vs animation-duration):
+
+     transition-transform [transition-duration:var(--dur-base)] [transition-timing-function:var(--ease-out)]
+
+   Origin-aware Radix overlays (scale from trigger, modals exempt):
+     origin-[var(--radix-popover-content-transform-origin)]
+------------------------------------------------------------------------------ */
