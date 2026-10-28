@@ -1,251 +1,253 @@
 ---
 name: visant-preflight
-description: 'Pré-voo de projeto grande de cliente: rodada de perguntas ao dono do trabalho + cinco checagens de premissa (vault × Drive, fonte carregável, resolução de foto, arquivos de marca, número com fonte). Use ANTES de "criar site", "redesenhar", "nova proposta", "montar campanha", "hidratar a marca" — sempre que errar a premissa custaria mais de um dia.'
+description: 'Preflight for a large client project: one question round with whoever owns the work, plus five premise checks (brand source of truth, loadable fonts, photo resolution, brand files, sourced numbers). Use BEFORE "new site", "redesign", "new proposal", "criar site", "redesenhar", "nova proposta", "montar campanha", "hidratar a marca".'
 ---
 
-# Visant Pré-voo
+# Visant Preflight
 
-Esta skill existe porque a casa erra sempre no mesmo lugar: **não na execução,
-na premissa.** O trabalho sai bem-feito em cima de um dado que estava errado
-desde o começo, e o retrabalho custa dias.
+Projects rarely go wrong in execution. They go wrong **in the premise**: the work
+comes out well made on top of data that was wrong from the start, and the rework
+costs days.
 
-> **Nada de grande porte começa sem duas coisas: a rodada de perguntas
-> respondida, e as cinco checagens verdes ou explicitamente dispensadas.**
+> **Nothing large starts without two things: the question round answered, and
+> the five checks green or explicitly waived.**
 
-O pré-voo inteiro leva 15 minutos. Cada um dos erros que ele previne já custou
-mais de um dia.
+The whole preflight takes 15 minutes. Each mistake it prevents has already cost
+more than a day. The long stories are in [references/cases.md](references/cases.md).
 
-## Quando rodar
+## When to run
 
-Rode quando a tarefa for **grande o bastante para doer**: site novo, redesenho,
-proposta com mockup, campanha, hidratação de marca, migração. Se for ajuste
-pontual em coisa que já existe, não rode — pré-voo em tarefa pequena é
-burocracia e você vai (com razão) parar de rodar.
-
-Sinal prático: se você vai produzir mais de meio dia de trabalho antes do
-primeiro retorno do cliente, rode.
+Run it when the task is **big enough to hurt**: new site, redesign, proposal with
+mockups, campaign, brand hydration, migration. Signal: more than half a day of
+work before the first client feedback. Not for a one-off tweak: preflight on a
+small task is bureaucracy and you will (rightly) stop running it.
 
 ---
 
-## Parte 1 — A rodada de perguntas
+## Part 1: the question round
 
-**Esta parte não é opcional e não é automatizável.** É a que mais faltava.
+**This part is not optional and cannot be automated.** It is the one most often
+missing.
 
-Antes de desenhar qualquer coisa, faça as perguntas abaixo **ao dono do
-trabalho** e escreva as respostas. Não presuma nenhuma. Se ele responder "tanto
-faz", escreva "tanto faz" — isso também é resposta e vira liberdade explícita
-em vez de aposta silenciosa.
+Before designing anything, ask the questions below **to whoever owns the work**
+(client, account lead, project owner) and write down the answers. Assume none.
+If they answer "whatever", write "whatever": that is an answer too, and it turns
+into explicit freedom instead of a silent bet.
 
-Use a ferramenta de pergunta do harness quando houver escolha fechada; use
-conversa quando for aberta. **Faça em UMA rodada**, não em conta-gotas ao longo
-do trabalho.
+Use the harness question tool for closed choices; use conversation for open
+ones. **Do it in ONE round**, not drip-fed through the work: a question asked
+mid-work always arrives after the rework it would have prevented.
 
-### 1.1 A aposta
+### 1.1 The bet
 
-- **Qual é a única frase que este trabalho precisa provar?** Se não couber numa
-  frase, o escopo ainda não está fechado.
-- **Qual variável de negócio ele move?** Conversão, retenção, ticket, custo por
-  reunião. Se não move nenhuma, é decoração — e decoração custa atenção.
-- **Quem é a pessoa do outro lado, e em que estágio de consciência ela chega?**
-  (Schwartz — ver `revenue-centric-design`.) Headline fala no estágio atual;
-  prova empurra um estágio adiante.
-- **O que NÃO é para fazer?** A pergunta que mais economiza tempo e a que
-  ninguém faz.
+- **What is the single sentence this work must prove?** If it does not fit in a
+  sentence, the scope is not closed yet.
+- **Which business variable does it move?** Conversion, retention, ticket, cost
+  per meeting. If it moves none, it is decoration, and decoration costs
+  attention.
+- **Who is on the other side, and at what awareness stage do they arrive?**
+  (Schwartz, see `revenue-centric-design`.) The headline speaks to the current
+  stage; proof pushes one stage further.
+- **What is NOT to be done?** The question that saves the most time and that
+  nobody asks.
 
-### 1.2 A referência e o gosto
+### 1.2 Reference and taste
 
-- **Existe algo que o cliente já aprovou** — layout, peça, campanha — que eu
-  devo herdar em vez de reinventar? *(Regra da casa: minerar antes de desenhar.)*
-- **Tem alguma coisa que ele odeia?** Vale mais que dez referências que ele ama.
-- **Quantas alternativas ele quer ver?** Uma redonda ou três apostas distintas.
-  São trabalhos diferentes; combinar antes evita entregar o formato errado.
+- **Is there something the client already approved** (layout, piece, campaign)
+  that I should inherit instead of reinventing? Mine before designing.
+- **Is there something they hate?** Worth more than ten references they love.
+- **What in this brand is untouchable?** A "clean" version that swaps the brand's
+  own graphic language for a conventional one gets reverted in one sentence.
+- **How much density, and do photos go in this round?** Three full proposals
+  rebuilt over "too much text, no images" is the classic cost of skipping this.
+- **How many alternatives do they want to see?** One polished or three distinct
+  bets. Different jobs; agreeing first avoids delivering the wrong format.
 
-### 1.3 O que trava a publicação
+### 1.3 What blocks publishing
 
-- **O que ainda depende de terceiro?** Copy, foto, número, jurídico, domínio.
-- **Qual desses é caminho crítico?** Ele define a ordem do trabalho: comece pelo
-  que não depende de ninguém.
-- **Existe restrição regulatória?** (OAB, ANVISA, CVM, LGPD.) Descobrir isso
-  depois do layout pronto significa refazer o layout.
+- **What still depends on a third party?** Copy, photo, number, legal, domain.
+- **Which of those is on the critical path?** It sets the work order: start with
+  what depends on no one.
+- **Is there a regulatory constraint?** (Professional councils, health agency,
+  securities, privacy law such as LGPD.) Finding out after the layout is done
+  means redoing the layout.
 
-### 1.4 O acordo de pronto
+### 1.4 Definition of done
 
-- **Onde isso vai ser visto?** Link publicado, PDF, Figma, call. Muda tudo.
-- **Vai ao ar ou é proposta?** Se é proposta, `noindex` e nada de dado real
-  sensível.
-- **Quando é a conversa de retorno?** Define profundidade.
+- **Where will this be seen?** Published link, PDF, Figma, call. Changes
+  everything.
+- **Is it going live or is it a proposal?** If a proposal, `noindex` and no
+  sensitive real data.
+- **When is the feedback conversation?** Sets the depth.
 
-> **Saída obrigatória da Parte 1:** as respostas escritas no `.md` do projeto,
-> antes da primeira linha de código ou do primeiro frame. Resposta que ficou só
-> na conversa vira suposição na semana seguinte.
+> **Required output of Part 1:** the answers written in the project's `.md`,
+> before the first line of code or the first frame. An answer that stayed only in
+> the conversation becomes an assumption next week.
 
 ---
 
-## Parte 2 — As cinco checagens
+## Part 2: the five checks
 
-As duas primeiras são automáticas:
+The two middle ones (fonts and photos) are automated:
 
 ```bash
 node ~/.claude/skills/visant-preflight/scripts/preflight-scan.mjs \
-  --assets "H:/Meu Drive/Clientes/<Marca>" \
-  --fonts "Familia Display,Familia Corpo" \
-  --report PREVOO.md
+  --assets "<client files folder>" \
+  --fonts "Display Family,Body Family" \
+  --report PREFLIGHT.md
 ```
 
-`--strict` faz reprovar com exit 1. `--self-test` valida o próprio script.
+The script is plain node, no dependencies, and needs nothing Visant-specific:
 
-### 1. Vault × fonte de verdade — eles concordam?
-
-O vault do Visant **não é a verdade, é uma cópia** — e cópia envelhece. Cruze
-com a pasta da marca no Drive e com o arquivo do Figma.
-
-Confira nesta ordem: **tipografia, cores, logo, tagline.**
-
-Para auditar e reconciliar de fato, carregue a **[[visant-brand-sync]]**.
-
-> **Caso real (cliente K).** O vault dizia *Termina*, licença paga que a marca
-> nunca teve; a pasta entregue ao cliente tinha **Syncopate + Funnel Sans**.
-> Ninguém cruzou, e o site shipou **três tipografias erradas em meses**.
-> [Versão longa](references/casos.md#1-vault--drive--cliente-k-agosto-de-2026).
-
-### 2. As fontes carregam?
-
-Automático no script. Família que não está no Google Fonts não é
-necessariamente erro — face paga e licenciada é decisão legítima. O que não pode
-é **sumir em silêncio**: ou você tem o arquivo e carrega via `next/font/local` /
-`@font-face`, ou troca a família.
-
-Sintoma que denuncia: o layout "está certo" mas o site parece de outra marca.
-
-> O motor de tokens já checa isso na origem: `@visant/brand-tokens` emite
-> `@import` do que dá para carregar e **declara** no topo do CSS o que não dá
-> (`packages/brand-tokens/src/fonts.js`). Se o projeto consome tokens, o aviso
-> chega junto.
-
-### 3. A fotografia aguenta o layout?
-
-Automático no script. Ele lista **toda** imagem com resolução e o papel que ela
-suporta, e diz explicitamente o que pulou.
-
-| Papel | Largura mínima do arquivo |
+| flag | what it does |
 |---|---|
-| Faixa full-bleed | 2000px |
-| Retrato de herói | 1000px |
-| Célula de grade | 700px |
+| `--assets <dir>` | walks any local folder (synced Drive, Dropbox, a repo's `public/`) and lists every `.png .jpg .jpeg .webp .avif .gif .svg` with width, weight and the role it supports. PNG, JPEG and WebP are measured; SVG is listed as vector; anything whose header it cannot read goes to a "skipped" list with the reason |
+| `--fonts "A,B"` | checks each family against Google Fonts (needs network; offline shows as undetermined) |
+| `--report <file.md>` | also writes the output to a markdown file |
+| `--strict` | exit 1 if any item fails (no image reaches 2000px, or a font is missing from Google Fonts or could not be checked) |
+| `--self-test` | validates the script's own parsers and thresholds |
+
+At least one of `--assets` or `--fonts` is required; with neither it prints
+usage and exits 2. Output is in Portuguese.
+
+### 1. Brand source of truth: do the copies agree?
+
+Wherever your brand data is stored for reuse (a brand vault, a tokens file, a
+guidelines doc; at Visant, the Visant Labs vault) **is not the truth, it is a
+copy**, and copies age or are born wrong. Cross it against the files actually
+delivered to the client (the brand folder in Drive or wherever it lives) and the
+design file (Figma).
+
+Check in this order: **typography, colors, logo, tagline.** When they disagree,
+the folder the client received is stronger evidence than the stored field.
+
+To audit and reconcile Visant's vault, load **[[visant-brand-sync]]**.
+
+> A stored typeface the brand never had shipped as three wrong typefaces over
+> months, because nobody opened the client's font folder. See
+> [references/cases.md](references/cases.md#1-brand-source-of-truth-client-k).
+
+### 2. Do the fonts load?
+
+Automated in the script. A family not on Google Fonts is not necessarily wrong:
+a paid, licensed face is a legitimate decision. What cannot happen is for it to
+**vanish silently**: either you have the file and load it via `next/font/local` /
+`@font-face`, or you change the family.
+
+Telltale symptom: the layout "is right" but the site looks like another brand.
+
+> If the project consumes Visant's `@visant/brand-tokens`, the token engine
+> already checks this at the source: it emits `@import` for what can load and
+> **declares** at the top of the CSS what cannot.
+
+### 3. Can the photography carry the layout?
+
+Automated in the script. It lists **every** image with resolution and the role
+it supports, and says explicitly what it skipped.
+
+| Role | Minimum file width |
+|---|---|
+| Full-bleed band | 2000px |
+| Hero portrait | 1000px |
+| Grid cell | 700px |
 | Thumb | 400px |
 
-**Escolha a fonte pela resolução ANTES de decidir o enquadramento**, nunca o
-contrário. Ampliação aparece, e nenhuma escolha de layout compensa arquivo
-pequeno.
+**Choose the source by resolution BEFORE deciding the framing**, never the other
+way round. Upscaling shows, and no layout choice makes up for a small file.
 
-> **Caso real.** Faixa full-bleed desenhada antes de olhar a origem: 646px
-> esticados na largura da tela. E a varredura que "provou" não existir foto em
-> alta filtrava por dimensão e escondeu uma pasta com originais de 4562px — o
-> laudo estava errado e virou decisão de layout.
-> [Versão longa](references/casos.md#2-resolução-de-foto--mesma-sessão).
->
-> Daí a regra do script: **nunca filtrar em silêncio.** Varredura que esconde é
-> pior que varredura que não roda, porque produz confiança falsa.
+Hence the script's rule: **never filter silently.** A scan that hides is worse
+than a scan that does not run, because it produces false confidence, and false
+confidence becomes a verdict. The case of the hidden 4562px originals:
+[references/cases.md](references/cases.md#2-photo-resolution).
 
-### 4. Os arquivos de marca existem de verdade?
+### 4. Do the brand files really exist?
 
-Logo em **vetor** (SVG/PDF), não PNG de apresentação. Variantes claro/escuro.
-Ícone quadrado para favicon. Grafismos próprios.
+Logo in **vector** (SVG/PDF), not a presentation PNG. Light/dark variants. Square
+icon for the favicon. The brand's own graphic elements.
 
-Se não existir, **não redesenhe a marca**: peça. Logo redesenhado por
-aproximação é a falha mais cara e mais difícil de reverter.
+If they do not exist, **do not redraw the brand**: ask for them. A logo redrawn
+by approximation is the most expensive failure and the hardest to reverse.
 
-### 5. Todo número tem fonte?
+### 5. Does every number have a source?
 
-Cada dado que vai ao ar precisa de origem anotada ao lado, no arquivo de
-conteúdo. Número extraído de layout **não é fonte primária** — sobe marcado como
-pendente ou não sobe.
+Every piece of data going live needs its origin noted next to it, in the content
+file. A number lifted from a layout **is not a primary source**: it goes up
+marked as pending, or it does not go up.
 
-> Número que não se sustenta não é prova, é passivo. E na hora que o cliente
-> perguntar de onde veio, a resposta precisa viajar junto com o dado, não na
-> memória de quem montou.
+> A number that does not hold up is not proof, it is liability. When the client
+> asks where it came from, the answer has to travel with the data, not in the
+> memory of whoever assembled it.
 
 ---
 
----
+## Part 3: scars, do not reintroduce the bug you already killed
 
-## Parte 3 — Cicatrizes: não reintroduza o bug que você já matou
+A visual defect fix **lives in the code as a comment at the fix site**, with the
+why. And there is a specific way to lose it: **rewriting the whole file**, which
+starts from the new intent and not from the old file.
 
-Correção de defeito visual **mora no código como comentário no ponto do
-conserto**, com o porquê. E existe um jeito específico de perdê-la:
-**reescrever o arquivo inteiro.**
+Two rules, and they are cheap:
 
-> **Caso real, na mesma sessão.** Um campo decorativo `absolute` atravessava a
-> faixa de números. Corrigido, com comentário. Duas horas depois o arquivo foi
-> reescrito por outro motivo e o mesmo bug voltou — a reescrita partiu da
-> intenção nova, não do arquivo velho.
-> [Versão longa](references/casos.md#4-a-cicatriz-que-reabriu).
-
-Duas regras, e elas são baratas:
-
-1. **Antes de reescrever um arquivo por completo, leia-o e liste os comentários
-   defensivos** — os que começam com "bg opaco é obrigatório", "medido em
-   navegador", "não trocar por", "sem isso o X quebra". Carregue cada um para a
-   versão nova, ou justifique por escrito por que deixou de valer.
-2. **Toda correção achada no navegador vira uma linha na seção Cicatrizes** do
-   `.md` do projeto. É o que sobrevive à reescrita e à troca de quem está
-   tocando o trabalho.
+1. **Before rewriting a file completely, read it and list the defensive
+   comments** (the ones saying "opaque bg is required", "measured in browser",
+   "do not swap for", "without this X breaks"). Carry each one to the new
+   version, or justify in writing why it no longer applies.
+2. **Every fix found in the browser becomes a line in the Scars section** of the
+   project's `.md`. It is what survives the rewrite and a change of hands.
 
 ```markdown
-## Cicatrizes
-- Campo de barras é do herói: a faixa de prova precisa de `bg` opaco, senão a
-  decoração atravessa o número. (medido, 13/08)
-- Nav claro sobre campo de Equilíbrio some. Nav de duas cores → só marca + ação.
-- Foto: escolher a fonte pela resolução ANTES do enquadramento.
+## Scars
+- The bar field belongs to the hero: the proof band needs an opaque `bg`, or the
+  decoration cuts through the number. (measured, 08-13)
+- Light nav over a light field disappears. Two-tone nav → logo + action only.
+- Photo: choose the source by resolution BEFORE framing.
 ```
 
-**Por que não virou detector automático.** Foi avaliado e recusado: a regra
-line-based não distingue o caso real de dezenas de bordas legítimas. O próprio
-`refine-scan` avisa — *detector que grita fora do escopo é detector que a pessoa
-desliga*. Cicatriz escrita custa uma linha e não gera falso positivo.
+**Why it did not become an automatic detector:** a line-based rule cannot tell
+the real case from dozens of legitimate edges. A detector that shouts out of
+scope is one people turn off; a written scar costs one line and has no false
+positives. The story: [references/cases.md](references/cases.md#4-the-scar-that-reopened).
 
 ---
 
-## O relatório
+## The report
 
-O pré-voo termina num bloco no `.md` do projeto:
+The preflight ends in a block in the project's `.md`:
 
 ```markdown
-## Pré-voo — <data>
+## Preflight: <date>
 
-**A aposta:** <a frase única>
-**Variável:** <o que move>
-**Não é para fazer:** <o que ficou fora>
-**Formato de entrega:** <link / proposta / PDF> · retorno em <quando>
+**The bet:** <the single sentence>
+**Variable:** <what it moves>
+**Not to be done:** <what was left out>
+**Delivery format:** <link / proposal / PDF>, feedback on <when>
 
-| Checagem | Situação |
+| Check | Status |
 |---|---|
-| Vault × Drive | ✅ / ⚠ <o que divergiu> |
-| Fontes carregáveis | ✅ / ⚠ <família e plano> |
-| Resolução de foto | ✅ teto <N>px / ⚠ <o que não dá para fazer> |
-| Arquivos de marca | ✅ / ⚠ <o que falta> |
-| Números com fonte | ✅ / ⚠ <o que está pendente> |
+| Brand source of truth | ✅ / ⚠ <what diverged> |
+| Loadable fonts | ✅ / ⚠ <family and plan> |
+| Photo resolution | ✅ ceiling <N>px / ⚠ <what cannot be done> |
+| Brand files | ✅ / ⚠ <what is missing> |
+| Sourced numbers | ✅ / ⚠ <what is pending> |
 
-**Caminho crítico:** <o que trava a publicação e de quem depende>
+**Critical path:** <what blocks publishing and who it depends on>
 ```
 
-Um ⚠ não impede começar. Impede **fingir que não existe** — e define a ordem do
-trabalho: tudo que não depende do item travado vai primeiro.
+A ⚠ does not stop you from starting. It stops you from **pretending it does not
+exist**, and sets the order: what does not depend on the blocked item goes first.
 
 ---
 
-## Regra de ouro
+## Golden rule
 
-> **Toda checagem deste pré-voo nasceu de um erro que já aconteceu.**
+**Every check here was born from a mistake that already happened.** A sixth only
+goes in after it costs someone a day. One that catches nothing for a whole year
+comes out: a checklist that never flags trains people to sign without reading.
 
-Se você inventar uma sexta, ela só entra aqui depois de custar um dia a alguém.
-E se uma das cinco parar de pegar erro por um ano inteiro, tire — checklist que
-nunca acusa nada treina a pessoa a assinar sem ler.
+## Neighbors
 
-## Vizinhança
-
-- **[[visant-brand-sync]]** — reconciliar o vault quando o pré-voo achar divergência
-- **[[visant-new-site]]** — o fluxo de site de cliente, que começa por este pré-voo
-- **[[revenue-centric-design]]** — estágio de consciência, ICP, prova
-- **[[visant-frontend]]** — classificar a superfície depois que o pré-voo passou
-- **[[visant-killer]]** — o portão de saída, no fim; este é o de entrada
+- **[[visant-brand-sync]]**: reconcile the vault when the preflight finds a divergence
+- **[[visant-new-site]]**: the client site flow, which starts with this preflight
+- **[[revenue-centric-design]]**: awareness stage, ICP, proof
+- **[[visant-frontend]]**: classify the surface after the preflight passed
+- **[[visant-killer]]**: the exit gate at the end; this is the entry gate

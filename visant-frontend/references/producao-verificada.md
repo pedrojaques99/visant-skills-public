@@ -1,9 +1,8 @@
-# Verificado em revisão de produção
+# Verified in production review
 
-Casos reais, cada um com a espinha que ele confirma e a variável de negócio que
-ele protege. Isto é EVIDÊNCIA, não regra: as regras moram no corpo da skill.
-Um caso entra aqui quando sobreviveu a uma revisão de verdade — nunca como
-hipótese.
+Real cases, each with the spine it confirms and the business variable it
+protects. This is EVIDENCE, not rule: the rules live in the skill body. A case
+gets in here only after surviving a real review, never as a hypothesis.
 
 - **A price written in copy is a claim about the database.** On a purchase
   surface the charged amount lived in server config and the displayed amount in
@@ -68,7 +67,7 @@ hipótese.
   unreachable, with no intermediate state to hint it exists. Reveal with
   `[@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100`
   plus `focus-visible:opacity-100`. Sharpens spine 7; pattern +
-  source-guard test in [stack-tailwind-react.md](references/stack-tailwind-react.md). → *throughput, a11y*
+  source-guard test in [stack-tailwind-react.md](stack-tailwind-react.md). → *throughput, a11y*
 - **The exit animation must not play behind an open modal.** Completing from a
   dialog ran the list row's collapse *under* the still-open modal (invisible)
   and held the modal ~320ms waiting for it. Close the surface first — the dialog
@@ -99,13 +98,13 @@ hipótese.
   a sidebar pushed a page 240px sideways at 390px. Fix the **outermost**
   offender: a single bad container generates hundreds of overflowing descendants,
   and the leaves point at the wrong file. Pattern in
-  [stack-tailwind-react.md](references/stack-tailwind-react.md). → *throughput*
+  [stack-tailwind-react.md](stack-tailwind-react.md). → *throughput*
 - **A responsive fix is not done until it is re-measured.** Swapping a calendar's
   month grid (which clipped event titles to 10–28px) for a list view fixed the
   legibility and introduced **+215px** of page scroll — the list is a
   `table-layout: auto` table. The measurement that justifies a change is not the
   measurement that proves it. → *every variable*
-- **An empty state hides every overflow.** The CRM tabs measured clean on a period
+- **An empty state hides every overflow.** A CRM's tabs measured clean on a period
   with no deals and broke on one with real ones. Layout verification without real
   data is verification of nothing — same failure as reviewing a card with a
   three-character name. *(spine 10)* → *decision quality*

@@ -9,6 +9,7 @@
 //         frame?(page, t) (a cada quadro), preserve? (preserveDrawingBuffer, true), crf? }
 // Requer scripts/patch-timeweb.mjs aplicado (postinstall).
 import puppeteer from 'puppeteer-core'
+import { findChrome, angleArgs } from './find-chrome.mjs'
 import { mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
@@ -19,8 +20,8 @@ import { tmpdir } from 'node:os'
 const BASE = process.env.BASE ?? 'http://localhost:3100'
 const OUT = process.env.OUT ?? './videos'
 const FPS = +(process.env.FPS ?? 60)
-const CHROME = process.env.CHROME ?? 'C:/Users/<voce>/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'
-const FFMPEG = process.env.FFMPEG ?? 'C:/Program Files/ffmpeg-2025-10-05-git-6231fa7fb7-essentials_build/bin/ffmpeg.exe'
+const CHROME = findChrome() // CHROME env, else installed Chrome/Edge, else Playwright Chromium (find-chrome.mjs)
+const FFMPEG = process.env.FFMPEG ?? 'ffmpeg' // on PATH, or full path in FFMPEG
 const W = 1920, H = 1080
 const TIMEWEB = readFileSync(createRequire(import.meta.url).resolve('timeweb/dist/timeweb.js'), 'utf8')
 if (!TIMEWEB.includes('patch-timeweb')) throw new Error('rode: node scripts/patch-timeweb.mjs')
@@ -138,7 +139,7 @@ const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: false, // GPU real (headless cai no SwiftShader)
   defaultViewport: null,
-  args: [`--window-size=${W},${H + 140}`, '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--disable-features=CalculateNativeWinOcclusion'],
+  args: [`--window-size=${W},${H + 140}`, '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', ...angleArgs, '--ignore-gpu-blocklist', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--disable-features=CalculateNativeWinOcclusion'],
 })
 for (const s of list) await snap(s, browser)
 await browser.close()

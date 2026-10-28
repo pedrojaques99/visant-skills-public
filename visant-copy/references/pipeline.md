@@ -1,73 +1,75 @@
-# O pipeline de copy (SSoT)
+# The copy pipeline (SSoT)
 
-Índice:
-1. O contrato
-2. Rodar
-3. Adicionar ou renomear chave
-4. Registrar uma página nova
-5. Erros do check e o que cada um significa
-6. Montar o pipeline num repo que ainda não tem
-7. Onde o preço mora de verdade
+Only applies if the repo uses Visant's pipeline (`copy*.json` at the root plus
+`copy:build` / `copy:check` scripts). Section 6 shows how to set it up in a repo
+that does not have it yet, if that is ever the task.
+
+Index:
+1. The contract
+2. Running
+3. Adding or renaming a key
+4. Registering a new page
+5. Check errors and what each means
+6. Setting up the pipeline in a repo that lacks it
+7. Where the price really lives
 
 ---
 
-## 1. O contrato
+## 1. The contract
 
-Um JSON de copy por página, na **raiz** do repo. Ele é a única fonte.
+One copy JSON per page, at the repo **root**. It is the only source.
 
 ```
-copy.json        → index.html      → docs/COPY.md         (landing Visant Club)
-copy.ebook.json  → ebook.html      → docs/COPY-EBOOK.md   (landing do e-book)
+copy.json        → index.html      → docs/COPY.md         (Visant Club landing)
+copy.ebook.json  → ebook.html      → docs/COPY-EBOOK.md   (e-book landing)
 ```
 
-- O JSON é **dado**. O `.html` e o `.md` são **views geradas**.
-- Chave = atributo `data-copy` no HTML = nome da layer no Figma. Os três batem,
-  de propósito: dá pra rastrear uma palavra do Figma ao deploy.
-- A injeção acontece em **build time**. Já existiu um `js/copy.js` que dava
-  `fetch('copy.json')` e reescrevia headline depois do paint: causava flash de
-  conteúdo e CLS, e deixou o HTML divergir do JSON em 14 pontos sem o check
-  perceber (ele só olhava a presença da chave, nunca o valor). Não voltar pra
-  hidratação no browser.
-- Um JSON por página é obrigatório porque o check exige que **toda chave do JSON
-  esteja usada no HTML dela**. Um arquivo compartilhado faria a landing do e-book
-  reprovar por causa das chaves do Club.
+- The JSON is **data**. The `.html` and the `.md` are **generated views**.
+- Key = `data-copy` attribute in the HTML = layer name in Figma. All three match
+  on purpose: a word can be traced from Figma to deploy.
+- Injection happens at **build time**. Hydrating copy in the browser
+  (`fetch('copy.json')` after paint) caused content flash and CLS, and let the
+  HTML drift from the JSON without the check noticing. Do not go back to it.
+- One JSON per page is mandatory because the check requires **every JSON key to
+  be used in its HTML**. A shared file would fail one landing because of another's
+  keys.
 
-## 2. Rodar
+## 2. Running
 
 ```bash
-npm run copy:lint    # vícios de linguagem (FORA do gate, roda à mão)
-npm run copy:build   # injeta nos HTMLs e regera os COPY*.md
-npm run copy:check   # exit 1 se qualquer view divergir
-npm run check        # o gate completo (fonts, copy, price, csp, links, lint)
+npm run copy:lint    # language tics (OUTSIDE the gate, run by hand)
+npm run copy:build   # injects into the HTMLs and regenerates COPY*.md
+npm run copy:check   # exit 1 if any view diverges
+npm run check        # the full gate (fonts, copy, price, csp, links, lint)
 ```
 
-`copy:lint` fica de fora do `check` de propósito: vício de linguagem é decisão
-editorial, e derrubar deploy por causa de uma vírgula trava correção urgente de
-preço. `copy:check` continua no gate, porque HTML fora de sync é bug de verdade.
+`copy:lint` stays out of `check` on purpose: a language tic is an editorial
+decision, and blocking a deploy over a comma stalls an urgent price fix.
+`copy:check` stays in the gate, because an out-of-sync HTML is a real bug.
 
-`build` e `check` usam a **mesma** função de render, então é impossível o check
-passar com HTML stale.
+`build` and `check` use the **same** render function, so the check cannot pass
+with a stale HTML.
 
-Commit sempre com os três juntos: `copy.json` + `index.html` + `docs/COPY.md`.
+Always commit the three together: `copy.json` + `index.html` + `docs/COPY.md`.
 
-## 3. Adicionar ou renomear chave
+## 3. Adding or renaming a key
 
-Nomenclatura: `secao.elemento` em lowercase, com o prefixo de seção registrado
-em `PAGES[].sections` do `scripts/copy.mjs`. Numeração de item usa dois dígitos
-quando a ordem importa (`inside.item01.title`).
+Naming: `section.element` in lowercase, with the section prefix registered in
+`PAGES[].sections` of `scripts/copy.mjs`. Item numbering uses two digits when
+order matters (`inside.item01.title`).
 
-Adicionar:
-1. Chave no JSON, dentro do bloco da seção dela.
-2. `data-copy="secao.elemento"` no elemento do HTML. O conteúdo escrito à mão no
-   HTML pode ser qualquer coisa: o build sobrescreve.
+Adding:
+1. Key in the JSON, inside its section's block.
+2. `data-copy="section.element"` on the HTML element. Whatever is handwritten in
+   the HTML can be anything: the build overwrites it.
 3. `npm run copy:build`.
 
-Renomear: mudar nos dois lugares no mesmo commit, senão o build aborta com chave
-órfã (o que é o comportamento desejado).
+Renaming: change both places in the same commit, or the build aborts with an
+orphan key (which is the desired behavior).
 
-**Injetar em atributo (meta tags):** `data-copy-attr="content"` no elemento faz
-o build escrever no atributo em vez do conteúdo do nó. É o que põe SEO e social
-no SSoT:
+**Injecting into an attribute (meta tags):** `data-copy-attr="content"` on the
+element makes the build write the attribute instead of the node content. That is
+what puts SEO and social in the SSoT:
 
 ```html
 <title data-copy="meta.title">…</title>
@@ -76,20 +78,20 @@ no SSoT:
 <meta name="twitter:title" data-copy="meta.og_title" data-copy-attr="content" content="">
 ```
 
-Vários elementos podem apontar pra **mesma chave** (og: e twitter: compartilham
-valor). Chaves do bloco: `meta.title`, `meta.description`, `meta.og_title`,
-`meta.og_description`, `meta.og_image_alt`. Antes disso essas tags viviam soltas
-no `<head>` e drift(av)am em silêncio: a description do index passou meses
-anunciando uma headline que já tinha mudado.
+Several elements can point to the **same key** (og: and twitter: share a value).
+Block keys: `meta.title`, `meta.description`, `meta.og_title`,
+`meta.og_description`, `meta.og_image_alt`. Loose in the `<head>`, these tags
+drift silently: a description can announce for months a headline that already
+changed.
 
-**Quebra de linha:** `\n` no JSON vira `<br>` no HTML. Todo o resto é escapado
-(`&`, `<`, `>`, `"`), porque copy é conteúdo e não markup. Pra negrito dentro de
-um parágrafo, o caminho é dividir em duas chaves ou usar CSS no elemento, nunca
-tag dentro do JSON.
+**Line breaks:** `\n` in the JSON becomes `<br>` in the HTML. Everything else is
+escaped (`&`, `<`, `>`, `"`), because copy is content, not markup. For bold
+inside a paragraph, split into two keys or use CSS on the element, never a tag
+inside the JSON.
 
-## 4. Registrar uma página nova
+## 4. Registering a new page
 
-Só precisa de uma entrada em `PAGES` no `scripts/copy.mjs`:
+It only needs an entry in `PAGES` in `scripts/copy.mjs`:
 
 ```js
 {
@@ -98,49 +100,51 @@ Só precisa de uma entrada em `PAGES` no `scripts/copy.mjs`:
   md: 'docs/COPY-NOVA.md',
   title: 'Nome da página, Landing Copy',
   note: 'Aviso que vai no fim do MD gerado (ex.: de onde vem o preço real).',
-  sections: { nav: 'Nav', hero: 'Hero', /* prefixo → título humano */ },
+  sections: { nav: 'Nav', hero: 'Hero', /* prefix → human title */ },
 }
 ```
 
-Faltando o prefixo em `sections`, o MD ainda gera (usa o prefixo cru como
-título), então não quebra, só fica feio. Registrar.
+If a prefix is missing from `sections`, the MD still generates (using the raw
+prefix as the title), so nothing breaks, it just looks bad. Register it.
 
-## 5. Erros do check
+## 5. Check errors
 
-| mensagem | causa | conserto |
+The messages are printed in Portuguese by the script.
+
+| message | cause | fix |
 |---|---|---|
-| `data-copy="x" não existe no copy.json` | HTML pede chave que o JSON não tem | criar a chave ou tirar o atributo |
-| `chave "x" sem uso no index.html` | chave órfã no JSON | usar no HTML ou apagar do JSON |
-| `index.html está fora de sync` | alguém editou texto no HTML, ou esqueceu o build | `npm run copy:build` (o texto escrito à mão no HTML é descartado) |
-| `docs/COPY.md está stale` | MD editado à mão ou build não rodado | `npm run copy:build`, e nunca editar o MD |
+| `data-copy="x" não existe no copy.json` | HTML asks for a key the JSON lacks | create the key or remove the attribute |
+| `chave "x" sem uso no index.html` | orphan key in the JSON | use it in the HTML or delete it from the JSON |
+| `index.html está fora de sync` | someone edited text in the HTML, or forgot the build | `npm run copy:build` (text handwritten in the HTML is discarded) |
+| `docs/COPY.md está stale` | MD edited by hand or build not run | `npm run copy:build`, and never edit the MD |
 
-## 6. Montar o pipeline num repo novo
+## 6. Setting up the pipeline in a new repo
 
-Copiar `scripts/copy.mjs` do visantismo é o caminho mais curto. Dependência
-única: `node-html-parser` (preserva o markup original, só reescreve o conteúdo
-dos nós com `data-copy`). Adicionar em `package.json`:
+Copying `scripts/copy.mjs` from Visant's landing repo is the shortest path. Single
+dependency: `node-html-parser` (keeps the original markup, only rewrites the
+content of nodes with `data-copy`). Add to `package.json`:
 
 ```json
 "copy:build": "node scripts/copy.mjs build",
 "copy:check": "node scripts/copy.mjs check"
 ```
 
-e pendurar o `copy:check` no `check` geral que o CI/deploy roda.
+and hang `copy:check` on the general `check` that CI/deploy runs.
 
-Em repo Next/React o mesmo princípio vale sem o parser de HTML: o JSON é
-importado e lido por chave, e o gate passa a ser "toda chave do JSON é
-referenciada em algum componente". O que não muda nunca: **texto de interface
-não é escrito dentro do componente.**
+In a Next/React repo the same principle holds without the HTML parser: the JSON
+is imported and read by key, and the gate becomes "every JSON key is referenced
+in some component". What never changes in this pipeline: **interface text is not
+written inside the component.**
 
-## 7. Onde o preço mora de verdade
+## 7. Where the price really lives
 
-- **Landing do Club:** preço, número do fundador e total de vagas são preenchidos
-  em **runtime** por `js/ratchet.js` a partir de `/api/sold`. A copy não carrega
-  esses números.
-- **Landing do e-book:** o preço cobrado é resolvido no **servidor**
-  (`api/_config.js` → `PRODUCTS`). O texto do JSON é só exibição. Mudou o preço
-  lá, muda aqui também, nas duas ou três chaves que citam `R$ 47` (nav, hero,
-  gate da amostra, CTA final).
+- **Club landing:** price, founder number and total seats are filled at
+  **runtime** by `js/ratchet.js` from `/api/sold`. The copy does not carry those
+  numbers. If it still writes "Fundador nº X", unify it to Visionário.
+- **E-book landing:** the charged price is resolved on the **server**
+  (`api/_config.js` → `PRODUCTS`). The JSON text is display only. If the price
+  changes there, it changes here too, in the two or three keys that quote
+  `R$ 47` (nav, hero, sample gate, final CTA).
 
-Antes de aprovar copy com número, conferir contra essas fontes. Copy que mente
-sobre preço é a única que gera chargeback.
+Before approving copy with a number, check it against these sources. Copy that
+lies about price is the only kind that causes chargebacks.

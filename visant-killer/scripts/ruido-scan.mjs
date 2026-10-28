@@ -41,6 +41,11 @@
  * exigir a MESMA TELA pelo grafo de imports (`grafo.mjs`): de 25 achados quase
  * todos falsos pra 2 reais.
  *
+ * Nine more came in on 2026-10-28, from the design-slop signals 47-57 of the
+ * catalog: `tag-everywhere`, `italic-headline-word`, `display-serif-tight`,
+ * `divider-everywhere`, `opacity-ladder`, `box-in-box`, `code-crumb`,
+ * `numbered-section` and `mono-everywhere`. Signals 50 and 54 stay with the eye.
+ *
  * Uso:
  *   node ruido-scan.mjs <alvo...>          # arquivos ou pastas
  *   node ruido-scan.mjs --quiet <alvo...>  # só o placar
@@ -1111,6 +1116,435 @@ REGRAS.push({
 });
 
 /* ------------------------------------------------------------------ */
+/* design-slop signals, catalog entries 47-57 (2026-10-28)             */
+/* ------------------------------------------------------------------ */
+/*
+ * Entries 47-57 of `references/slop-catalog.md` ("ornament that imitates
+ * care") started as rg one-liners. The rules below are the ones with a static
+ * signature cheap enough to run with few false positives. Two stay with the
+ * eye on purpose: 50 (over-detailed UI) and 54 (diagram) do not live in any
+ * single line, and a grep for them would flag every dashboard and every SVG.
+ *
+ * The density rules (47 tag, 51 divider, 57 mono) follow R1: one use is a
+ * choice, many in the same file is the symptom, so the floor is a per-file
+ * count. Every rule was run on a real app (visantlabs-os, 588 interface files,
+ * 2026-10-28) and tightened where the sampled hits were legitimate; each
+ * exclusion below names the case that forced it.
+ *
+ * Like the phase 2 rules, they read code with comments blanked (line numbers
+ * are kept), and the written exception (`EXCEÇÃO ao ruido-scan/<rule>: why`)
+ * releases a hit exactly as for every other rule.
+ */
+
+/**
+ * Opening and closing JSX tags, in source order.
+ *
+ * Attribute values may hold braces three levels deep (`style={{ a: { } }}`).
+ * A TS generic (`Array<string>`) also parses as a "tag"; that is harmless here
+ * because every rule below asks something of the class list, which a generic
+ * does not have.
+ */
+function tagsDe(s) {
+  const out = [];
+  const RE = /<(\/?)([A-Za-z][\w.]*)\b((?:[^<>{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*?)(\/?)>/g;
+  for (const m of s.matchAll(RE)) {
+    out.push({ fecha: m[1] === '/', nome: m[2], attrs: m[3] ?? '', auto: m[4] === '/', idx: m.index, fim: m.index + m[0].length });
+  }
+  return out;
+}
+
+/** Index (in `tags`) of the tag that closes the opening tag at `i`, counting nesting. */
+function fechoDe(tags, i) {
+  const nome = tags[i].nome;
+  let prof = 1;
+  for (let k = i + 1; k < tags.length; k++) {
+    const t = tags[k];
+    if (t.nome !== nome || t.auto) continue;
+    if (t.fecha) { if (--prof === 0) return k; } else prof++;
+  }
+  return tags.length;
+}
+
+/**
+ * Utility present in the base state only. `hover:border` or `md:rounded` is a
+ * state or a breakpoint, not the resting look of the element, so the lookbehind
+ * refuses a `:` (and a `-`, so `divide-y` never reads as a bare `y`).
+ */
+const util = (re) => new RegExp(String.raw`(?<![\w:/-])(?:${re})(?![\w-])`);
+
+/**
+ * Visible text nodes: what follows a REAL tag end (`>` from `tagsDe`, so an
+ * arrow `=>` or a comparison never opens one), up to the next tag or brace.
+ * Also a lone string expression right after a tag (`>{'01'}<`).
+ *
+ * Only block comments are blanked here, not line comments: in JSX, `// serviços`
+ * between two tags is TEXT that renders, and it is exactly what rule 55 hunts.
+ * `semComentario` would erase it.
+ */
+function nosDeTexto(src) {
+  const s = src.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+  const tags = tagsDe(s);
+  const out = [];
+  for (const t of tags) {
+    const resto = s.slice(t.fim, t.fim + 240);
+    const m = resto.match(/^\s*(?:\{\s*(["'`])([^"'`\n]{1,120})\1\s*\}|([^<>{}]{1,200}))/);
+    if (!m) continue;
+    const texto = (m[2] ?? m[3] ?? '').replace(/\s+/g, ' ').trim();
+    if (!texto) continue;
+    const idx = t.fim + resto.indexOf(texto.slice(0, 1));
+    out.push({ texto, linha: linhaEm(s, idx), tag: t });
+  }
+  return { s, tags, out };
+}
+
+/** Inside `<pre>`, `<code>`, `<kbd>` or `<samp>`: code that is code, by markup. */
+function regioesDeCodigoEm(tags) {
+  const reg = [];
+  tags.forEach((t, i) => {
+    if (t.fecha || t.auto || !/^(pre|code|kbd|samp)$/.test(t.nome)) return;
+    const j = fechoDe(tags, i);
+    reg.push([t.idx, tags[j]?.idx ?? Infinity]);
+  });
+  return (idx) => reg.some(([a, b]) => idx >= a && idx < b);
+}
+
+/*
+ * 47 - tag on everything.
+ *
+ * A chip on every card ("Novo", "IA", "Beta", the category), a badge above the
+ * title, three tags under the description. Counted: `<Badge>`/`<Chip>`/`<Pill>`/
+ * `<Tag>` and the hand-made pill (`rounded-full` + horizontal padding + small
+ * text). A pill with a fixed width or height is an avatar or a dot, not a tag,
+ * and a tag you click (`onClick`, `active`, `selected`, `href`) is a filter or a
+ * choice, the use the catalog keeps (measured: the ruler chips of
+ * NamingSettingsPopover.tsx, six selectable `<Chip>`, all legitimate).
+ *
+ * Floor 6 per file: a table column of status badges is legitimate and lives in
+ * one or two lines of a `.map`; six separate tags in one file is the template.
+ */
+REGRAS.push({
+  id: 'tag-everywhere',
+  descricao: 'badge/chip/pill on everything: tag that neither filters nor changes a decision',
+  piso: 6,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const out = [];
+    const PILULA = util('rounded-full');
+    const PAD = util(String.raw`px-(?:1\.5|2|2\.5|3)`);
+    const MIUDO = util(String.raw`text-(?:xs|micro|\[1[01]px\]|\[0\.[67]\d*rem\])`);
+    const FIXO = util(String.raw`(?:w|h|size)-(?:\d+|\[[^\]]+\])`);
+    for (const t of tagsDe(s)) {
+      if (t.fecha) continue;
+      /* a tag you click IS a filter or a choice, the one use the catalog keeps */
+      if (/\b(onClick|onSelect|onCheckedChange|onPressedChange|href|active|selected|pressed)\s*=/.test(t.attrs)) continue;
+      const componente = /^(Badge|Chip|Pill|Tag)$|Badge$/.test(t.nome);
+      const pilula = PILULA.test(t.attrs) && PAD.test(t.attrs) && MIUDO.test(t.attrs) && !FIXO.test(t.attrs);
+      if (componente || pilula) out.push({ linha: linhaEm(s, t.idx), amostra: componente ? `<${t.nome}>` : 'pill: rounded-full + px + small text' });
+    }
+    return out;
+  },
+});
+
+/*
+ * 48 - one word in italics in the headline.
+ *
+ * "Design que *converte*": an `<em>`, `<i>` or `italic` child inside an h1/h2
+ * or inside display-size text (`text-4xl` and up, `text-[40px]` and up,
+ * `text-[clamp(...)]`). A heading that is italic as a WHOLE is a type choice
+ * and passes; the tell is the single emphasized word. `<i>` with an icon class
+ * (`fa-`, `icon`) is an icon font, not italics.
+ *
+ * No floor: one per page already is the tic.
+ */
+REGRAS.push({
+  id: 'italic-headline-word',
+  descricao: 'single word in italics (em/i/italic) inside a headline',
+  piso: 1,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const tags = tagsDe(s);
+    const out = [];
+    const vistos = new Set();
+    const DISPLAY = /(?<![\w-])(?:\w+:)?text-(?:[4-9]xl|\[(?:[4-9]\d|1\d\d)px\]|\[clamp)/;
+    const ITALICO = util('italic');
+    tags.forEach((t, i) => {
+      if (t.fecha || t.auto) return;
+      if (!/^h[12]$/.test(t.nome) && !DISPLAY.test(t.attrs)) return;
+      if (ITALICO.test(t.attrs)) return;
+      const j = fechoDe(tags, i);
+      for (let k = i + 1; k < j && k < tags.length; k++) {
+        const f = tags[k];
+        if (f.fecha) continue;
+        const enfase = (/^(em|i)$/.test(f.nome) && !f.auto && !/\b(fa-|icon|ri-|bi-)/.test(f.attrs)) || ITALICO.test(f.attrs);
+        if (!enfase) continue;
+        const l = linhaEm(s, f.idx);
+        if (vistos.has(l)) continue;
+        vistos.add(l);
+        out.push({ linha: l, amostra: `<${f.nome}> italic inside <${t.nome}> headline` });
+      }
+    });
+    return out;
+  },
+});
+
+/*
+ * 49 - Instrument Serif with negative tracking.
+ *
+ * The uniform of generated landing pages: a free display serif (Instrument
+ * Serif first, `font-serif` in general) with `tracking-tight`, `tracking-tighter`,
+ * `tracking-[-…]` or a negative `letterSpacing`, on the SAME element. Serif
+ * alone passes (it may be the brand), tight tracking alone passes (the brand
+ * sans may ask for it at that size); the pair is the borrowed look.
+ */
+REGRAS.push({
+  id: 'display-serif-tight',
+  descricao: 'Instrument Serif (or font-serif) with negative tracking on the same element',
+  piso: 1,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const out = [];
+    const SERIF = /instrument[\s_-]?serif|font-instrument|(?<![\w:-])font-serif(?![\w-])|fontFamily\s*:\s*[^,}\n]*serif/i;
+    const APERTADO = /(?<![\w:-])(?:\w+:)?(?:tracking-(?:tight|tighter)(?![\w-])|-tracking-|tracking-\[-)|letterSpacing\s*:\s*['"`]?-/;
+    for (const t of tagsDe(s)) {
+      if (t.fecha) continue;
+      if (/sans-serif/i.test(t.attrs) && !/instrument/i.test(t.attrs)) continue;
+      if (SERIF.test(t.attrs) && APERTADO.test(t.attrs)) out.push({ linha: linhaEm(s, t.idx), amostra: 'display serif + negative tracking' });
+    }
+    return out;
+  },
+});
+
+/*
+ * 51 - a divider between everything.
+ *
+ * `<hr>`, `<Separator>`, `divide-y`, `border-t`/`border-b` splitting blocks that
+ * spacing already split. Lines in a table or a dense list are the legitimate
+ * use, so table parts and `<li>` do not count, and neither does a sticky or
+ * fixed bar (the edge of a header over scrolling content is a real limit).
+ * A vertical separator and any divider in a toolbar, sidebar or menu file are
+ * out too: there the line splits groups of controls in a dense strip, which is
+ * the "dense list" case (measured: CreativeToolbar.tsx, 12 `<Divider>` between
+ * tool groups, all legitimate).
+ *
+ * Floor 8 per file: a few section lines in a long page are normal; eight is a
+ * page that groups by line instead of by space. On visantlabs-os (2026-10-28)
+ * it left 7 files, led by DocsPage.tsx (55) and BrandReadOnlyView.tsx (17).
+ */
+REGRAS.push({
+  id: 'divider-everywhere',
+  descricao: 'hr/Separator/divide/border-t used as the grouping device all over the file',
+  piso: 8,
+  achar(src, file) {
+    if (/(Toolbar|Sidebar|Menu|Table|List)\w*\.(tsx|jsx)$/.test(path.basename(file ?? ''))) return [];
+    const s = semComentarioCod(src);
+    const out = [];
+    const LINHA = util(String.raw`divide-[xy]|border-[tb]`);
+    for (const t of tagsDe(s)) {
+      if (t.fecha) continue;
+      if (/^(tr|td|th|thead|tbody|tfoot|table|li|Table\w*)$/.test(t.nome)) continue;
+      if (util('sticky|fixed').test(t.attrs) || /orientation\s*=\s*["'{]*vertical/.test(t.attrs)) continue;
+      const tag = /^(hr|Separator|Divider)$/.test(t.nome);
+      if (tag || LINHA.test(t.attrs)) out.push({ linha: linhaEm(s, t.idx), amostra: tag ? `<${t.nome}>` : (t.attrs.match(LINHA) ?? [''])[0] });
+    }
+    return out;
+  },
+});
+
+/*
+ * 52 - opacity ladder.
+ *
+ * `text-white/90`, `/70`, `/50`, `/40` in one file: hierarchy made of
+ * transparency, which is a raw color under another name. The rule groups by
+ * utility + color (`text-white`, `bg-primary`) and fires when one pair has FOUR
+ * or more distinct steps in the base state. `hover:bg-primary/20` is a state,
+ * not a level, and does not count. `text-sm/6` is font size with line height
+ * (Tailwind shorthand), not opacity, and does not count either.
+ *
+ * One hit per ladder, at its first step.
+ */
+REGRAS.push({
+  id: 'opacity-ladder',
+  descricao: 'same color utility in 4+ opacity steps in one file (hierarchy by transparency)',
+  piso: 1,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const escadas = new Map();
+    const RE = /(?<![\w:/-])(text|bg|border)-([a-z]+(?:-[a-z]+)*(?:-\d{2,3})?)\/(\d{1,3}|\[[\d.]+%?\])(?![\w-])/g;
+    for (const m of s.matchAll(RE)) {
+      if (/^(xs|sm|base|lg|\d?xl)$/.test(m[2])) continue;
+      const k = `${m[1]}-${m[2]}`;
+      if (!escadas.has(k)) escadas.set(k, new Map());
+      const passos = escadas.get(k);
+      if (!passos.has(m[3])) passos.set(m[3], m.index);
+    }
+    const out = [];
+    for (const [k, passos] of escadas) {
+      if (passos.size < 4) continue;
+      const idx = Math.min(...passos.values());
+      out.push({ linha: linhaEm(s, idx), amostra: `${k}: /${[...passos.keys()].join(' /')}` });
+    }
+    return out;
+  },
+});
+
+/*
+ * 53 - a bordered box around everything, box inside box.
+ *
+ * A `border rounded-*` container opened inside another `border rounded-*`
+ * container, in the same JSX tree. Borders where a real limit exists stay out:
+ * the inner element being a field, a button, a link, an image, code or a table
+ * (catalog: "input, table, clickable area"), anything with `onClick`/`href`, an
+ * inline `span`/`Badge`/`Chip` (a tag, rule 47's business), a tab or toggle
+ * group (a control), and an element with fixed width and height (swatch, icon
+ * tile, thumbnail). `rounded-full` is a pill or an avatar, not a box.
+ *
+ * Floor 2 per file: one nested card can be a deliberate inset (a preview inside
+ * a settings card); two is the habit.
+ */
+REGRAS.push({
+  id: 'box-in-box',
+  descricao: 'bordered rounded container nested inside another bordered rounded container',
+  piso: 2,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const tags = tagsDe(s);
+    const out = [];
+    const BORDA = util(String.raw`border(?:-[1-4])?`);
+    const CANTO = util(String.raw`rounded(?:-(?!full\b|none\b)[\w[\].]+)?`);
+    const caixa = (a) => BORDA.test(a) && CANTO.test(a);
+    const LIMITE_REAL = /^(input|textarea|select|button|a|Link|NavLink|img|Image|Input|Textarea|Button|Select\w*|kbd|code|pre|video|iframe|canvas|label|summary|table|svg|Thumb|span|Badge|Chip|Tabs\w*|Toggle\w*)$/;
+    /* fixed width AND height: a swatch, an icon tile or a thumbnail, not a content box */
+    const LARG = util(String.raw`(?:w|size)-(?:\d+|\[[^\]]+\])`);
+    const ALT = util(String.raw`(?:h|size)-(?:\d+|\[[^\]]+\])`);
+    const MEDIDA = (a) => LARG.test(a) && ALT.test(a);
+    /*
+     * The parent is the box whose CLOSING tag (same-name nesting, `fechoDe`)
+     * comes after the child, not whatever is left on a stack. The first version
+     * used a stack, and one misparsed tag left a modal "open" for 400 lines:
+     * a sibling modal in another branch read as a box inside it (measured on
+     * PixPaymentModal.tsx in the real app).
+     */
+    const regioes = [];
+    tags.forEach((t, i) => {
+      if (t.fecha || t.auto || !caixa(t.attrs) || LIMITE_REAL.test(t.nome)) return;
+      regioes.push({ ini: t.idx, fim: tags[fechoDe(tags, i)]?.idx ?? -1, t });
+    });
+    /*
+     * A `fixed` or `absolute` layer starts a new stack of boxes: the dialog
+     * opened from inside a card is drawn over the page, not inside the card
+     * (measured: the QR code modal declared inside the PIX modal,
+     * PixPaymentModal.tsx), and a status chip floating over an image is an
+     * overlay, not a box in a box (FullScreenViewer.tsx).
+     */
+    const camadas = [];
+    const CAMADA = util('fixed|absolute');
+    tags.forEach((t, i) => {
+      if (!t.fecha && !t.auto && CAMADA.test(t.attrs)) camadas.push([t.idx, tags[fechoDe(tags, i)]?.idx ?? -1]);
+    });
+    const camadaEntre = (pai, idx) => camadas.some(([a, b]) => a > pai.ini && a <= idx && idx < b);
+    for (const r of regioes) {
+      const t = r.t;
+      if (/\b(onClick|href)\s*=/.test(t.attrs) || MEDIDA(t.attrs)) continue;
+      const pai = regioes.filter((p) => p !== r && p.ini < t.idx && t.idx < p.fim && !camadaEntre(p, t.idx)).pop();
+      if (!pai) continue;
+      out.push({ linha: linhaEm(s, t.idx), amostra: `<${t.nome}> box inside <${pai.t.nome}> box (l.${linhaEm(s, pai.ini)})` });
+    }
+    return out;
+  },
+});
+
+/*
+ * 55 - code breadcrumb as ornament.
+ *
+ * `~/projects/app`, `$ npm install`, `// serviços`, `src/app/page.tsx`,
+ * `<Hero />` written as VISIBLE text on a page that is not for developers. Read
+ * from the text nodes (see `nosDeTexto`), so a real comment never fires.
+ *
+ * Out: text inside `<pre>`/`<code>`/`<kbd>`/`<samp>` (code marked as code), the
+ * caption of a code block (a `<pre>` or `<code>` opening in the next 4 lines,
+ * like "plugin/src/code.ts usage" over the snippet on DocsPage.tsx), and a
+ * command with a copy button within 10 lines (a real command someone copies,
+ * the one case the catalog keeps).
+ */
+REGRAS.push({
+  id: 'code-crumb',
+  descricao: 'shell prompt, path or code comment as decorative visible text',
+  piso: 1,
+  achar(src) {
+    const { s, tags, out: nos } = nosDeTexto(src);
+    const linhas = s.split('\n');
+    const emCodigo = regioesDeCodigoEm(tags);
+    const MIGALHA = /^(?:~\/[\w.-]|\$ [a-z]|\/\/ ?\p{L}|&lt;[A-Z]\w*\s*\/&gt;|<[A-Z]\w*\s*\/>$)|\bsrc\/[\w/-]+\.(?:tsx?|jsx?|css)\b/u;
+    const out = [];
+    for (const n of nos) {
+      if (!MIGALHA.test(n.texto)) continue;
+      if (emCodigo(n.tag.idx + 1)) continue;
+      if (/<(pre|code)\b/.test(janelaDe(linhas, n.linha, 0, 4))) continue;
+      if (/clipboard|copyTo|onCopy|CopyButton/i.test(janelaDe(linhas, n.linha, 10, 10))) continue;
+      out.push({ linha: n.linha, amostra: n.texto.slice(0, 40) });
+    }
+    return out;
+  },
+});
+
+/*
+ * 56 - numbered section.
+ *
+ * "01 — Serviços", "/02", "§3" written above each section. A visible text node
+ * that is only the number (`01`, `/02`, `§ 3`) or the number joined to a label
+ * (`01 · Serviços`). Clock and date text (`01:30`, `01/12`) does not match: a
+ * digit after the separator is not a label.
+ *
+ * Floor 2 per file: the tell is the numbering of EVERY section, and a single
+ * `01` is often a real step. Numbers generated in a `.map`
+ * (`String(i + 1).padStart(2, '0')`) are left to the eye: there the list is
+ * usually a process, where the catalog says the number belongs.
+ */
+REGRAS.push({
+  id: 'numbered-section',
+  descricao: 'section label numbered like 01 / /02 / §3 when order means nothing',
+  piso: 2,
+  achar(src) {
+    const { out: nos } = nosDeTexto(src);
+    const NUMERO = /^(?:\/\s?0[1-9]|0[1-9]|§\s?\d{1,2})(?:\s*[—–·.\/|:-]\s*\p{L}[^\n]{0,60})?$/u;
+    return nos.filter((n) => NUMERO.test(n.texto)).map((n) => ({ linha: n.linha, amostra: n.texto.slice(0, 40) }));
+  },
+});
+
+/*
+ * 57 - mono on everything.
+ *
+ * `font-mono` on eyebrow, label, button, nav, date, counter, card caption: the
+ * code font becomes the page's second font. Counted per file, leaving out what
+ * is code by markup (`pre`, `code`, `kbd`, `samp`) or by content: the element's
+ * first child is an expression naming an id, hash, key, token, serial, command,
+ * path, url, slug or hex, the cases the catalog keeps.
+ *
+ * Floor 10 per file: a handful of mono values (a price column, a timestamp) is
+ * a choice; ten is a second font. On visantlabs-os (2026-10-28) it left 7
+ * files, and the sampled hits were what the catalog describes: an `<h1>`,
+ * error copy, buttons and table headers in mono (AdminPage.tsx alone: 210).
+ */
+REGRAS.push({
+  id: 'mono-everywhere',
+  descricao: 'font-mono as a second UI font (labels, buttons, counters), not on code',
+  piso: 10,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const out = [];
+    const MONO = util(String.raw`font-mono|font-\[[^\]]*mono[^\]]*\]`);
+    const CODIGO = /^\s*\{[^}]{0,60}\b(\w*(?:id|Id|ID|hash|Hash|sha|uuid|key|Key|token|Token|serial|Serial|cmd|command|Command|path|Path|url|Url|URL|slug|Slug|hex|Hex|json|Json|JSON|code|Code))\b/;
+    for (const t of tagsDe(s)) {
+      if (t.fecha || /^(pre|code|kbd|samp)$/.test(t.nome)) continue;
+      if (!MONO.test(t.attrs)) continue;
+      if (CODIGO.test(s.slice(t.fim, t.fim + 80))) continue;
+      out.push({ linha: linhaEm(s, t.idx), amostra: `<${t.nome}> font-mono` });
+    }
+    return out;
+  },
+});
+
+/* ------------------------------------------------------------------ */
 /* execução                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -1548,7 +1982,8 @@ function selfTest() {
    */
   const porta = path.join(dir, 'porta');
   const fixtures = [
-    ...['ruido-casos.tsx', 'ruido-porta-b.tsx', 'ruido-fase2.tsx'].map((f) => path.join(dir, f)),
+    /* `sinais-sujo.tsx` fires every rule for catalog signals 47-57; `sinais-limpo.tsx` is its legitimate twin and must stay silent. */
+    ...['ruido-casos.tsx', 'ruido-porta-b.tsx', 'ruido-fase2.tsx', 'sinais-sujo.tsx', 'sinais-limpo.tsx'].map((f) => path.join(dir, f)),
     ...(fs.existsSync(porta) ? fs.readdirSync(porta).filter((f) => f.endsWith('.tsx')).map((f) => path.join(porta, f)) : []),
   ];
   for (const f of fixtures) {
@@ -1626,6 +2061,21 @@ function selfTest() {
     'hover-que-levanta': 7,
     'grade-de-pontos': 3, // <GridDots…>, radial repetido, SVG de círculo
     'blur-em-card': 1, // o card no fluxo; barra grudada e diálogo ficam fora
+    /*
+     * Signals 47-57 (2026-10-28): every count below comes from sinais-sujo.tsx
+     * alone. sinais-limpo.tsx holds the legitimate twin of each block (below
+     * the floor, real limits, code marked as code, a written exception) and
+     * adds zero; if one of these numbers grows, the clean file started firing.
+     */
+    'tag-everywhere': 6,
+    'italic-headline-word': 2,
+    'display-serif-tight': 2,
+    'divider-everywhere': 8,
+    'opacity-ladder': 1,
+    'box-in-box': 2,
+    'code-crumb': 4,
+    'numbered-section': 3,
+    'mono-everywhere': 10,
   };
 
   let falhou = 0;

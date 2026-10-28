@@ -24,8 +24,13 @@
 # enquanto 130 arquivos e 342 s de percurso ficavam parados.
 import os, subprocess, sys
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-PROJ = os.path.dirname(BASE)
+# Projeto = env PROJ ou a pasta atual (igual aos .sh); le e escreve em <PROJ>/_build.
+# Legado: se o script foi copiado pra dentro de _build/, usa a pasta dele.
+PROJ = os.environ.get("PROJ") or os.getcwd()
+BASE = os.path.join(PROJ, "_build")
+if not os.path.exists(os.path.join(BASE, "manifest.tsv")):
+    BASE = os.path.dirname(os.path.abspath(__file__))
+    PROJ = os.path.dirname(BASE)
 MIN_PLANO, MAX_PLANO = 2.5, 4.0      # pulso medio: o plano respira
 # Respiro de ambiente SO entre blocos de fonte diferente. Entre trechos da mesma
 # fala ele soava como corte no meio da frase - foi a queixa mais justa que recebi.

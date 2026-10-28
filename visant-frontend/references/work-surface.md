@@ -15,6 +15,12 @@ items got processed. Every rule below moves one of the two.
 - [Keyboard](#keyboard)
 - [Defaults and ordering](#defaults-and-ordering)
 - [Empty and absent](#empty-and-absent)
+- [Forms: an empty field is not a field](#forms-an-empty-field-is-not-a-field)
+- [What the screen says when it refuses](#what-the-screen-says-when-it-refuses)
+- [Columns: what separates a list from a table](#columns-what-separates-a-list-from-a-table)
+- [A control pair is one unit, not two ends](#a-control-pair-is-one-unit-not-two-ends)
+- [A label becomes an icon when the option HAS a shape](#a-label-becomes-an-icon-when-the-option-has-a-shape)
+- [Render tool: preview in a fixed column, controls in another](#render-tool-preview-in-a-fixed-column-controls-in-another)
 - [Anti-patterns](#anti-patterns)
 
 ## Chrome budget
@@ -208,188 +214,191 @@ an existing crawl costs nothing extra).
 Do not render a count next to an empty state that already says the same thing
 with more context.
 
-## Formulário: campo vazio não é campo
+## Forms: an empty field is not a field
 
-Um formulário com nove campos abertos e sete em branco não é um formulário — é a
-lista do que você ainda não preencheu. O olho gasta a varredura inteira antes de
-achar o que importa, e a coluna cresce até o botão de enviar sair da dobra.
+A form with nine open fields and seven of them blank is not a form, it is the
+list of what you have not filled in yet. The eye spends the whole scan before it
+finds what matters, and the column grows until the submit button falls below the
+fold.
 
-**A regra única:** campo COM valor aparece como campo; campo opcional vazio vira
-`+ Substantivo` numa faixa de botões no fim do bloco. Ele reabre sozinho quando
-tem conteúdo — não há estado a lembrar, ter valor já basta.
+**The single rule:** a field WITH a value renders as a field; an empty optional
+field becomes a `+ Noun` button in a strip at the end of the block. It reopens by
+itself when it has content: there is no state to remember, having a value is
+enough.
 
-O erro típico não é esquecer a regra, é aplicá-la a metade dos campos: "medidas"
-escondido atrás de um botão enquanto data, responsável, prioridade e projeto
-ficam sempre abertos e quase sempre vazios. Meia regra é pior que nenhuma,
-porque passam a existir dois modos sem critério visível pra qual é qual.
+The typical mistake is not forgetting the rule, it is applying it to half the
+fields: "dimensions" hidden behind a button while date, assignee, priority and
+project stay always open and almost always empty. Half a rule is worse than
+none, because now there are two modes with no visible criterion for which is
+which.
 
-### Marcar a exceção, nunca a regra
+### Mark the exception, never the rule
 
-Se oito de nove campos são opcionais, `(Opcional)` aparece oito vezes pra dizer
-o que o silêncio já diz — e o único obrigatório fica sem marca nenhuma, ou seja,
-a informação que importa é a única não escrita. Inverta: apague os oito, marque
-o obrigatório com `*` (mais `aria-required` e um `sr-only`, porque asterisco é
-convenção visual, não semântica).
+If eight of nine fields are optional, `(Optional)` shows up eight times to say
+what silence already says, and the one required field carries no mark at all:
+the information that matters is the only one not written. Invert it: delete the
+eight, mark the required one with `*` (plus `aria-required` and an `sr-only`,
+because an asterisk is a visual convention, not semantics).
 
-### Enunciado vira placeholder
+### Help text becomes placeholder
 
-Texto de ajuda que explica o FORMATO do campo pertence ao placeholder: ele some
-sozinho no instante em que deixa de ser útil (há texto no campo). Como parágrafo
-fixo, ocupa a linha pra sempre, inclusive depois de lido.
+Help text that explains the field's FORMAT belongs in the placeholder: it goes
+away on its own the moment it stops being useful (there is text in the field).
+As a fixed paragraph, it occupies the line forever, even after it has been read.
 
-Texto de ajuda que descreve o que o campo JÁ MOSTRA sai inteiro. "Em branco, usa
-o título automático" embaixo de um campo cujo placeholder É o título automático,
-escrito por extenso, é uma linha gastando altura pra narrar a tela.
+Help text that describes what the field ALREADY SHOWS goes entirely. "Leave blank
+to use the automatic title" under a field whose placeholder IS the automatic
+title, spelled out, is a line spending height to narrate the screen.
 
-Título de seção que nomeia o óbvio também sai. Duas colunas separadas por régua
-vertical não precisam de "A demanda" e "Detalhes" em cima — a separação já está
-desenhada, e os rótulos só somam duas linhas de chrome.
+A section title that names the obvious also goes. Two columns separated by a
+vertical rule do not need "The request" and "Details" above them: the separation
+is already drawn, and the labels only add two lines of chrome.
 
-### Semente de preset
+### Preset seeding
 
-Preencher campo por preset (tipo de demanda, template, último uso) é legítimo e
-tem duas regras que não se negociam:
+Filling fields from a preset (request type, template, last use) is legitimate and
+has two non-negotiable rules:
 
-- **Nunca escreve por cima de resposta humana.** A semente entra em campo vazio;
-  sair do preset limpa apenas o que ela mesma pôs (guarde o valor semeado num
-  ref e compare). Semear por cima é como um formulário passa a gravar resposta
-  que ninguém deu.
-- **Semente não rouba foco.** `autoFocus` é do campo que a PESSOA abriu. Um
-  campo que se abriu sozinho e puxa o cursor tira a pessoa de onde ela estava
-  digitando — normalmente pra outra coluna.
+- **Never write over a human answer.** The seed goes into an empty field; leaving
+  the preset clears only what the seed itself put there (keep the seeded value in
+  a ref and compare). Seeding over the top is how a form starts recording answers
+  nobody gave.
+- **A seed does not steal focus.** `autoFocus` belongs to the field the PERSON
+  opened. A field that opened by itself and grabs the cursor pulls the person out
+  of where they were typing, usually into another column.
 
-## O que a tela diz quando recusa
+## What the screen says when it refuses
 
-Recusa silenciosa é lida como bug do sistema, não como campo faltando. Três
-falhas que aparecem juntas e se disfarçam de "não funciona":
+A silent refusal reads as a system bug, not as a missing field. Three failures
+that show up together and disguise themselves as "it doesn't work":
 
-**Botão desabilitado não explica.** `disabled` até a validação passar produz um
-clique que não faz nada, não foca nada e não diz nada — e a pessoa conclui que a
-integração caiu, não que faltou preencher. Deixe o botão vivo (desabilite só
-durante o envio) e faça o clique ser o que revela o que falta: mensagem nomeando
-o campo + foco nele + a borda dele em `destructive`. O atalho de teclado
-equivalente segue o mesmo caminho, senão ele "quebra" em silêncio.
+**A disabled button does not explain.** `disabled` until validation passes
+produces a click that does nothing, focuses nothing and says nothing, and the
+person concludes the integration is down, not that something was left blank.
+Keep the button live (disable it only while submitting) and make the click be
+what reveals what is missing: a message naming the field + focus on it + its
+border in `destructive`. The equivalent keyboard shortcut follows the same path,
+or it "breaks" silently.
 
-Consequência que vem junto: se o `disabled` era também a trava de duplo-clique,
-ela vira um ref síncrono — `isSubmitting` só vale no próximo render, e dois
-cliques no mesmo tick entram os dois.
+A consequence that comes with it: if `disabled` was also the double-click guard,
+that guard becomes a synchronous ref. `isSubmitting` only takes effect on the
+next render, and two clicks in the same tick both go through.
 
-**Mensagem de erro nunca é rótulo de botão.** `catch { setError(t.createIssue) }`
-pinta a string "Criar Demanda" de vermelho como se fosse a causa. Todo fallback
-de erro é uma frase que diz o que houve e o que fazer; sem causa conhecida, o
-status HTTP entra no texto, porque é a única pista que sempre existe. E
-`response.json()` leva `.catch()` nos dois pontos: um 502 de gateway devolve
-HTML, o parse estoura, e o erro real vira a mensagem genérica.
+**An error message is never a button label.** `catch { setError(t.createIssue) }`
+paints the string "Create request" in red as if it were the cause. Every error
+fallback is a sentence that says what happened and what to do; with no known
+cause, the HTTP status goes into the text, because it is the one clue that always
+exists. And `response.json()` gets a `.catch()` at both call sites: a gateway 502
+returns HTML, the parse throws, and the real error becomes the generic message.
 
-**O alerta mora onde o clique aconteceu.** Um `<p>` de erro no fim do conteúdo
-de um dialog que rola nasce abaixo da dobra: a pessoa clica, "nada acontece", e
-a explicação está fora da tela. Prenda o rodapé (`sticky`) e ponha o alerta
-dentro dele, encostado no botão.
+**The alert lives where the click happened.** An error `<p>` at the end of a
+scrolling dialog's content is born below the fold: the person clicks, "nothing
+happens", and the explanation is off screen. Pin the footer (`sticky`) and put
+the alert inside it, next to the button.
 
-## Colunas: o que separa lista de tabela
+## Columns: what separates a list from a table
 
-Verificado numa folha de horas em 2026-08-12, onde a lista "densa e organizada"
-ainda lia como improviso. Nenhum destes acende num linter: os quatro são
-alinhamento, e alinhamento errado não quebra nada, só parece amador.
+Found on a timesheet whose "dense and organized" list still read as improvised.
+None of these lights up in a linter: all four are alignment, and wrong alignment
+breaks nothing, it just looks amateur.
 
-**1. O campo de largura variável na frente do título desalinha a página
-inteira.** Um chip de identificador que encolhe ao conteúdo (`ABC-745` contra
-`sem tarefa`) faz cada título começar num x diferente. Largura fixa no chip, com
-o texto centralizado, é o que transforma a lista em tabela — custa uma classe e
-paga a coluna do meio inteira.
+**1. A variable-width field in front of the title misaligns the whole page.** An
+identifier chip that shrinks to its content (`ABC-745` versus `no task`) makes
+every title start at a different x. A fixed width on the chip, with centered
+text, is what turns the list into a table: it costs one class and pays for the
+whole middle column.
 
-**2. Metadado dentro da célula do título aparece onde cada título termina.** O
-mesmo campo (cliente, projeto, tag) numa vertical diferente por linha obriga a
-reler a linha em vez de descer a coluna. Metadado que se compara entre linhas é
-**coluna própria** de largura fixa, escondida por breakpoint quando não couber —
-nunca um `<span>` correndo atrás do texto.
+**2. Metadata inside the title cell shows up wherever each title ends.** The same
+field (client, project, tag) on a different vertical per row forces re-reading
+the row instead of running down the column. Metadata compared across rows is
+**its own fixed-width column**, hidden by breakpoint when it does not fit, never
+a `<span>` trailing after the text.
 
-**3. O total do agrupamento tem que cair na coluna dos números que ele soma.**
-`justify-between` no cabeçalho do dia fecha na borda do container, enquanto as
-durações das linhas param antes do trilho de ações. Dois números da mesma
-natureza, duas verticais, 56px de desencontro — e o olho acusa antes de saber
-por quê. **O vão (`gap`) também precisa ser o mesmo nos dois**, ou a coluna
-fecha torta por três pixels.
+**3. The group total has to land in the column of the numbers it sums.**
+`justify-between` on the day header ends at the container edge, while the row
+durations stop before the actions rail. Two numbers of the same kind, two
+verticals, 56px apart, and the eye flags it before knowing why. **The `gap` must
+also be the same in both**, or the column closes three pixels crooked.
 
-**4. Largura de coluna escrita à mão em cada bloco DERIVA em silêncio.** A mesma
-grade costuma ser desenhada por quatro lugares — a linha, o cabeçalho do grupo,
-a barra de ferramentas e o esqueleto. Mudar num e esquecer nos outros não quebra
-build, não acende teste: só desalinha. Extraia as medidas para um objeto de
-**constantes literais** (`const COL = { time: "sm:w-[5.5rem]", … }`) e componha
-com `cn()`. Literal, nunca `w-[${x}]` — o Tailwind varre string completa e classe
-interpolada não entra no CSS.
+**4. Column widths hand-written in each block DRIFT silently.** The same grid is
+usually drawn in four places: the row, the group header, the toolbar and the
+skeleton. Changing one and forgetting the others breaks no build and fails no
+test: it only misaligns. Extract the measures into an object of **literal
+constants** (`const COL = { time: "sm:w-[5.5rem]", … }`) and compose with `cn()`.
+Literal, never `w-[${x}]`: Tailwind scans complete strings and an interpolated
+class never makes it into the CSS.
 
-Bônus da mesma família: **o esqueleto tem que ter as mesmas colunas do conteúdo**.
-Um esqueleto de uma coluna que vira duas ao carregar faz a tela encolher na
-frente de quem olha.
+Bonus from the same family: **the skeleton must have the same columns as the
+content**. A one-column skeleton that becomes two on load makes the screen shrink
+in front of the viewer.
 
-## Par de controles é uma unidade, não duas pontas
+## A control pair is one unit, not two ends
 
-`justify-between` numa barra larga põe a seta "anterior" numa borda e a "próxima"
-na outra — mil pixels entre dois botões que se usam alternadamente, com o rótulo
-boiando no meio sem dono. Navegação prev/next, zoom −/+, passo de wizard: o par
-se desenha **junto**, colado no rótulo que ele muda, e o número vai pra coluna
-onde os outros números já estão.
+`justify-between` on a wide bar puts the "previous" arrow on one edge and "next"
+on the other: a thousand pixels between two buttons used alternately, with the
+label floating ownerless in the middle. Prev/next navigation, zoom −/+, wizard
+step: the pair is drawn **together**, next to the label it changes, and the
+number goes in the column where the other numbers already are.
 
-Vale a generalização: `justify-between` é para **zonas** (identidade × ação), não
-para membros do mesmo controle. Quanto mais larga a tela, mais caro o erro.
+The generalization holds: `justify-between` is for **zones** (identity × action),
+not for members of the same control. The wider the screen, the more expensive
+the mistake.
 
-## Rótulo vira ícone quando a opção TEM desenho
+## A label becomes an icon when the option HAS a shape
 
-A régua não é economia de espaço, é tradução: o ícone paga quando ele **é** a
-coisa, e cobra quando apenas a representa.
+The test is not saving space, it is translation: the icon pays off when it **is**
+the thing, and costs when it merely represents it.
 
-| Vira ícone | Continua palavra |
+| Becomes an icon | Stays a word |
 |---|---|
-| "Barras" / "Linha" — a opção é uma forma, e o ícone ainda mostra o resultado antes do clique | "Time" / "Por pessoa" — audiências; viraria `Users` contra `User`, dois bonecos separados por um traço a 14px |
-| "Grade" / "Lista" | "Mensal" / "Anual" |
-| play, pause, fechar | qualquer opção cujo ícone precise de legenda |
+| "Bars" / "Line": the option is a shape, and the icon also previews the result before the click | "Team" / "Per person": audiences; it would become `Users` versus `User`, two figures told apart by one stroke at 14px |
+| "Grid" / "List" | "Monthly" / "Yearly" |
+| play, pause, close | any option whose icon needs a caption |
 
-Ícone que precisa de legenda é pior que a legenda sozinha. E ícone sem `title` +
-`sr-only` é botão mudo: o rótulo sai da tela, não do documento.
+An icon that needs a caption is worse than the caption alone. And an icon without
+`title` + `sr-only` is a mute button: the label leaves the screen, not the
+document.
 
-Ganho colateral que costuma decidir o caso: o grupo de ícones encolhe e devolve
-largura pro vizinho de rótulo comprido — em painel estreito é o que faz a linha
-inteira caber sem truncar.
+A side benefit that often decides the case: the icon group shrinks and gives
+width back to the neighbor with a long label. In a narrow panel that is what
+makes the whole row fit without truncating.
 
-## Ferramenta de render: preview numa coluna fixa, controles noutra
+## Render tool: preview in a fixed column, controls in another
 
-Verificado no sequenciador de fotos do `auto-video-editor-ai` em 2026-08-18: a
-tela tinha upload, controles (ordem, transição, formato, slider) e o
-preview/player empilhados numa única coluna que rolava junto. Ajustar um
-parâmetro e rolar pra baixo pra ver o resultado — ou pior, renderizar de novo e
-perder de vista o preview anterior porque ele ficou acima da dobra enquanto os
-controles cresciam.
+Found on a photo sequencer that stacked upload, controls (order, transition,
+format, slider) and the preview/player in a single scrolling column: tweaking a
+parameter meant scrolling to see the result, and the previous preview slid above
+the fold while the controls grew.
 
-**A regra:** numa ferramenta de "configura → gera → vê o resultado" (sequenciador,
-editor, gerador de imagem, qualquer tela com um botão "renderizar"), preview e
-output vivem numa coluna própria, fixa (`lg:sticky lg:top-*`), separada da
-coluna de controles que rola livre. O usuário ajusta um parâmetro com o
-resultado anterior sempre visível ao lado — não precisa escolher entre ver o
-controle ou ver o efeito dele.
+**The rule:** in a "configure → generate → see the result" tool (sequencer,
+editor, image generator, any screen with a "render" button), preview and output
+live in their own fixed column (`lg:sticky lg:top-*`), separate from the controls
+column that scrolls freely. The user adjusts a parameter with the previous result
+always visible beside it: no choosing between seeing the control and seeing its
+effect.
 
-Isso vale mesmo antes do primeiro render: a coluna de preview já nasce no
-layout (com um estado vazio nela, tipo "nada renderizado ainda"), nunca aparece
-só depois que o primeiro resultado existe — senão a tela pula de uma coluna pra
-duas no meio do uso, e é exatamente esse pulo de layout que a regra evita.
+This holds even before the first render: the preview column is born in the
+layout (with an empty state in it, like "nothing rendered yet"), it never appears
+only after the first result exists. Otherwise the screen jumps from one column to
+two mid-use, and that layout jump is exactly what the rule prevents.
 
 ## Anti-patterns
 
 | Pattern | Why it fails |
 |---|---|
 | Gradient hero on a work surface | Acquisition instinct on class B; 88px for a title already in the tab |
-| Controle empilhado ACIMA do `<h1>`, repetindo o que o título diz | O sujeito da tela chega antes do nome dela, e a mesma informação ocupa duas alturas; ele pertence ao cabeçalho, ao lado da ação |
-| Três eixos de alinhamento na mesma dobra (título à esquerda, peça central, ação na borda) | Nenhuma âncora compartilha coluna; em tela larga o primário fica a mais de 1000px do título e a página lê como montada |
-| `justify-between` separando um PAR de controles (‹ ›) | Mil pixels entre dois botões alternados; par é unidade, ver a seção acima |
-| Chip/badge de largura variável antes do título | Cada linha começa num x diferente; a lista nunca vira tabela |
-| Larguras de coluna repetidas à mão em linha, cabeçalho e esqueleto | Derivam em silêncio: nada quebra, só desalinha |
+| Control stacked ABOVE the `<h1>`, repeating what the title says | The screen's subject arrives before its name, and the same information takes two heights; it belongs in the header, next to the action |
+| Three alignment axes in the same fold (title left, piece centered, action at the edge) | No anchor shares a column; on a wide screen the primary sits over 1000px from the title and the page reads as assembled |
+| `justify-between` splitting a PAIR of controls (‹ ›) | A thousand pixels between two alternating buttons; a pair is one unit, see the section above |
+| Variable-width chip/badge before the title | Every row starts at a different x; the list never becomes a table |
+| Column widths repeated by hand in row, header and skeleton | They drift silently: nothing breaks, it only misaligns |
 | Disabled primary button | Promises an action that will not happen; replace with quiet text |
-| Primário desabilitado ATÉ a validação passar | O clique morto é lido como "o sistema falhou", não como "faltou campo"; o clique tem que dizer o que falta |
-| `(Opcional)` repetido em vários rótulos | Marca a regra e deixa a exceção sem marca — inverta |
-| Campo opcional vazio renderizado aberto | Vira item na lista do que você não preencheu; `+ Substantivo` até ter valor |
-| Enunciado fixo abaixo do rótulo explicando o formato | Placeholder faz o mesmo e some quando deixa de ser útil |
-| Alerta de erro no fim do conteúdo de um dialog que rola | Nasce abaixo da dobra; mora no rodapé sticky, colado ao botão |
-| Rótulo de botão usado como fallback de mensagem de erro | "Criar Demanda" em vermelho não é causa nenhuma |
+| Primary disabled UNTIL validation passes | The dead click reads as "the system failed", not "a field is missing"; the click has to say what is missing |
+| `(Optional)` repeated across many labels | Marks the rule and leaves the exception unmarked; invert it |
+| Empty optional field rendered open | Becomes an item on the list of what you have not filled in; `+ Noun` until it has a value |
+| Fixed help text under the label explaining the format | A placeholder does the same and disappears once it stops being useful |
+| Error alert at the end of a scrolling dialog's content | Born below the fold; it lives in the sticky footer, next to the button |
+| Button label used as the error-message fallback | "Create request" in red is no cause at all |
 | Metric grid of mostly zeros | Occupies the fold to report nothing |
 | Uniform gap inside a card | No perceivable grouping; everything reads as one flat list |
 | Guessed breakpoints | `lg:grid-cols-3 xl:grid-cols-4` assumes a viewport; use an intrinsic grid |
@@ -404,4 +413,4 @@ duas no meio do uso, e é exatamente esse pulo de layout que a regra evita.
 | A 5-tab strip that fits only on desktop | The last tabs are not squeezed, they are *unreachable*; scroll the strip and `shrink-0` the triggers |
 | A month calendar grid on a phone | Seven ~50px columns clip every event title to 10–28px; default to a list view below the breakpoint |
 | Third-party `<table>` left at `table-layout: auto` | One long title makes the table wider than its container regardless of the wrapper |
-| Preview/render empilhado na mesma coluna que rola com os controles | O resultado sai da tela bem na hora de ajustar o parâmetro que o muda; preview mora em coluna própria e fixa |
+| Preview/render stacked in the same column that scrolls with the controls | The result leaves the screen right when you adjust the parameter that changes it; the preview lives in its own fixed column |

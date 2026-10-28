@@ -1,59 +1,63 @@
-# Falso positivo — quando o defeito está na regra, não no código
+# False positive: when the defect is in the rule, not in the code
 
-Antes de gastar rodada em cima de uma lista de achados, meça a recompensa. Um
-detector em `grep` acusa **sintaxe**; a regra que ele tenta defender é sobre
-**intenção**, e a diferença aparece como ruído em massa.
+Before spending a round on a list of findings, measure the payoff. A `grep`
+detector flags **syntax**; the rule it tries to defend is about **intent**, and
+the gap shows up as mass noise.
 
-Sintoma de que o defeito está na regra, e não no código: **muito achado, quase
-nenhum verdadeiro**. No audit do boxy-app o `lint:design` devolveu 104 hex com ~1
-verdadeiro. O resto era paleta extraída, ponto de referência do WCAG (`#fff` e
-`#000`, que não podem virar token sem quebrar o cálculo de contraste), cor de
-marca de terceiro, canvas e WebGL (que não leem CSS custom property), HTML de
-e-mail, e uma entidade HTML (`&#9662;`) que o regex leu como cor.
+Symptom that the defect is in the rule and not in the code: **many findings,
+almost none real**. In one real audit a repo's `lint:design` returned 104 hex
+colors with about 1 real one. The rest were extracted palettes, WCAG reference
+points (`#fff` and `#000`, which cannot become tokens without breaking the
+contrast math), third-party brand colors, canvas and WebGL (which do not read
+CSS custom properties), email HTML, and an HTML entity (`&#9662;`) the regex read
+as a color.
 
-O procedimento, nessa ordem:
+The procedure, in this order:
 
-1. **Agrupe o achado por pasta antes de ler linha.** Concentração num `lib/`, num
-   `__tests__/` ou num motor de canvas é assinatura de regra mal escopada, não
-   de dívida técnica.
-2. **Leia a intenção escrita na própria regra.** "duration-300+ *on interactive
-   elements*" e "backdrop-blur *on cards*" já traziam o escopo no título, e o
-   `grep` ignorava esse escopo. Restringir cada regra à intenção que ela mesma
-   declara derrubou 20 achados para 4 e 49 para ~20, sem afrouxar nada.
-3. **Só então conserte o que sobrou**, que é o achado de verdade.
+1. **Group findings by folder before reading lines.** Concentration in a `lib/`,
+   a `__tests__/` or a canvas engine is the signature of a badly scoped rule,
+   not of tech debt.
+2. **Read the intent written in the rule itself.** "duration-300+ *on
+   interactive elements*" and "backdrop-blur *on cards*" already carried the
+   scope in the title, and the `grep` ignored it. Restricting each rule to the
+   intent it declares dropped 20 findings to 4 and 49 to about 20, without
+   loosening anything.
+3. **Only then fix what is left**, which is the real finding.
 
-Regra escopada precisa de **motivo escrito dentro da regra**, com o caso que a
-originou. Exclusão sem justificativa é `audit-ignore` com outro nome, e quem ler
-depois não distingue decisão de desistência.
+A scoped rule needs a **reason written inside the rule**, with the case that
+created it. An exclusion with no justification is `audit-ignore` under another
+name, and whoever reads it later cannot tell a decision from giving up.
 
-Três coisas que isso **não** autoriza: afrouxar detector porque o conserto dá
-trabalho; escopar sem verificar o caso na tela (o do blur exigiu abrir a página e
-ver o que havia atrás); e tratar volume alto como prova de que a regra está
-errada, porque às vezes o repo está sujo mesmo. Quem decide é a taxa de acerto
-lida em `arquivo:linha`, nunca o tamanho da lista.
+Three things this does **not** authorize: loosening a detector because the fix is
+work; scoping without checking the case on screen (the blur case required
+opening the page and seeing what was behind it); and treating high volume as
+proof the rule is wrong, because sometimes the repo really is dirty. What decides
+is the hit rate read at `file:line`, never the size of the list.
 
-Antes de confiar num "zero" do portão de copy, prove o extrator:
+Before trusting a "zero" from the copy gate, prove the extractor:
 
 ```bash
 node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --self-test
 ```
 
-Ele roda a extração contra `scripts/fixtures/copy-extractor.tsx`, que carrega o
-contrato dentro dele (linha com `EXTRAI` tem que sair, linha com `IGNORA` não), e
-falha nos dois sentidos. O falso **negativo** é o que importa: string que nunca
-foi extraída faz o portão dizer zero sobre texto que ninguém checou, e isso
-parece sucesso. Foi assim que se descobriu que copy dentro de template com
-interpolação (`` `Acima de ${x}. Obrigatória.` ``) passava batida. Caso novo que
-escapar: acrescente no fixture, nunca substitua.
+It runs extraction against `scripts/fixtures/copy-extractor.tsx`, which carries
+the contract inside it (a line with `EXTRAI` must come out, a line with `IGNORA`
+must not), and fails both ways. The false **negative** is what matters: a string
+that was never extracted makes the gate say zero about text nobody checked, and
+that looks like success. That is how copy inside an interpolated template
+(`` `Acima de ${x}. Obrigatória.` ``) was found slipping through. A new case that
+escapes: add it to the fixture, never replace one. The same self-test also
+proves the built-in token fallback both ways (`fixtures/token-fallback-*`).
 
-Portões (todos precisam ficar em zero **no alvo**, nunca no repo inteiro):
+Gates (all must stay at zero **in the target**, never in the whole repo):
 
-| Portão | Zero significa |
+| Gate | Zero means |
 |---|---|
-| `impeccable detect` | nenhum tell de IA genérica: gradiente em texto, roxo de template, bounce, glow, accent em cima de arredondado |
-| `audit:design` errors | nenhuma cor crua nem valor fora do token |
-| copy (vício de linguagem) | nenhum travessão, bolinha separadora, "não é X, é Y", "é sobre X", emoji, ponto-e-vírgula, abertura de guru, selo de credibilidade repetido |
+| `impeccable detect` | no generic-AI tell: gradient text, template purple, bounce, glow, accent on rounded |
+| token (`audit:design` errors, or the built-in fallback) | no raw color and no value outside the token |
+| copy (voice) | no em-dash, bullet separator, "não é X, é Y", "é sobre X", emoji, semicolon, guru opener, repeated credibility badge |
+| chrome noise (`ruido-scan`) | no screen explaining itself to death |
 
-Se o repo não tiver `audit:design`, o script diz que pulou. **Portão pulado é
-reportado, nunca omitido.** Depois do portão, e só depois, rode `tsc` e o lint.
-
+If the repo has no token gate of its own, `killer-scan` runs its built-in
+fallback and says so. **A skipped gate is reported, never omitted.** After the
+gate, and only after, run `tsc` and the lint.

@@ -71,7 +71,7 @@ Web (Motion/framer-motion): `{ type:"spring", bounce:0, duration:0.4 }` (critica
 
 ## Waiting & pending states
 
-The wait is a designed surface, not a fallback (SKILL §3). Numbers:
+The wait is a designed surface, not a fallback (SKILL §4). Numbers:
 
 | Threshold | Meaning |
 |---|---|
@@ -197,7 +197,7 @@ Then measure the deployed URL with `scripts/measure-motion.mjs` — dropped fram
 | framer `x`/`y` under load | full `transform` string |
 | same enter/exit speed | exit faster than enter |
 | all appear at once | stagger 30-80ms, capped |
-| hardcoded curve/duration | import from `lib/motion.ts` / `var(--ease-*)` / `var(--dur-*)` |
+| hardcoded curve/duration | import from the repo motion SSoT (e.g. `lib/motion.ts`) / `var(--ease-*)` / `var(--dur-*)` |
 | spinner on a known layout | skeleton matching the real boxes + crossfade |
 | loader flashes / blinks | 300ms delay + 500ms minimum visible |
 | skeleton shifts layout on load | match sizes, radii and gaps to the real row |

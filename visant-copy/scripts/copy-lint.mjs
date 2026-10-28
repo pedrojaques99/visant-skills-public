@@ -23,7 +23,8 @@
  * "é"/"são"/"não". Use os boundaries L/R abaixo (lookaround unicode) sempre que
  * a borda encostar em letra acentuada, senão a regra passa batido em silêncio.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
 const L = '(?<![\\p{L}\\p{N}])'; // início de palavra, unicode
 const R = '(?![\\p{L}\\p{N}])'; // fim de palavra, unicode
@@ -143,7 +144,8 @@ const RULES = [
   },
   {
     id: 'emoji',
-    jsonOnly: true,
+    /* Vale em todo arquivo: emoji em .tsx/.md visível é o mesmo defeito que no
+       .json. Comentário de código já sai mascarado antes. */
     /* Emoji_Presentation em vez de Extended_Pictographic: o segundo inclui
        © ® ™, que são marca registrada e ficam (Visionário®, Visant Club®). */
     re: /[\p{Emoji_Presentation}\u{1F300}-\u{1FAFF}]/gu,
@@ -202,14 +204,77 @@ const REPEATS = [
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const comentarios = args.includes('--include-comments');
-const files = args.filter((a) => !a.startsWith('--'));
-
-if (!files.length) {
-  console.log('uso: copy-lint.mjs [--quiet] <arquivo...>');
-  process.exit(1);
+/* --self-test: prova os dois sentidos, como os outros detectores do repo. Cada
+   regra de RULES tem que disparar no seu exemplo ruim, e a frase limpa tem que
+   passar em todas. Regra que virou inerte aparece aqui, não em produção. */
+if (args.includes('--self-test')) {
+  const RUIM = {
+    travessao: 'Rápido — e bonito.',
+    bolinha: 'Marca · Site',
+    'hifen-como-travessao': 'Rápido - e bonito.',
+    'nao-e-x-e-y': 'Não é um site, é uma máquina de venda.',
+    'nao-e-apenas': 'Não é apenas um site.',
+    'nao-e-definicao': 'Não é um teaser.',
+    'nao-se-trata': 'Não se trata de design.',
+    'x-virgula-nao-y': 'Feito pra ler, não pra arquivar.',
+    'e-sobre': 'Branding é sobre pessoas.',
+    'menos-x-mais-y': 'Menos ruído e mais venda.',
+    'mais-que-apenas': 'Mais que apenas um logo.',
+    hype: 'Uma solução revolucionária.',
+    'abertura-de-guru': 'Imagine que seu site vendesse sozinho.',
+    'urgencia-cliche': 'Últimas vagas para o curso.',
+    'pipe-separador': 'Marca | Site',
+    emoji: 'Seu site novo 🚀',
+    'ponto-e-virgula': 'Rápido; bonito.',
+    'conector-de-llm': 'Além disso, entregamos rápido.',
+  };
+  const LIMPA = 'Seu site novo fica pronto em uma semana.';
+  const falhas = [];
+  for (const rule of RULES) {
+    rule.re.lastIndex = 0;
+    if (rule.re.test(LIMPA)) falhas.push(`${rule.id} disparou na frase limpa`);
+    const ruim = RUIM[rule.id];
+    if (ruim === undefined) continue;
+    rule.re.lastIndex = 0;
+    if (!rule.re.test(ruim)) falhas.push(`${rule.id} não disparou em "${ruim}"`);
+  }
+  for (const id of Object.keys(RUIM)) {
+    if (!RULES.some((r) => r.id === id)) falhas.push(`regra ${id} sumiu de RULES`);
+  }
+  if (falhas.length) {
+    console.error(`✗ copy-lint --self-test\n  ${falhas.join('\n  ')}`);
+    process.exit(1);
+  }
+  console.log(`✓ copy-lint --self-test: ${Object.keys(RUIM).length} regras disparam, frase limpa passa nas ${RULES.length}`);
+  process.exit(0);
 }
 
 const CODIGO = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/i;
+const TEXTO = /\.(?:json|md|mdx|html?|txt)$/i;
+const PULA = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', 'coverage']);
+
+/* Pasta vira a lista dos arquivos de copy dentro dela; arquivo passa direto. */
+function expande(alvo) {
+  if (!statSync(alvo).isDirectory()) return [alvo];
+  return readdirSync(alvo, { withFileTypes: true }).flatMap((e) => {
+    if (PULA.has(e.name) || e.name.startsWith('.')) return [];
+    const p = join(alvo, e.name);
+    if (e.isDirectory()) return expande(p);
+    return CODIGO.test(e.name) || TEXTO.test(e.name) ? [p] : [];
+  });
+}
+
+const alvos = args.filter((a) => !a.startsWith('--'));
+if (!alvos.length) {
+  console.log('uso: copy-lint.mjs [--quiet] [--include-comments] <arquivo ou pasta...>');
+  process.exit(1);
+}
+const faltando = alvos.filter((a) => !existsSync(a));
+if (faltando.length) {
+  console.error(`copy-lint: não existe: ${faltando.join(', ')}`);
+  process.exit(1);
+}
+const files = alvos.flatMap(expande);
 
 /* Chave cujo valor é fala de outra pessoa. Ver a nota no laço principal. */
 const CHAVE_DE_CITACAO = /(^|\.)(?:quote|quote_by|depoimento)$/;
@@ -276,7 +341,14 @@ function units(file) {
       for (const [k, v] of Object.entries(node)) walk(v, path ? `${path}.${k}` : k);
     }
   };
-  walk(JSON.parse(raw), '');
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    console.error(`copy-lint: ${file} não é JSON válido (${e.message})`);
+    process.exit(1);
+  }
+  walk(data, '');
   return out;
 }
 

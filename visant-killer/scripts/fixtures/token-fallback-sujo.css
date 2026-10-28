@@ -1,0 +1,21 @@
+/* Fixture of the killer-scan token fallback (--self-test).
+   Contract: a line carrying the flag-marker must be flagged, one with the quiet-marker must not. */
+:root {
+  --brand: #7c3aed; /* CALA */
+  --ink: 222 47% 11%; /* CALA */
+}
+.dark {
+  --brand: #a78bfa; /* CALA */
+  color: #ffffff; /* CALA */
+}
+.card {
+  --local: #123456; /* CALA */
+  color: #333; /* ACUSA */
+  background: rgb(240, 240, 240); /* ACUSA */
+  border-color: hsl(var(--border)); /* CALA */
+}
+.chip { color: #0af; } /* ACUSA */
+#header { color: hsl(var(--foreground)); } /* CALA */
+.btn {
+  @apply text-red-500 px-2; /* ACUSA */
+}

@@ -3,6 +3,7 @@
 // Env: BASE (default http://localhost:3100), OUT (pasta de saída), CHROME, FFMPEG.
 // Requer o site rodando em BASE (de preferência build de produção: next build && next start -p 3100).
 import puppeteer from 'puppeteer-core'
+import { findChrome, angleArgs } from './find-chrome.mjs'
 import { PuppeteerScreenRecorder } from 'puppeteer-screen-recorder'
 import { mkdirSync, renameSync, rmSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -11,8 +12,8 @@ import { resolve } from 'node:path'
 
 const BASE = process.env.BASE ?? 'http://localhost:3100'
 const OUT = process.env.OUT ?? './videos'
-const CHROME = process.env.CHROME ?? 'C:/Users/<voce>/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'
-const FFMPEG = process.env.FFMPEG ?? 'C:/Program Files/ffmpeg-2025-10-05-git-6231fa7fb7-essentials_build/bin/ffmpeg.exe'
+const CHROME = findChrome() // CHROME env, else installed Chrome/Edge, else Playwright Chromium (find-chrome.mjs)
+const FFMPEG = process.env.FFMPEG ?? 'ffmpeg' // on PATH, or full path in FFMPEG
 // W/H = viewport em px CSS; DPR = densidade (vídeo sai em W*DPR x H*DPR); MOBILE=1 emula celular (toque);
 // KEEP_UI=1 mantém nav/header (cards de portfolio mostram o site como ele é).
 const W = +(process.env.W ?? 1920), H = +(process.env.H ?? 1080)
@@ -135,7 +136,7 @@ const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: false, // GPU real: WebGL fluido (headless cai no SwiftShader)
   defaultViewport: null,
-  args: [`--window-size=${Math.max(W, 500)},${H + 140}`, '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', '--use-angle=d3d11', '--ignore-gpu-blocklist', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--disable-features=CalculateNativeWinOcclusion'],
+  args: [`--window-size=${Math.max(W, 500)},${H + 140}`, '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', ...angleArgs, '--ignore-gpu-blocklist', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--disable-features=CalculateNativeWinOcclusion'],
 })
 for (const s of list) {
   for (let k = 0; k < 3; k++) if ((await run(s, browser)) >= (s.minFps ?? MIN_FPS)) break

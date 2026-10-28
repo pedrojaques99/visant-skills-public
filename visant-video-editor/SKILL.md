@@ -1,229 +1,234 @@
 ---
 name: visant-video-editor
-description: 'Monta vlog, vídeo de evento e vídeo-aula a partir de mídia bruta: decupagem, corte de silêncio sem cortar palavra, loudness e capítulos, com self-test contra falha silenciosa. Use em "monta um vlog", "edita esses vídeos", "decupagem", "vídeo do evento", "edita essa aula", "tira o silêncio do vídeo", "corta esse grito/ruído do áudio", /visant-video-editor.'
+description: 'Edits vlogs, event videos and video lessons from raw footage: breakdown, silence cuts that never clip a word, loudness and chapters, with a self-test against silent failures. Use on "edit this vlog", "cut the silence", "edit this lesson", "monta um vlog", "decupagem", "edita essa aula", "tira o silêncio do vídeo", /visant-video-editor.'
 ---
 
 # Visant Video Editor
 
-Montagem de vlog a partir de pasta bruta. O material é de celular: dezenas a
-centenas de arquivos, takes de 1 a 120 s, orientação misturada, volume de áudio
-variando 20 LU entre clipes.
+## Requirements
 
-Duas metades que não se substituem:
+| Needed for | What | Check |
+|---|---|---|
+| everything | Windows (Git Bash), macOS or Linux, with bash 3.2+ | `bash --version` |
+| everything | ffmpeg + ffprobe on PATH (libx264, aac; `drawtext` for the contact sheet) | `ffmpeg -version` |
+| `planeja.py`, `transcreve.sh` | Python 3 (`PYTHON=` picks the interpreter) | `python --version` |
+| `transcreve.sh` | faster-whisper (`pip install faster-whisper`) | `python -c "import faster_whisper"` |
+| silence inside a take (optional) | auto-editor (`pip install auto-editor`) | `auto-editor --version` |
+| real photo dates (optional) | exiftool | `exiftool -ver` |
 
-1. **Portão** (`scripts/self-test.sh`, determinístico): o pipeline entrega vídeo
-   inteiro ou não entrega. Nota binária.
-2. **Julgamento** (você, lendo a decupagem): qual take entra, em que ordem, por
-   quanto tempo. Nenhum script decide isso bem.
+No Node, no GUI app. Everything else is POSIX shell + awk. See
+[references/tools.md](references/tools.md) before adding any tool.
 
-> **Regra zero: o roteiro vai pra aprovação antes do encode.** Encodar 25 min de
-> material do Drive custa uma hora. Propor o roteiro em texto custa segundos.
-> Nunca renderize master sem o usuário ter visto a lista de cortes — a não ser
-> que ele tenha dito "só faz" explicitamente.
+## What it does
 
-> **Portão verde não é vídeo visto.** O portão prova que nenhum corte sumiu e que
-> o áudio bate o alvo. Não prova que a abertura é boa nem que o take certo entrou.
-> Sempre abra uma folha de contato antes de dizer que está pronto.
+Assembles a vlog from a raw folder. The material is phone footage: dozens to hundreds of files,
+takes of 1 to 120 s, mixed orientation, audio level varying 20 LU between clips.
 
-## Antes de tocar em qualquer coisa
+Two halves that do not replace each other:
+
+1. **Gate** (`scripts/self-test.sh`, deterministic): the pipeline delivers a whole video or
+   nothing. Binary grade.
+2. **Judgment** (you, reading the breakdown): which take goes in, in what order, for how long. No
+   script decides that well.
+
+> **Rule zero: the cut list goes for approval before encoding.** Encoding 25 min of material from
+> a cloud drive costs an hour. Proposing the cut list as text costs seconds. Never render a master
+> without the user having seen the cut list, unless they explicitly said "just do it".
+
+> **A green gate is not a watched video.** The gate proves no cut vanished and audio hits the
+> target. It does not prove the opening is good or the right take went in. Always open a contact
+> sheet before saying it is ready.
+
+## Before touching anything
 
 ```bash
 bash scripts/self-test.sh
 ```
 
-20 casos, ~2 min, sandbox próprio com fixtures geradas na hora. **Portão fechado =
-não monte vídeo de cliente**: as falhas cobertas são todas silenciosas (exit 0 com
-vídeo errado). Se você mexeu num script do pipeline, rode de novo.
+~2 min, own sandbox with fixtures generated on the spot. **Gate closed = do not edit a client
+video**: the failures covered are all silent (exit 0 with a wrong video). If you changed a
+pipeline script, run it again.
 
-## Fluxo
+## Flow
 
 ```
-1. self-test          portão. Sem isso, não comece.
-2. ingest.sh          lê metadado de tudo -> _build/manifest.tsv (ordena por captura)
-3. roteiro.sh         propõe o corte dentro de um teto -> _build/edl.txt
-4. decupagem.sh       folha de corte + capítulos + folha de contato
-5. >>> APROVAÇÃO <<<  mostre a decupagem e o total; espere o ok
-6. build.sh           normaliza cada corte e cola -> _out/vlog.mp4
-7. verifique          loudness, duração, folha de contato. Só então diga pronto.
+1. self-test          gate. Without it, do not start.
+2. ingest.sh          reads metadata of everything -> _build/manifest.tsv (sorted by capture)
+3. roteiro.sh         proposes the cut under a ceiling -> _build/edl.txt
+4. decupagem.sh       cut sheet + chapters + contact sheet
+5. >>> APPROVAL <<<   show the breakdown and the total; wait for the ok
+6. build.sh           normalizes each cut and concatenates -> _out/vlog.mp4
+7. verify             loudness, duration, contact sheet. Only then say ready.
 ```
 
-Tudo de uma vez, quando o usuário já aprovou o perfil:
+All at once, when the user already approved the profile:
 
 ```bash
-SRC=/pasta/midia PROJ=/pasta/projeto PERFIL=youtube bash scripts/tudo.sh
+SRC=/path/media PROJ=/path/project PERFIL=youtube bash scripts/tudo.sh
 ```
 
-`PROJ` é onde nascem `_build/` e `_out/`. `SRC` é a pasta da mídia — **nunca é
-escrita**, e o portão testa isso.
+`PROJ` is where `_build/` and `_out/` are born. `SRC` is the media folder: it is **never
+written**, and the gate tests that.
 
-## Perfis
+## Profiles
 
-| `PERFIL` | Formato | Take de fala | Uso |
+| `PERFIL` | Format | Speech take | Use |
 |---|---|---|---|
-| `youtube` (default) | 16:9 1920x1080 | **inteiro** | vlog de evento, registro longo |
-| `reels` | 9:16 1080x1920 | 8 s máx | corte social, teto de 1 min |
-| `registro` | 16:9 | inteiro, nada aparado | arquivo bruto organizado |
+| `youtube` (default) | 16:9 1920x1080 | **whole** | event vlog, long record |
+| `reels` | 9:16 1080x1920 | 8 s max | social cut, 1 min ceiling |
+| `registro` | 16:9 | whole, nothing trimmed | organized raw archive |
 
-## As decisões que importam
+## Decisions that matter
 
-| Decisão | Padrão | Por quê |
+| Decision | Default | Why |
 |---|---|---|
-| Preenchimento | `FILL=auto` | clipe horizontal enche a tela (crop); clipe vertical entra com fundo borrado (blur). Cortar vertical pra 16:9 **destrói o enquadramento**. A decisão lê o display matrix, não a largura do pixel |
-| Loudness | `LOUD=2` (dois passos) | um passo comprime: medido LRA de 1,6 LU, dinâmica morta. Ver [audio.md](references/audio.md) |
-| Transição | corte seco | vlog bom é corte. Wipe e crossfade em b-roll é cara de template |
-| Duração do corte | proporcional ao take | teto plano gerava 41 cortes de 5,0 s idênticos: ritmo de esteira |
-| Ordem | cronológica por `creation_time` | monta a narrativa sozinha (montagem → chegada → evento). Vale para vídeo; **não vale para foto** |
-| Cache | chave de conteúdo | md5 de arquivo+in+out+fill+formato+áudio. Nunca por posição |
+| Fill | `FILL=auto` | horizontal clip fills the frame (crop); vertical clip goes in over a blurred background. Cropping vertical to 16:9 **destroys the framing**. The decision reads the display matrix, not pixel width |
+| Loudness | `LOUD=2` (two passes) | one pass compresses the dynamics. Numbers in [audio.md](references/audio.md) |
+| Transition | hard cut | a good vlog is cuts. Wipe and crossfade on b-roll look like a template |
+| Cut length | proportional to the take | a flat ceiling produced 41 identical 5.0 s cuts: conveyor-belt rhythm |
+| Order | chronological by `creation_time` | builds the narrative by itself (setup → arrival → event). Valid for video; **not for photos** |
+| Cache | content key | md5 of file+in+out+fill+format+audio. Never by position |
 
-## O roteiro (`_build/edl.txt`)
+## The cut list (`_build/edl.txt`)
 
-Uma linha por corte, separado por TAB. É aqui que a edição de verdade acontece:
+One line per cut, TAB-separated. This is where the real editing happens:
 
 ```
-arquivo.MOV	0	12.5      # entra em 0s, sai em 12.5s
-outro.MOV	4	9         # só o trecho de 4s a 9s
-foto.jpg	0	3         # foto = 3s com zoom lento (Ken Burns)
-# linha com # é ignorada    <- "deleta" um take sem apagar arquivo
+file.MOV	0	12.5      # in at 0s, out at 12.5s
+other.MOV	4	9         # only 4s to 9s
+photo.jpg	0	3         # photo = 3s with a slow zoom (Ken Burns)
+# a line with # is ignored    <- "deletes" a take without deleting the file
 ```
 
-Reordenar as linhas reordena o vídeo. Comentar é como se tira um take ruim.
+Reordering lines reorders the video. Commenting is how you drop a bad take.
 
-`roteiro.sh` classifica por tamanho do take e **nunca sacrifica narrativa**: se
-estourar o teto, aperta os caps primeiro e só depois afina o b-roll por amostragem
-uniforme. Take longo (>25 s) é fala e sempre entra.
+`roteiro.sh` classifies by take length and **never sacrifices narrative**: if it busts the
+ceiling, it tightens the caps first and only then thins the b-roll by uniform sampling. A long
+take (>25 s) is speech and always goes in.
 
 ```bash
-TETO_MIN=5 bash scripts/roteiro.sh    # alvo de 5 min
-TETO_MIN=0 bash scripts/roteiro.sh    # sem teto
-MAX_LONG=0 bash scripts/roteiro.sh    # take de fala inteiro
+TETO_MIN=5 bash scripts/roteiro.sh    # 5 min target
+TETO_MIN=0 bash scripts/roteiro.sh    # no ceiling
+MAX_LONG=0 bash scripts/roteiro.sh    # whole speech take
 FOTOS_POR_DIA=0 bash scripts/roteiro.sh
 ```
 
-## Entregas de decupagem
+## Breakdown deliverables
 
-`decupagem.sh` produz três coisas que o usuário usa de verdade:
+`decupagem.sh` produces three things the user actually uses:
 
-- `DECUPAGEM.md` — uma linha por corte: posição no timeline, arquivo, dia, quanto
-  do bruto foi usado, tipo (fala/médio/b-roll) e enquadramento
-- `CAPITULOS.txt` — capítulos por dia, prontos pra descrição do YouTube (o
-  primeiro **tem** que ser `00:00:00`, ou o YouTube recusa)
-- `_build/contato/folha-*.jpg` — grade de thumbs numeradas. **Abra pelo menos uma
-  antes de declarar pronto.** É o único jeito de ver o conteúdo sem assistir tudo
+- `DECUPAGEM.md`: one line per cut: timeline position, file, day, how much of the raw was used,
+  type (speech/medium/b-roll) and framing
+- `CAPITULOS.txt`: chapters per day, ready for a YouTube description (the first one **must** be
+  `00:00:00`, or YouTube rejects them)
+- `_build/contato/folha-*.jpg`: grid of numbered thumbs. **Open at least one before declaring
+  ready.** It is the only way to see the content without watching it all
 
-## Antes de dizer que está pronto
+## Before saying it is ready
 
 ```bash
 ffprobe -v error -show_entries format=duration,size -of default=nw=1 _out/vlog.mp4
 ffmpeg -hide_banner -nostats -i _out/vlog.mp4 -af ebur128 -f null - 2>&1 | tail -12
 ```
 
-Checar: duração fecha com a soma do EDL; `I:` dentro de ±1 do alvo; `LRA:` entre 5
-e 12 (abaixo de 3 = comprimido demais). Então abra a folha de contato e olhe a
-**abertura** — o vlog abre com clipe forte ou com vertical borrado?
+Check: duration matches the EDL sum; `I:` within ±1 of target; `LRA:` between 5 and 12 (below 3 =
+over-compressed). Then open the contact sheet and look at the **opening**: does the vlog open on
+a strong clip or on a blurred vertical?
 
-## Montagem narrada (ensaio, nao log)
+## Narrated edit (essay, not log)
 
-Quando o material tem fala com conteudo, a ordem nao vem da data — vem do
-argumento. O caminho:
+When the material has speech with content, the order does not come from the date, it comes from
+the argument. The path (run from the project folder, or set `PROJ`):
 
 ```bash
-bash scripts/transcreve.sh       # 151 frases com timecode
-bash scripts/frames.sh           # ponto de entrada de cada clipe
-# recorte os blocos de fala (ver _build/falas4 e falasv no projeto de exemplo)
-python scripts/planeja.py        # gera o EDL por argumento
+bash scripts/transcreve.sh       # sentences with timecode
+bash scripts/frames.sh           # entry point of each clip
+# cut the speech blocks into _build/falas4 (audio) and _build/falasv (video+audio)
+python scripts/planeja.py        # builds the EDL by argument
 bash scripts/build.sh
 ```
 
-**EDL de narracao** — 5 colunas, video de um arquivo e voz de outro:
+**Narration EDL**: 5 columns, video from one file and voice from another:
 
 ```
-broll.MOV   in   out   narracao.m4a   in_da_voz
+broll.MOV   in   out   narration.m4a   voice_in
 ```
 
-**Momento de rosto** — 3 colunas apontando pro proprio clipe da fala em
-`falasv/`, que tem video e audio cortados juntos. Sincronia garantida, narracao
-sem emenda.
+**Face moment**: 3 columns pointing to the speech clip itself in `falasv/`, which has video and
+audio cut together. Guaranteed sync, seamless narration.
 
-Regras medidas em campo, em [armadilhas.md](references/armadilhas.md):
-- respiro de ambiente **so** entre blocos de fonte diferente
-- pool global sem repeticao (senao o video gira nos mesmos 6 clipes)
-- bloco de fala longo e continuo: 40-56s sem interrupcao e o que soa natural
+Field-measured rules (detail in [pitfalls.md](references/pitfalls.md)):
+- ambience breath **only** between blocks from different sources
+- global pool with no repetition (otherwise the video spins on the same 6 clips)
+- long continuous speech block: 40-56 s without interruption is what sounds natural
 
-## Vídeo-aula / curso (screencast, fala corrida)
+## Video lesson / course (screencast, running speech)
 
-Forma diferente de vlog: geralmente **um arquivo só** (ou poucos, de uma sessão
-de gravação), vídeo e áudio **sempre da mesma fonte** (sem b-roll separado de
-narração), e o problema não é achar o take certo — é que a gravação tem minutos
-de silêncio morto (tela sendo observada, ninguém falando) entre frases boas, e
-às vezes um evento pontual ruim no áudio (grito ao fundo, batida no microfone).
+A different shape from a vlog: usually **one file** (or a few from one recording session), video
+and audio **always from the same source** (no separate b-roll for narration), and the problem is
+not finding the right take: the recording has minutes of dead silence (screen being watched,
+nobody talking) between good sentences, and sometimes one bad audio event (background scream, mic
+bump).
 
-Fluxo (não usa `roteiro.sh`/`frames.sh`/`planeja.py` — aqueles são pra separar
-narração de b-roll; aqui video e áudio nunca se separam):
+Flow (does not use `roteiro.sh`/`frames.sh`/`planeja.py`, which separate narration from b-roll;
+here video and audio never separate):
 
 ```
-1. transcreve.sh              frase com timecode de cada arquivo bruto
-2. leia a transcrição          decida quais frases ENTRAM, na ordem
-3. monte o EDL na mão          arquivo\tin\tout, um por frase (não por take)
-4. scan de anomalia de áudio    ver references/aula-curso.md — pico e queda
-5. build.sh                    mesmo motor de trim+concat+loudnorm do vlog
-6. confira o corte              ouça as emendas, principalmente onde um evento
-                                foi removido
+1. transcreve.sh              sentences with timecode for each raw file
+2. read the transcript        decide which sentences GO IN, in order
+3. write the EDL by hand      file\tin\tout, one per sentence (not per take)
+4. audio anomaly scan         see references/course-lessons.md: peak and drop
+5. build.sh                   same trim+concat+loudnorm engine as the vlog
+6. check the cut              listen to the splices, especially where an event was removed
 ```
 
-Regra dura: **nunca corte no meio de uma palavra ou de um raciocínio em
-andamento.** Aperte o silêncio até quase zero, mas só na fronteira real entre
-frases/orações — ver [references/aula-curso.md](references/aula-curso.md) pra
-como achar essa fronteira nos timestamps do whisper sem adivinhar.
+Hard rule: **never cut in the middle of a word or of a line of reasoning in progress.** Tighten
+silence to almost zero, but only at the real boundary between sentences/clauses. See
+[references/course-lessons.md](references/course-lessons.md) for finding that boundary in
+whisper's timestamps without guessing.
 
-**O fim da aula é o lugar onde isso mais quebra.** O corte final cai num
-"recapitulando…" e a avaliação que fecha o raciocínio ("levou 7 minutos, teve
-um erro, nota 8") fica de fora, quase sempre porque logo antes dela tem uma
-tentativa que travou ("em aproximadamente 450 segundos" + silêncio). Tire a
-tentativa e mantenha a retomada; nunca jogue a avaliação junto. Antes de
-fechar a decupagem, rode a porta do fecho (no curso IA para Designers:
-`edicao/fecho.py`). Ela marca toda aula cuja próxima palavra no bruto vem em
-menos de 3 s, e mostra o que ficou e o que vem depois, com as pausas marcadas.
-Quem decide é quem LÊ: o som não sabe onde o raciocínio fecha, e o whisper
-quase não põe ponto final. O fim aceito vai pro `fecho.tsv`, com a frase que
-fecha. Não é corte no meio quando o que vem depois já é a próxima aula, quando
-tem "corta" dito na gravação, ou quando o assunto vira ("agora o próximo
-teste…").
+**The end of the lesson is where this breaks most.** The final cut lands on a "to recap…" and the
+evaluation that closes the reasoning ("took 7 minutes, had one error, grade 8") gets left out,
+almost always because right before it there is a stalled attempt ("in roughly 450 seconds" +
+silence). Remove the attempt and keep the resumption; never drop the evaluation with it. Before
+closing the breakdown, check every lesson whose next word in the raw comes within 3 s of the cut,
+looking at what stayed and what comes next, with pauses marked. The reader decides: sound does not
+know where reasoning closes, and whisper barely uses full stops. Record the accepted ending with
+the sentence that closes it. It is not a mid-thought cut when what comes next is already the next
+lesson, when "cut" was said in the recording, or when the subject turns ("now the next test…").
 
-Evento de áudio indesejado (grito, batida, pico): **corte literal por padrão**,
-não abaixe o volume. Duck é gambiarra frágil aqui — o compressor e o loudnorm
-que rodam depois tendem a levantar de novo o que foi abaixado, e o resultado
-"parece que funcionou" só até alguém ouvir com atenção. Só considere duck se
-cortar o tempo destruir uma frase que precisa continuar inteira, e mesmo assim
-avise que é solução de exceção. Detalhe completo, com o porquê medido, em
-[references/aula-curso.md](references/aula-curso.md).
+Unwanted audio event (scream, bump, peak): **literal cut by default**, do not lower the volume.
+Ducking is fragile here: the compressor and loudnorm that run afterwards tend to raise what was
+lowered, and the result "seems to work" until someone listens closely. Only consider a duck if
+cutting the time would destroy a sentence that must stay whole, and even then say it is an
+exception. Full detail, with the measured why, in
+[references/course-lessons.md](references/course-lessons.md).
 
-## Quando o material tem muita fala
+## When the material is speech-heavy
 
-`roteiro.sh` escolhe takes; ele não limpa o miolo de um take. Para isso existe
-`auto-editor`, já instalado e testado: corta o silêncio dentro do take. Rode
-**antes** do ingest, numa pasta separada. Ver [ferramentas.md](references/ferramentas.md).
+`roteiro.sh` picks takes; it does not clean the middle of a take. That is what `auto-editor` is
+for: it cuts silence inside the take. Run it **before** ingest, into a separate folder. See
+[tools.md](references/tools.md).
 
-## Leia quando precisar
+## Media on a cloud drive
 
-- **[references/armadilhas.md](references/armadilhas.md)** — as falhas silenciosas
-  deste pipeline, com causa raiz. **Leia antes de mexer em qualquer script**, e
-  leia antes de diagnosticar bug por semelhança de sintoma: tem um caso aqui de
-  diagnóstico errado que custou um rebuild de uma hora.
-- **[references/audio.md](references/audio.md)** — alvos de loudness, um passo vs
-  dois passos, desclique, trilha. Leia ao mexer em áudio ou ao receber "o som tá
-  estranho".
-- **[references/ferramentas.md](references/ferramentas.md)** — o que já existe
-  pronto (auto-editor, whisper, ffmpeg-normalize, exiftool), o que está instalado
-  e o que não trazer. Leia antes de escrever qualquer coisa nova.
-- **[references/aula-curso.md](references/aula-curso.md)** — decupagem por frase
-  de screencast/vídeo-aula: achar fronteira de corte segura nos timestamps do
-  whisper, achar evento de áudio ruim (grito, batida) sem confundir com ênfase
-  de fala, e por que corte literal bate duck. Leia antes de editar aula/curso.
+On a Google Drive for desktop mount the file is virtual until read, and every read forces a
+download. Ingesting ~170 files takes minutes; encoding 2.5 GB takes an hour.
 
-## Mídia no Google Drive
+**Run in background and tell the user the cost first**, not after. Never call `tudo.sh` in
+foreground thinking it is fast.
 
-Em `H:\Meu Drive\...` o arquivo é virtual até ser lido, e cada leitura força
-download. Ingest de ~170 arquivos leva minutos; encodar 2,5 GB leva uma hora.
+## Read when needed
 
-**Rode em background e diga o custo ao usuário antes**, não depois. Nunca chame
-`tudo.sh` em foreground achando que é rápido.
+- **[references/pitfalls.md](references/pitfalls.md)**: the silent failures of this pipeline,
+  with root cause. **Read before touching any script**, and before diagnosing a bug by symptom
+  similarity: one case there is a wrong diagnosis that cost a one-hour rebuild.
+- **[references/audio.md](references/audio.md)**: loudness targets, one vs two passes, de-click,
+  music bed, desk mic. Read when touching audio or on "the sound is weird".
+- **[references/tools.md](references/tools.md)**: what already exists (auto-editor,
+  faster-whisper, ffmpeg-normalize, exiftool) and what not to bring in. Read before writing
+  anything new.
+- **[references/course-lessons.md](references/course-lessons.md)**: sentence-level breakdown of
+  screencasts/lessons: safe cut boundaries in whisper timestamps, finding a bad audio event
+  without confusing it with speech emphasis, and why a literal cut beats a duck.
+- **[references/cases.md](references/cases.md)**: the jobs these rules came from.

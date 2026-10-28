@@ -16,6 +16,7 @@ Visant-specific and what RCD does not carry.
 - [The optimal-play test](#the-optimal-play-test)
 - [Client sites: brand fidelity over taste](#client-sites-brand-fidelity-over-taste)
 - [Onboarding: order encodes the thesis](#onboarding-order-encodes-the-thesis)
+- [The micro-label tax (eyebrows and letterspaced mono)](#the-micro-label-tax-eyebrows-and-letterspaced-mono)
 - [Where work-surface rules still apply](#where-work-surface-rules-still-apply)
 
 ## The four-layer alignment test
@@ -94,7 +95,7 @@ skips the unit of value is a path that cannot activate.
 
 ## The micro-label tax (eyebrows and letterspaced mono)
 
-Verified on the visantismo e-book landing, 2026-07. Two habits that read as
+Verified on a real e-book landing page. Two habits that read as
 craft and are actually costing legibility on the exact elements that sell.
 
 **A tracked-caps eyebrow sitting above an oversized hero headline is the default

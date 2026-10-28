@@ -41,7 +41,12 @@ def fps_de(d: dict) -> float:
 def url_premiere(arq: str) -> str:
     # file:///Z:/ o Premiere le como \\\Z:\ -> midia offline e janela modal que
     # trava o MCP. Este e o formato que ele mesmo exporta:
-    return "file://localhost/" + urllib.parse.quote(arq.replace("\\", "/"), safe="/")
+    #   Windows  Z:/x/a.mov     -> file://localhost/Z%3A/x/a.mov
+    #   macOS    /Users/x/a.mov -> file://localhost/Users/x/a.mov (sem barra dupla)
+    p = arq.replace("\\", "/")
+    if p.startswith("/") and not p.startswith("//"):
+        p = p[1:]
+    return "file://localhost/" + urllib.parse.quote(p, safe="/")
 
 
 def quadros_do_arquivo(arq: str, fps: float) -> int:

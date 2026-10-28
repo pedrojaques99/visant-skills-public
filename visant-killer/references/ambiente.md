@@ -1,64 +1,65 @@
-# Ambiente — como saber que a tela está pronta antes de medir
+# Environment: how to know the screen is ready before you measure
 
-Existe porque metade dos achados iniciais de uma sessão real não eram da tela,
-eram do ambiente: dev server compilando 115s, hidratação parcial lida como bug,
-CDP cortando em 45s. Medir antes da hora produz achado que some sozinho, e a
-rodada inteira vai atrás de fantasma.
+This exists because, in a real session, half of the first findings weren't from
+the screen. They were from the environment: a dev server compiling for 115s,
+partial hydration read as a bug, CDP cutting off at 45s. Measuring too early
+produces findings that vanish on their own, and the whole round chases ghosts.
 
-A regra: **nenhuma medida vale antes destes quatro sinais.** Se você mediu antes,
-o número não é da tela — é do compilador.
+The rule: **no measurement counts before these four signals.** If you measured
+before, the number isn't from the screen, it's from the compiler.
 
-## 1. A rota compilou (o erro nº1)
+## 1. The route compiled (error #1)
 
-O dev server do Next compila **sob demanda, na primeira visita**. A primeira
-carga de uma rota pesada leva de 30s a 2min. Nesse intervalo você mede:
+The Next dev server compiles **on demand, on the first visit**. The first load
+of a heavy route takes 30s to 2min. In that window you're measuring:
 
-- `scrollWidth` de um DOM que ainda é o esqueleto do layout
-- LCP e INP de uma página que está esperando o bundler, não a rede
-- "elemento sumiu" de um componente que ainda não foi entregue
+- `scrollWidth` of a DOM that's still the layout skeleton
+- LCP and INP of a page waiting on the bundler, not the network
+- "element disappeared" on a component that hasn't been delivered yet
 
-**Aqueça antes de medir.** Visite a rota, espere terminar, e só então recarregue
-para medir. A segunda carga é a que representa a experiência real.
+**Warm up before measuring.** Visit the route, wait for it to finish, and only
+then reload to measure. The second load is the one that represents the real
+experience.
 
 ```bash
-# aquece as rotas do alvo antes de qualquer medição
+# warm up the target routes before any measurement
 for r in / /painel /painel/fiscal; do curl -s -o /dev/null -w "%{http_code} %{time_total}s $r\n" "http://localhost:3000$r"; done
 ```
 
-Se o `time_total` da segunda passada não cair pra menos de 1s, não é a tela: é
-build ou uma chamada de rede lenta no server component.
+If `time_total` on the second pass doesn't drop below 1s, it's not the screen:
+it's the build or a slow network call in the server component.
 
-Melhor ainda para auditoria de aparência e de estouro: **meça no build de
-produção**, não no dev. `next build && next start`. O dev injeta HMR, source maps
-e overlay, e nada disso existe pro usuário.
+Even better for appearance and overflow audits: **measure on the production
+build**, not dev. `next build && next start`. Dev injects HMR, source maps and
+the overlay, and none of that exists for the user.
 
-> Nunca rode `next build` com o dev server de pé — os dois escrevem no `.next` e
-> o resultado é um erro que parece bug de código.
+> Never run `next build` with the dev server up: both write to `.next` and the
+> result is an error that looks like a code bug.
 
-## 2. A página hidratou
+## 2. The page hydrated
 
-Antes de hidratar, o HTML está na tela mas nada responde: clique não faz nada,
-`useState` ainda está no valor inicial do servidor, `AnimatePresence` não montou.
-Uma tela nesse estado parece **quebrada** e não está.
+Before hydration, the HTML is on screen but nothing responds: clicks do nothing,
+`useState` is still at the server's initial value, `AnimatePresence` hasn't
+mounted. A screen in that state looks **broken** and isn't.
 
-Sinal confiável, do próprio React, no console da página:
+Reliable signal, from React itself, in the page console:
 
 ```js
-// true quando o React já assumiu o DOM
+// true once React has taken over the DOM
 !!document.querySelector('#__next, #root, body > div')
   ?.[Object.keys(document.querySelector('#__next, #root, body > div') ?? {})
     .find(k => k.startsWith('__reactContainer') || k.startsWith('__reactFiber'))]
 ```
 
-Mais simples e suficiente na prática — plante uma marca no app e espere por ela:
+Simpler and good enough in practice: plant a marker in the app and wait for it.
 
 ```js
-// no layout raiz, dentro de um useEffect
+// in the root layout, inside a useEffect
 useEffect(() => { document.documentElement.dataset.hydrated = "1" }, []);
 ```
 
 ```js
-// no medidor
+// in the measurer
 await new Promise(r => {
   if (document.documentElement.dataset.hydrated) return r();
   new MutationObserver((_, o) => {
@@ -67,117 +68,119 @@ await new Promise(r => {
 });
 ```
 
-Sem uma marca dessas, os substitutos honestos, em ordem de confiabilidade:
+Without a marker like that, the honest substitutes, in order of reliability:
 
-1. um elemento que **só existe depois do efeito** (um `data-state` de Radix, um
-   contador que começa vazio) aparecer no DOM
-2. `document.readyState === "complete"` **mais** dois `requestAnimationFrame`
-3. `networkidle` do Playwright/Puppeteer — só como piso, não como prova
+1. an element that **only exists after the effect** (a Radix `data-state`, a
+   counter that starts empty) shows up in the DOM
+2. `document.readyState === "complete"` **plus** two `requestAnimationFrame`
+3. Playwright/Puppeteer `networkidle`: only as a floor, not as proof
 
-`document.readyState` sozinho **não** significa hidratado. Ele fecha quando os
-recursos carregaram, e a hidratação acontece depois.
+`document.readyState` alone does **not** mean hydrated. It closes when the
+resources have loaded, and hydration happens after that.
 
-## 3. O dado é real, e é o pior dado
+## 3. The data is real, and it's the worst data
 
-Tela vazia esconde todo estouro horizontal, todo texto que quebra, toda coluna
-que não cabe. Meça sempre com:
+An empty screen hides every horizontal overflow, every text that wraps, every
+column that doesn't fit. Always measure with:
 
-- o **melhor** registro (nome curto, poucos itens)
-- o **pior** registro (nome longo, muitos itens, valor de 7 dígitos, e-mail sem
-  espaço, que é o que estoura layout)
+- the **best** record (short name, few items)
+- the **worst** record (long name, many items, a 7-digit value, an email with no
+  spaces, which is what breaks layouts)
 
-E uma vez com o **backend parado**. O zero silencioso é a mentira dominante da
-casa: um fetch que falha e pinta "0" é indistinguível de um zero verdadeiro, e
-essa tela passa por todos os detectores.
+And once with the **backend stopped**. The silent zero is the dominant lie: a
+fetch that fails and paints "0" is indistinguishable from a true zero, and that
+screen passes every detector.
 
-## 4. A ferramenta de medição não cortou
+## 4. The measuring tool didn't cut off
 
-CDP (Chrome DevTools Protocol) e drivers headless têm timeout padrão curto —
-30s a 45s é comum. Numa rota que compila em 115s, o driver **desiste antes** e
-devolve um DOM parcial, sem erro nenhum. O resultado é um achado inventado.
+CDP (Chrome DevTools Protocol) and headless drivers have short default timeouts,
+30s to 45s is common. On a route that compiles in 115s, the driver **gives up
+first** and returns a partial DOM, with no error at all. The result is an
+invented finding.
 
-- suba os timeouts pro dobro do pior tempo de compilação observado
-- **sempre** compare a contagem de nós: `document.querySelectorAll('*').length`
-  na medição contra a mesma contagem com a página aberta à mão. Divergência
-  grande significa que você mediu meia página.
-- se a medição devolver 0 achado E 0 nó de conteúdo, trate como **falha da
-  medição**, nunca como tela limpa
+- raise the timeouts to twice the worst compile time you've seen
+- **always** compare the node count: `document.querySelectorAll('*').length`
+  in the measurement against the same count with the page opened by hand. A big
+  gap means you measured half a page.
+- if the measurement returns 0 findings AND 0 content nodes, treat it as a
+  **measurement failure**, never as a clean screen
 
-## Falso positivo clássico de medição
+## Classic measurement false positive
 
-Já aconteceu e vai acontecer de novo: um blob decorativo com `overflow-hidden`
-no pai foi lido como 64px de estouro a 390px. O elemento realmente é mais largo
-que a viewport — e é recortado, então não estoura nada.
+It has happened and will happen again: a decorative blob with `overflow-hidden`
+on the parent was read as 64px of overflow at 390px. The element really is wider
+than the viewport, and it's clipped, so it doesn't overflow anything.
 
-Meça o estouro no **documento**, não no elemento:
+Measure overflow on the **document**, not the element:
 
 ```js
 document.documentElement.scrollWidth - document.documentElement.clientWidth
 ```
 
-Se der 0, não há estouro, por mais largo que algum filho pareça. Para achar o
-culpado quando dá > 0, ande no DOM comparando `getBoundingClientRect().right`
-contra `innerWidth` **e** confira se algum ancestral tem `overflow` diferente de
-`visible` antes de acusar.
+If it's 0, there's no overflow, however wide some child looks. To find the
+culprit when it's > 0, walk the DOM comparing `getBoundingClientRect().right`
+against `innerWidth` **and** check whether any ancestor has `overflow` other than
+`visible` before accusing.
 
-## Quando a janela MENTE que redimensionou (390px sem device emulation)
+## When the window LIES that it resized (390px without device emulation)
 
-Verificado em 2026-08-12, no visant-board: `resize_window` do harness de browser
-devolveu **"Successfully resized to 420x900"** e o `innerWidth` da página
-continuou em **1920**. Sem `innerWidth`, nenhuma media query do Tailwind muda —
-a medida sai do layout desktop com nome de mobile, que é pior que não medir.
+Verified in a real session: the browser harness `resize_window` returned
+**"Successfully resized to 420x900"** and the page's `innerWidth` stayed at
+**1920**. Without `innerWidth`, no Tailwind media query changes: the measurement
+comes from the desktop layout with a mobile label, which is worse than not
+measuring.
 
-**Sempre confirme o redimensionamento pelo lado da PÁGINA**, nunca pela resposta
-da ferramenta:
+**Always confirm the resize from the PAGE side**, never from the tool's response:
 
 ```js
-innerWidth // é este número que as media queries leem, não o da janela
+innerWidth // this is the number media queries read, not the window's
 ```
 
-Se ele não mudou, o caminho é o iframe — media query responde à largura do
-**iframe**, não à da janela:
+If it didn't change, the way out is an iframe: media queries respond to the
+**iframe's** width, not the window's.
 
 ```js
 const f = document.createElement('iframe');
 f.style.cssText = 'position:fixed;left:0;top:0;width:390px;height:844px;z-index:2147483647';
-f.src = 'about:blank';                       // about:blank herda a origem
+f.src = 'about:blank';                       // about:blank inherits the origin
 document.body.appendChild(f);
-// X-Frame-Options: DENY (comum em app sério) impede apontar o src pra rota.
-// Buscar o HTML e ESCREVER dentro do frame contorna sem afrouxar o header:
+// X-Frame-Options: DENY (common in serious apps) blocks pointing src at the route.
+// Fetching the HTML and WRITING it into the frame works around it without loosening the header:
 const html = await fetch('/rota', { credentials: 'include' }).then(r => r.text());
 const d = f.contentDocument; d.open();
 d.write(html.replace(/<head([^>]*)>/i, `<head$1><base href="${location.origin}/">`));
-d.close();                                    // <base> pro Next achar os chunks
+d.close();                                    // <base> so Next can find the chunks
 ```
 
-Três armadilhas, todas já pagas:
+Three traps, all already paid for:
 
-- **`f.src = '/rota'` falha com `SecurityError`** quando o app manda
-  `X-Frame-Options: DENY`: o frame vira página de erro, que é outra origem, e
-  ler `contentWindow.innerWidth` estoura. O sintoma engana — parece bug de
-  cross-origin num mesmo host.
-- **Sem `<base href>`**, o Next não resolve os chunks e o frame fica no HTML
-  cru: você mede o servidor, não o app.
-- **Confirme a hidratação DENTRO do frame** (`body.innerText.length`, contagem
-  de linhas, um texto que só existe depois do dado) antes de acreditar no
-  número. Esqueleto não estoura: um `overflowPx: 0` com 260 caracteres de texto
-  é medição de placeholder.
+- **`f.src = '/rota'` fails with `SecurityError`** when the app sends
+  `X-Frame-Options: DENY`: the frame becomes an error page, which is another
+  origin, and reading `contentWindow.innerWidth` throws. The symptom misleads:
+  it looks like a cross-origin bug on the same host.
+- **Without `<base href>`**, Next can't resolve the chunks and the frame stays on
+  raw HTML: you're measuring the server, not the app.
+- **Confirm hydration INSIDE the frame** (`body.innerText.length`, row count, a
+  text that only exists after the data) before believing the number. A skeleton
+  doesn't overflow: an `overflowPx: 0` with 260 characters of text is a
+  placeholder measurement.
 
-Em repo Visant, isto já existe pronto: `scripts/audit-mobile-overflow.js`
-(`auditRoute('/rota')`, `auditDialogs()`, `auditScrollers()`). Procure o script
-antes de escrever o seu — ele já reduz o culpado ao elemento **mais externo** e
-descarta o que está clipado por ancestral.
+Some repos already ship this ready-made (for example a
+`scripts/audit-mobile-overflow.js` with `auditRoute('/rota')`, `auditDialogs()`,
+`auditScrollers()`). Look for the script before writing your own: a good one
+already narrows the culprit to the **outermost** element and discards what an
+ancestor clips.
 
-## Checklist, para colar no relatório
+## Checklist, to paste into the report
 
 ```
-[ ] rota aquecida (segunda carga < 1s) ou medida em `next start`
-[ ] hidratação confirmada (marca no DOM, não readyState)
-[ ] largura confirmada por `innerWidth` da PÁGINA, não pela resposta do resize
-[ ] dado real: melhor registro, pior registro, e backend parado
-[ ] contagem de nós bate com a página aberta à mão
-[ ] estouro medido no documento, com overflow do ancestral verificado
+[ ] route warmed up (second load < 1s) or measured on `next start`
+[ ] hydration confirmed (marker in the DOM, not readyState)
+[ ] width confirmed by the PAGE's `innerWidth`, not the resize response
+[ ] real data: best record, worst record, and backend stopped
+[ ] node count matches the page opened by hand
+[ ] overflow measured on the document, with ancestor overflow checked
 ```
 
-Achado levantado sem essas cinco linhas fechadas entra no relatório como
-**suspeita**, não como defeito.
+A finding raised without those lines checked goes into the report as a
+**suspicion**, not a defect.

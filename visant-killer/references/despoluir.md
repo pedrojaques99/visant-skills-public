@@ -1,161 +1,165 @@
-# Despoluir uma tela — o padrão, aplicável em qualquer repo
+# Declutter a screen: the pattern, usable in any repo
 
-Esta é a metade do `visant-killer` que não depende de nada da Visant: nem dos
-tokens, nem do `copy-lint`, nem do design system. Serve para repo de cliente,
-repo em inglês, repo que você acabou de clonar.
+This is the half of `visant-killer` that depends on nothing from Visant: not the
+tokens, not `copy-lint`, not the design system. It works on a client repo, an
+English repo, a repo you just cloned.
 
-O defeito que ela ataca está catalogado como entrada 20 do
-[slop-catalog.md](slop-catalog.md), "a página que se explica". Resumo: **a tela
-funciona, passa em todos os linters, e ainda assim é ilegível de tanto texto de
-apoio.** Cada linha de cromo, sozinha, é defensável; o dano é o somatório, e
-nenhum linter soma.
+The defect it attacks is cataloged as entry 20 of
+[slop-catalog.md](slop-catalog.md), "the page that explains itself". Summary:
+**the screen works, passes every linter, and is still unreadable from so much
+helper text.** Each line of chrome, on its own, is defensible; the damage is the
+sum, and no linter sums.
 
-## Quando usar
+## When to use
 
-Quando a frase que você ouviu for alguma destas:
+When the sentence you heard is one of these:
 
 > "tá cheio de texto", "poluído", "muita label", "carregado", "não tá nível
 > Apple", "parece dashboard genérico", "tá com cara de template"
+> ("too much text", "cluttered", "too many labels", "looks like a template")
 
-Se a frase for sobre bug, lentidão ou layout quebrado, o alvo é outro: volte
-para o `SKILL.md`.
+If the sentence is about a bug, slowness or a broken layout, the target is
+something else: go back to `SKILL.md`.
 
-## Passo 1 — Medir antes de opinar
+## Step 1: Measure before you opine
 
 ```bash
-node ~/.claude/skills/visant-killer/scripts/ruido-scan.mjs <alvo>
+node ~/.claude/skills/visant-killer/scripts/ruido-scan.mjs <target>
 ```
 
-Roda em qualquer repo com `.tsx`/`.jsx`. Bilíngue (português e inglês). Não
-precisa de instalação, config, nem de o repo ter linter nenhum.
+Runs on any repo with `.tsx`/`.jsx`. Bilingual (Portuguese and English). Needs
+no install, no config, and no linter in the repo.
 
-Nove regras, todas com o mesmo formato de saída (`arquivo:linha`):
+Nine rules, all with the same output format (`file:line`):
 
-| regra | o que acusa | piso |
+| rule | what it flags | floor |
 |---|---|---|
-| `rotulo-gritado` | `uppercase` + `tracking-*` + corpo micro, três ou mais na mesma tela | 3 |
-| `ensina-a-usar` | imperativo colado ao mecanismo: "clique **para**", "arraste **o**", "click **to**", "hover over" | 1 |
-| `legenda-do-que-vem` | frase que narra o conteúdo logo abaixo: "as peças **abaixo**", "the panels **below**" | 1 |
-| `verbo-por-item` | palavra de ação constante repetida uma vez por item de lista ("add", "copiar", "open") | 1 |
-| `mesma-info-dois-tamanhos` | duas frases da mesma tela com 50%+ de palavras de conteúdo em comum | 1 |
-| `seta-glifo` | `→` em texto onde devia haver ícone de biblioteca | 1 |
-| `icone-desenhado-a-mao` | SVG 24×24 desenhado à mão, que um import substituiria | 1 |
-| `realce-que-nao-decide` | realce fixo em `true` na fábrica de um item — a lista toda acende | 1 |
-| `porta-repetida` | a mesma porta de dado nomeada em dois arquivos (a única regra ENTRE arquivos) | 1 |
+| `rotulo-gritado` | `uppercase` + `tracking-*` + micro body size, three or more on the same screen | 3 |
+| `ensina-a-usar` | imperative glued to the mechanism: "clique **para**", "arraste **o**", "click **to**", "hover over" | 1 |
+| `legenda-do-que-vem` | a sentence narrating the content right below: "as peças **abaixo**", "the panels **below**" | 1 |
+| `verbo-por-item` | a constant action word repeated once per list item ("add", "copiar", "open") | 1 |
+| `mesma-info-dois-tamanhos` | two sentences on the same screen sharing 50%+ of their content words | 1 |
+| `seta-glifo` | `→` in text where a library icon belongs | 1 |
+| `icone-desenhado-a-mao` | a hand-drawn 24×24 SVG that an import would replace | 1 |
+| `realce-que-nao-decide` | highlight hardcoded to `true` in an item factory: the whole list lights up | 1 |
+| `porta-repetida` | the same data entry point named in two files (the only rule ACROSS files) | 1 |
 
-**Achado é candidato a corte, não conserto automático.** Uma dessas linhas pode
-ser a única que orienta de verdade.
+**A finding is a cut candidate, not an automatic fix.** One of those lines may be
+the only one that actually guides.
 
-As duas últimas não são de texto, e é por isso que elas existem: o caso que as
-gerou (2026-09-11) era uma tela *sem* prosa sobrando — o `ruido-scan` dava zero,
-e o usuário olhou o print e disse "muito slop de IA ainda". O que havia era
-**acúmulo de decisão**: dois formulários iguais na mesma aba, três de três capas
-acesas em ciano, e uma palavra cortada pela metade. Prosa era o sintoma antigo;
-estas duas regras são o mesmo defeito sem texto.
+The last two aren't about text, and that's why they exist: the case that
+produced them was a screen *without* leftover prose. `ruido-scan` returned zero,
+and the user looked at the screenshot and said "still a lot of AI slop". What was
+there was **accumulated decisions**: two identical forms on the same tab, three
+out of three covers lit in cyan, and a word cut in half. Prose was the old
+symptom; these two rules are the same defect without text.
 
-## Passo 2 — A pergunta que resolve todas
+## Step 2: The question that settles all of them
 
-> **Isto sobrevive se eu apagar?**
+> **Does this survive if I delete it?**
 
-Se a resposta for "sim, a pessoa descobre mexendo", apaga. Descobrir que um card
-arrasta custa um gesto; ler que ele arrasta custa uma linha em todo carregamento
-de página, para sempre.
+If the answer is "yes, people find out by using it", delete it. Discovering that
+a card drags costs one gesture; reading that it drags costs a line on every page
+load, forever.
 
-Se a resposta for "não, ninguém descobriria", ela fica — e vira **exceção com
-motivo escrito** (Passo 4).
+If the answer is "no, nobody would find out", it stays, and becomes an
+**exception with a written reason** (Step 4).
 
-## Passo 3 — A contagem que o detector não faz
+## Step 3: The count the detector doesn't do
 
-O script conta padrões. Ele não conta **acúmulo**, que é o defeito de verdade.
-Isso é seu, e leva trinta segundos:
+The script counts patterns. It doesn't count **accumulation**, which is the real
+defect. That's yours, and it takes thirty seconds:
 
-1. Abra a tela.
-2. Conte os blocos de texto **antes do primeiro pixel de conteúdo**. Mais de
-   três, a página está se explicando.
-3. Leia em sequência a chamada, a introdução e o primeiro rótulo. Se as três
-   dizem a mesma coisa em três tamanhos, duas morrem.
-4. **Conte os realces.** Quantas peças estão acesas com a cor de destaque ao
-   mesmo tempo? Mais de uma por região e o destaque não destaca nada — e o fato
-   que importa (o que está NO AR, o passo atual) fica indistinguível do resto.
-5. **Conte as portas do mesmo tipo.** Dois campos que pedem a mesma coisa
-   (duas urls, dois uploads, duas buscas) na mesma tela: ou um sai, ou os nomes
-   passam a dizer a diferença. Se os dois escrevem em lugares diferentes e nada
-   na tela diz isso, é sorteio, não interface.
-6. **Rode o `corta-scan.js`** (console, a 390px). Palavra pela metade e overlay
-   empilhado não se veem correndo o olho — se veem em pixel medido.
+1. Open the screen.
+2. Count the text blocks **before the first pixel of content**. More than three,
+   the page is explaining itself.
+3. Read the headline, the intro and the first label in sequence. If all three
+   say the same thing in three sizes, two of them die.
+4. **Count the highlights.** How many pieces are lit with the accent color at
+   the same time? More than one per region and the accent highlights nothing,
+   and the fact that matters (what is LIVE, the current step) becomes
+   indistinguishable from the rest.
+5. **Count the entry points of the same type.** Two fields asking for the same
+   thing (two urls, two uploads, two searches) on the same screen: either one
+   goes, or the names start stating the difference. If both write to different
+   places and nothing on screen says so, it's a lottery, not an interface.
+6. **Run `corta-scan.js`** (console, at 390px). A half-cut word and a stacked
+   overlay aren't seen by scanning with your eyes, they're seen in measured
+   pixels.
 
-Numa vitrine real esse número era **onze**. Depois do corte, três.
+On a real showcase that number was **eleven**. After the cut, three.
 
-## Passo 4 — Exceção que se justifica
+## Step 4: An exception that justifies itself
 
-Duas exceções são legítimas, e só duas:
+Two exceptions are legitimate, and only two:
 
-1. **Gesto sem afordância nativa** — modificador de teclado (`shift` para ajuste
-   fino), redimensionar a janela, atalho. Não existe pixel que anuncie isso.
-2. **Ordem que carrega significado** — numerar `01 fonte → 05 saída` numa
-   bancada de áudio orienta; numerar `1. 2. 3.` numa lista de features é ordinal
-   decorativo.
+1. **A gesture with no native affordance**: a keyboard modifier (`shift` for fine
+   adjustment), resizing the window, a shortcut. No pixel can announce that.
+2. **Order that carries meaning**: numbering `01 source → 05 output` on an audio
+   bench guides; numbering `1. 2. 3.` on a feature list is a decorative ordinal.
 
-O detector honra a exceção **se o motivo estiver escrito**: um comentário nas
-oito linhas acima do achado, citando a regra pelo nome.
+The detector honors the exception **if the reason is written**: a comment within
+the eight lines above the finding, naming the rule.
 
 ```tsx
 /* EXCEÇÃO ao `ruido-scan/ensina-a-usar`: o `shift` para ajuste fino é invisível
-   por natureza — não existe pixel que anuncie um modificador de teclado. */
+   por natureza, não existe pixel que anuncie um modificador de teclado. */
 <span>arrasta pra cima e pra baixo, shift para fino</span>
 ```
 
-É a única forma de calar o detector, e ela obriga quem cala a dizer por quê.
-`ignore` por valor não existe aqui de propósito: ignore mudo esconde o próximo
-caso.
+It's the only way to silence the detector, and it forces whoever silences it to
+say why. A by-value `ignore` doesn't exist here on purpose: a silent ignore hides
+the next case.
 
-## Passo 5 — Se o detector estiver errado, arrume a REGRA
+## Step 5: If the detector is wrong, fix the RULE
 
-Confirmado em três repos de fora, esta é a parte que mais economiza tempo.
-Sintoma de regra mal escrita: **muito achado, quase nenhum verdadeiro.**
+Confirmed on three outside repos, this is the part that saves the most time.
+Symptom of a badly written rule: **lots of findings, almost none true.**
 
-Casos reais e o que cada um ensinou:
+Real cases and what each one taught:
 
-| falso positivo | causa | conserto |
+| false positive | cause | fix |
 |---|---|---|
-| `React.useState<string \| null>` lido como duas frases | genérico de TS usa os mesmos sinais de uma tag | peneira de "cheiro de código" antes de extrair texto |
-| `tente "animacao", "vintage", "arrastar"` | verbo entre aspas é EXEMPLO | tirar o conteúdo entre aspas antes de casar |
-| "Ao rolar, a barra encosta" | oração subordinada descreve, não manda | tirar `ao/quando/se/when/while` + palavra seguinte |
-| "Supabase Service **Role** Key" | `role` é imperativo de "rolar" em português | verbo só conta colado ao mecanismo (`role a`, `role até`) |
-| "Scale down slightly on **click**" | `click` como substantivo | idem (`click to`, `click here`) |
-| "Choose the model shown on the Overview tab" | rótulo de campo de formulário | verbo solto saiu da regra: rótulo explica campo que não se explica sozinho |
+| `React.useState<string \| null>` read as two sentences | a TS generic uses the same signs as a tag | a "code smell" sieve before extracting text |
+| `tente "animacao", "vintage", "arrastar"` | a verb in quotes is an EXAMPLE | strip quoted content before matching |
+| "Ao rolar, a barra encosta" | a subordinate clause describes, it doesn't command | strip `ao/quando/se/when/while` + the next word |
+| "Supabase Service **Role** Key" | `role` is the imperative of "rolar" (to scroll) in Portuguese | a verb only counts when glued to the mechanism (`role a`, `role até`) |
+| "Scale down slightly on **click**" | `click` as a noun | same (`click to`, `click here`) |
+| "Choose the model shown on the Overview tab" | a form field label | the loose verb left the rule: a label explains a field that doesn't explain itself |
 
-Depois de arrumar a regra, **trave o caso no fixture**:
+After fixing the rule, **lock the case in the fixture**:
 
 ```bash
-# adicione o caso em scripts/fixtures/ruido-casos.tsx com o ESPERADO
+# add the case to scripts/fixtures/ruido-casos.tsx with the EXPECTED result
 node ~/.claude/skills/visant-killer/scripts/ruido-scan.mjs --self-test
 ```
 
-## Passo 6 — Portar para um repo novo
+## Step 6: Porting to a new repo
 
-Nada a instalar. Três coisas para conferir na primeira rodada:
+Nothing to install. Three things to check on the first round:
 
-1. **A pasta certa.** O script ignora `node_modules`, `dist`, `.next`, `.claude`,
-   `worktrees` e afins. Se o repo guarda worktree de agente dentro de si, o
-   mesmo arquivo era contado três vezes — foi assim que 54 achados viraram 13.
-2. **A língua.** As regras falam português e inglês. Outra língua exige
-   acrescentar os verbos de gesto, e só isso: as regras de classe (`rotulo-gritado`)
-   e de sobreposição (`mesma-info`) são agnósticas.
-3. **A convenção de tamanho.** `rotulo-gritado` procura `text-xs`, `text-micro`,
-   `text-rotulo` e `text-[10px|11px]`. Repo com escala tipográfica própria precisa
-   do nome dela na regra, ou a regra não acha nada.
+1. **The right folder.** The script ignores `node_modules`, `dist`, `.next`,
+   `.claude`, `worktrees` and the like. If the repo keeps agent worktrees inside
+   itself, the same file used to be counted three times: that's how 54 findings
+   became 13.
+2. **The language.** The rules speak Portuguese and English. Another language
+   needs the gesture verbs added, and only that: the class rules
+   (`rotulo-gritado`) and the overlap rules (`mesma-info`) are language-agnostic.
+3. **The size convention.** `rotulo-gritado` looks for `text-xs`, `text-micro`,
+   `text-rotulo` and `text-[10px|11px]`. A repo with its own type scale needs
+   that scale's name in the rule, or the rule finds nothing.
 
-## Números de referência
+## Reference numbers
 
-Rodado em quatro repos, depois de a regra ser estreitada:
+Run on four repos, after the rule was narrowed:
 
-| repo | arquivos | candidatos |
+| repo | files | candidates |
 |---|---|---|
-| vitrine @visant/ui (depois do corte) | 80 | **0** |
-| visant-club | 35 | 12 |
-| 7panel_studio | 160 | 13 |
-| agent-dashboard | 84 | 18 |
+| component showcase (after the cut) | 80 | **0** |
+| marketing site | 35 | 12 |
+| studio panel app | 160 | 13 |
+| agent dashboard | 84 | 18 |
 
-Zero no primeiro **não quer dizer tela limpa**: o detector conta cromo, não
-julga se o que sobrou merece o lugar que ocupa. O Passo 3 continua sendo seu.
+Zero on the first **doesn't mean a clean screen**: the detector counts chrome, it
+doesn't judge whether what's left deserves the space it takes. Step 3 is still
+yours.

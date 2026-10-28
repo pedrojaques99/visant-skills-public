@@ -65,7 +65,7 @@ front-loads the "AI slop" findings so the manual render audit can focus on data
 and layout.
 
 ```bash
-npx impeccable detect components/ app/   # no src/ in this repo — point at the real dirs
+npx impeccable detect components/ app/   # point at the target repo's real dirs (not every repo has src/)
 npx impeccable detect app/leads/          # or scope to the surface you touched
 ```
 
@@ -82,10 +82,12 @@ Two rules for using it:
   `<img>` whose `src` is a runtime prop is a false positive the static pass can't
   resolve; a `gradient-text` on a dashboard metric is a real tell worth cutting.
   Confirm before refactoring.
-- **It complements the token audit, it does not replace it.** On this repo
-  `npm run audit:design` (`scripts/audit-design-tokens.js`) owns token/hardcoded-
-  value violations; Impeccable owns the taste-level tells. Run both; they overlap
-  little.
+- **It complements the token audit, it does not replace it.** In the target repo,
+  look for whatever owns token/hardcoded-value violations (a `package.json`
+  script like `audit:design` or `lint:design`; Example: `npm run audit:design`
+  backed by `scripts/audit-design-tokens.js`). Impeccable owns the taste-level
+  tells. Run both; they overlap little. If the repo has no token audit, say so in
+  the report.
 
 To wire it into a repo for real, add `.impeccable/config.json` and a `DESIGN.md`
 (token-aware mode), and silence confirmed false positives structurally with
@@ -171,7 +173,8 @@ frame.contentWindow.history.replaceState({}, '', path); // before hydration
 The session cookie applies, so the app hydrates with **real data** — which is the
 point, since empty states hide every overflow. `<base href>` resolves the chunks;
 `replaceState` runs before hydration so a route keyed on `?tab=` mounts the right
-section. On this repo: `scripts/audit-mobile-overflow.js`.
+section. Before writing this by hand, look in the target repo for an existing
+overflow audit script (Example: `scripts/audit-mobile-overflow.js`).
 
 Modals and sheets are `position: fixed`, so they never enter the document's
 `scrollWidth`. Audit them separately, against **their own** right edge.

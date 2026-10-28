@@ -9,7 +9,7 @@
     "doctor": "node skills-doctor.mjs",
     "link": "node link.mjs",
     "smoke": "node scripts-smoke.mjs",
-    "test": "node skills-doctor.mjs --self-test && node skills-doctor.mjs && node scripts-smoke.mjs && node visant-motion/scripts/codemod-duration.mjs --self-test && node visant-motion/scripts/motion-lint.mjs --self-test && node visant-killer/scripts/dist-scan.mjs --self-test && node visant-killer/scripts/killer-scan.mjs --self-test && node visant-refine/scripts/refine-scan.mjs --self-test && node visant-preflight/scripts/preflight-scan.mjs --self-test"
+    "test": "node skills-doctor.mjs --self-test && node skills-doctor.mjs && node scripts-smoke.mjs && node visant-motion/scripts/codemod-duration.mjs --self-test && node visant-motion/scripts/motion-lint.mjs --self-test && node visant-killer/scripts/dist-scan.mjs --self-test && node visant-killer/scripts/killer-scan.mjs --self-test && node visant-refine/scripts/refine-scan.mjs --self-test && node visant-preflight/scripts/preflight-scan.mjs --self-test && node visant-copy/scripts/copy-lint.mjs --self-test"
   },
   "dependencies": {
     "js-yaml": "^4.1.0"

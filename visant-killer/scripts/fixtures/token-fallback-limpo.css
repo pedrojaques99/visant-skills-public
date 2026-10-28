@@ -1,0 +1,6 @@
+/* Fixture of the killer-scan token fallback (--self-test): clean file, zero findings expected. */
+:root { --brand: #7c3aed; }
+.card {
+  color: hsl(var(--foreground));
+  background: hsl(var(--card) / 0.9);
+}

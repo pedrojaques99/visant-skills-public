@@ -1,144 +1,138 @@
-# Áudio — o defeito nº 1 de vlog
+# Audio: the number one vlog defect
 
-Take inaudível estraga vlog mais rápido que qualquer erro de imagem. Material de
-celular de dias diferentes, lugares diferentes e distâncias diferentes do
-microfone varia de 15 a 20 LU entre takes. Sem normalizar, o espectador mexe no
-volume duas vezes e sai.
+An inaudible take ruins a vlog faster than any image mistake. Phone footage from different days,
+places and mic distances varies 15 to 20 LU between takes. Without normalizing, the viewer
+touches the volume twice and leaves.
 
-## Alvo
+## Target
 
-| Destino | LUFS integrado | True peak |
+| Destination | Integrated LUFS | True peak |
 |---|---|---|
 | YouTube, Instagram, TikTok | **-16** | -1.5 dBTP |
 | Spotify / podcast | -14 | -1.0 dBTP |
 | Broadcast EBU R128 | -23 | -1.0 dBTP |
 
-`build.sh` usa -16 por default (`ALVO_I=-16`). Streaming abaixa o que passa do
-alvo, mas **não levanta** o que fica abaixo — errar pra baixo é perda permanente.
+`build.sh` uses -16 by default (`ALVO_I=-16`). Streaming turns down what is above target but
+**does not raise** what is below: erring low is a permanent loss.
 
-## Um passo x dois passos
+## One pass vs two passes
 
-É a decisão que mais afeta a qualidade, e a errada é o default ingênuo.
+The decision that most affects quality, and the wrong one is the naive default.
 
-**Um passo** (`LOUD=1`) — `loudnorm=I=-16` numa passada. O filtro não sabe o
-futuro, então persegue o alvo **comprimindo** em tempo real.
+**One pass** (`LOUD=1`): `loudnorm=I=-16` in a single pass. The filter does not know the future,
+so it chases the target by **compressing** in real time.
 
-Medido em fixture de dinâmica moderada (o caso `LOUD=2 preserva dinamica` do portão):
+Measured on a moderate-dynamics fixture (the gate case `LOUD=2 preserva dinamica`):
 
 | | I | LRA |
 |---|---|---|
-| fonte | -28.1 | 8.8 |
-| um passo | -16.4 | **8.0** |
-| dois passos | -16.1 | **8.8** |
+| source | -28.1 | 8.8 |
+| one pass | -16.4 | **8.0** |
+| two passes | -16.1 | **8.8** |
 
-Dois passos preserva a faixa dinâmica **exata** da fonte e chega mais perto do
-alvo. Um passo come 0,8 LU e erra o alvo por 0,4.
+Two passes keeps the source's **exact** dynamic range and lands closer to target. One pass eats
+0.8 LU and misses the target by 0.4.
 
-> **Faixa em que isso importa.** Se o LRA medido do material for **maior** que o
-> LRA alvo (11), o ffmpeg desliga o modo linear sozinho e os dois modos dão
-> resultado idêntico. Testado: material com LRA 21,8 sai igual nos dois. Ou seja,
-> a vantagem do dois passos aparece em material de dinâmica normal — que é o
-> caso da maior parte de vlog.
+> **Where this matters.** If the measured LRA of the material is **higher** than the target LRA
+> (11), ffmpeg turns linear mode off by itself and both modes give identical results. Tested:
+> material with LRA 21.8 comes out the same in both. So the two-pass advantage shows on normal
+> dynamics material, which is most vlogs.
 
-**Dois passos** (`LOUD=2`, default) — mede o corte, depois aplica **ganho linear**
-com os valores medidos:
+**Two passes** (`LOUD=2`, default): measures the cut, then applies **linear gain** with the
+measured values:
 
 ```bash
-# passo 1: medir
-ffmpeg -nostdin -v error -i corte.mp4 \
+# pass 1: measure (needs -v info: with -v error the JSON is swallowed, see pitfalls.md#11)
+ffmpeg -nostdin -v info -i cut.mp4 \
   -af loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json -f null - 2>&1 | tail -14
 
-# passo 2: aplicar o que foi medido
-ffmpeg -i corte.mp4 -af \
+# pass 2: apply what was measured
+ffmpeg -i cut.mp4 -af \
   loudnorm=I=-16:TP=-1.5:LRA=11:linear=true:measured_I=-23.4:measured_TP=-5.2:measured_LRA=7.1:measured_thresh=-34.1 \
-  -c:v copy saida.mp4
+  -c:v copy out.mp4
 ```
 
-Custo: uma passada de análise de áudio por corte (rápido; o gargalo é vídeo).
-`build.sh` faz isso por corte dentro do loop, e o cache evita remedir.
+Cost: one audio analysis pass per cut (fast; video is the bottleneck). `build.sh` does it per cut
+inside the loop, and the cache avoids re-measuring.
 
-Quando `LOUD=1` se justifica: preview, rascunho, prazo. Nunca no master.
+When `LOUD=1` is justified: preview, draft, deadline. Never on the master.
 
-## Por corte, não no master
+## Per cut, not on the master
 
-Normalizar só o master acerta a média e deixa o take fraco fraco. Normalizar por
-corte é o que garante que **nenhum** take fica inaudível. É por isso que o
-`loudnorm` está no loop e não só no concat.
+Normalizing only the master gets the average right and leaves the weak take weak. Normalizing per
+cut is what guarantees **no** take is inaudible. That is why `loudnorm` lives in the loop and not
+only at the concat.
 
-O master leva só `alimiter=limit=0.95`, para segurar transiente de emenda.
+The master gets only `alimiter=limit=0.95`, to hold splice transients.
 
-## Desclique
+## De-click
 
-Corte seco em áudio digital estala: a onda é cortada no meio do ciclo. Um `afade`
-de 15 ms em cada ponta resolve, é inaudível como fade e elimina o clique.
+A hard cut in digital audio clicks: the wave is cut mid-cycle. A 15 ms `afade` at each end fixes
+it, is inaudible as a fade and removes the click.
 
 ```
 afade=t=in:st=0:d=0.015,areverse,afade=t=in:st=0:d=0.015,areverse
 ```
 
-O `areverse` duplo é o truque para aplicar fade no **fim** sem saber a duração do
-corte de antemão.
+The double `areverse` is the trick to fade the **end** without knowing the cut length up front.
 
-## Taxa de amostragem uniforme é pré-requisito
+## Uniform sample rate is a prerequisite
 
-O `loudnorm` devolve 192 kHz por dentro; o AAC trava em 96 kHz. Corte com loudnorm
-sai a 96 kHz, corte pelo caminho alternativo sai a 48 kHz, e o concat demuxer
-**exige taxa idêntica**. Misturar corrompe o áudio do master com `exit 0`.
+`loudnorm` runs at 192 kHz inside; AAC caps at 96 kHz. A cut with loudnorm comes out at 96 kHz, a
+cut on the alternate path at 48 kHz, and the concat demuxer **requires identical rates**. Mixing
+corrupts the master's audio with `exit 0`.
 
-Sempre `aresample=48000` **depois** do loudnorm mais `-ar 48000` no encoder.
-Detalhe e comprovação em [armadilhas.md](armadilhas.md#12).
+Always `aresample=48000` **after** loudnorm plus `-ar 48000` on the encoder. Detail and proof in
+[pitfalls.md](pitfalls.md#12).
 
-## Clipe sem faixa de áudio
+## Clip without an audio track
 
-Não pode derrubar o concat nem dessincronizar o resto. `build.sh` mistura um
-`anullsrc` com peso 0 (`amix ... weights='1 0'`), e se o corte não tem áudio
-nenhum o fallback mapeia o silêncio direto. Coberto pelo portão.
+It must not break the concat or desync the rest. `build.sh` mixes in an `anullsrc` at weight 0
+(`amix ... weights='1 0'`), and if the cut has no audio at all the fallback maps the silence
+directly. Covered by the gate.
 
-## Trilha
+## Music bed
 
 ```bash
-MUSIC=trilha.mp3 MUSIC_DB=-18 bash build.sh
+MUSIC=track.mp3 MUSIC_DB=-18 bash build.sh
 ```
 
--18 dB deixa a trilha embaixo da voz. Se o vlog é só ambiente sem fala, -12 aguenta.
-Trilha entra **depois** do loudnorm por corte e antes do limiter, então ela não
-distorce a medição de cada take.
+-18 dB keeps the track under the voice. If the vlog is ambience only, no speech, -12 holds. The
+track goes in **after** per-cut loudnorm and before the limiter, so it does not skew each take's
+measurement.
 
-## Mic de mesa (OBS, vídeo-aula) — denoise forte abafa a voz {#mic-de-mesa}
+<a id="desk-mic"></a>
+## Desk mic (OBS, video lesson): strong denoise muffles the voice
 
-Contraintuitivo: mic de mesa (headset, lapela, USB) pega mais chiado de
-ambiente que o mic de celular do vlog, e a tentação é limpar com um denoiser
-forte. Testado com `afftdn=nr=10:nf=-30` (bem no meio da faixa "normal" da
-documentação do filtro): o resultado soou **pior**, não melhor — voz abafada,
-"debaixo d'água". `nr` alto no `afftdn` (denoiser de FFT) borra a fricativa e
-a plosiva junto com o ruído de fundo, porque consoante tem energia espalhada
-no mesmo espectro que o chiado que o filtro está tentando apagar. O ouvido
-nota isso como perda de clareza antes de notar que o ruído sumiu.
+Counterintuitive: a desk mic (headset, lavalier, USB) picks up more room hiss than a vlog phone
+mic, and the temptation is to clean hard. Tested with `afftdn=nr=10:nf=-30` (right in the middle of
+the filter docs' "normal" range): the result sounded **worse**, voice muffled, "underwater". High
+`nr` in `afftdn` (FFT denoiser) smears fricatives and plosives together with the noise, because
+consonants spread energy over the same spectrum as the hiss. The ear notices the loss of clarity
+before it notices the noise is gone.
 
-Correção:
+Fix:
 
 ```
 highpass=f=80,afftdn=nr=3:nf=-40,equalizer=f=3200:width_type=o:width=1.2:g=4,
 acompressor=threshold=-20dB:ratio=2:attack=8:release=150:makeup=1.4
 ```
 
-- `afftdn nr=3` (ou tire o filtro inteiro) — só o suficiente pra hum/chiado
-  óbvio, nunca o bastante pra tocar a consoante.
-- **Realce de presença** (`equalizer` em ~3–3,5 kHz, +3 a +4 dB, banda
-  estreita) resolve o pedido de "mais claro" que denoise NÃO resolve — é ganho
-  seletivo, não subtração, então não come detalhe.
-- Compressor leve (`ratio=2`, não 3+) — comprimir demais achata o transiente
-  que dá a sensação de clareza, empilhando em cima do abafamento do denoiser.
+- `afftdn nr=3` (or drop the filter): just enough for obvious hum/hiss, never enough to touch
+  consonants.
+- **Presence boost** (`equalizer` at ~3–3.5 kHz, +3 to +4 dB, narrow band) solves the "clearer"
+  request that denoise does NOT: it is selective gain, not subtraction, so it eats no detail.
+- Light compressor (`ratio=2`, not 3+): compressing more flattens the transient that gives the
+  sense of clarity, stacking on top of the denoiser's muffling.
 
-Se o pedido for "ficou mais alto e mais claro" e o resultado atual "abafou",
-o denoiser é o primeiro suspeito, não o loudnorm. Teste tirando o `afftdn`
-inteiro antes de mexer no alvo de LUFS.
+If the request is "louder and clearer" and the current result "got muffled", the denoiser is the
+first suspect, not loudnorm. Test removing `afftdn` entirely before touching the LUFS target.
 
-## Verificar (sempre, não confie no filtro)
+## Verify (always, do not trust the filter)
 
 ```bash
 ffmpeg -hide_banner -nostats -i master.mp4 -af ebur128 -f null - 2>&1 | tail -12
 ```
 
-Ler `I:` (integrado, tem que bater com o alvo ±1) e `LRA:` (faixa dinâmica —
-abaixo de 3 LU indica compressão excessiva; vlog saudável fica entre 5 e 12).
+Read `I:` (integrated, must match target ±1) and `LRA:` (dynamic range: below 3 LU means
+over-compression; a healthy vlog sits between 5 and 12).

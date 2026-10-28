@@ -1,241 +1,253 @@
 ---
 name: visant-copy
-description: 'Escreve e revisa toda copy voltada ao público da Visant na voz falada brasileira da casa, e opera copy:lint / copy:build / copy.json. Use em "copy", "headline", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy", em título e description de SEO, no card social, e em auditoria de travessão e emoji.'
+description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visant''s spoken voice, in any repo (SEO, social card, dash and emoji audits included), and runs copy-lint. Use on "copy", "headline", "landing copy", "remove the AI feel", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy".'
 ---
 
 # Visant Copy
 
-Duas coisas moram aqui: **como a copy Visant soa** e **como ela é operada**. No
-visantismo o SSoT é `copy.json` e o HTML é view gerada, então nunca edite texto
-direto no `.html`. Nos outros repos a copy mora no componente e o cuidado é
-outro, o eco: a mesma frase em quatro arquivos. Em qualquer um dos dois, nunca
-escreva copy Visant sem passar pelas proibições abaixo.
+Two things live here: **how Visant copy sounds** (valid in any repo) and **how it
+is operated**, which depends on where the text lives. The rules below are in
+English; the copy itself, every example and every forbidden pattern is Brazilian
+Portuguese, and stays that way.
 
-## Regra zero: propor, nunca aplicar
+- **The repo uses Visant's pipeline** (`copy*.json` at the root and
+  `copy:build`/`copy:check` scripts in `package.json`): the JSON is the SSoT and
+  the HTML is a generated view, so never edit text directly in the `.html`. See
+  "If the repo uses Visant's pipeline".
+- **Any other repo** (copy inside the component, `.md`, exported CMS): the
+  component is the SSoT, and the risk is echo, the same sentence in four files.
 
-**Só entra no arquivo o conserto de vício que o linter aponta.** Headline, lead
-ou frase que passa limpo fica intocada, mesmo se você achar que soa flat.
+Find out which one before touching text:
 
-Melhoria de estilo vai como **tabela de propostas no relatório** (chave, antes,
-depois), e o usuário escolhe linha por linha. Reescrever o que já estava bom
-queima confiança e faz o usuário ter que revisar o revisor.
+```bash
+ls copy*.json 2>/dev/null; grep -nE '"copy:(lint|build|check)"' package.json
+```
 
-**A exceção é o pedido explícito.** "Essa copy tá confusa, tem que ser na pegada
-X" é ordem de serviço, não convite pra debate: aplica, mostra a tabela
-antes/depois, e deixa **uma ou duas alternativas de UMA linha** no fim, pra troca
-custar um Edit e não uma rodada nova. Devolver só opção quando o usuário já disse
-a direção empurra o trabalho de volta pra ele.
+Either way, never write Visant copy without going through the prohibitions
+below.
 
-## As proibições
+## Rule zero: propose, never apply
 
-Absolutas. Valem em headline, corpo, CTA, FAQ, e-mail, legenda, alt text,
-mensagem de erro, meta description. Sem exceção "porque nesse caso ficou bom".
+**Only the tic fixes the linter points out go into the file.** A headline, lead
+or sentence that passes clean stays untouched, even if you think it sounds flat.
 
-1. **Travessão (— ou –) nunca.** Ponto, vírgula, dois-pontos ou parênteses.
-2. **Bolinha separadora (`·`, o alt+7) nunca.** Nem em lista de metadado, nem em
-   CTA com preço, nem em rótulo de fase, nem no card social. Em lista vira ponto
-   e vírgula ("34 páginas. 9 etapas, 1 case inteiro"), em rótulo vira dois-pontos
-   ("Fase 1: A Estratégia"), em CTA vira preposição ("Quero o e-book por R$ 47").
-3. **"Não é X, é Y" nunca.** Nem partido em duas frases ("Não é uma lista. É uma
-   cascata."). Nem a frase que define pela negativa ("Não é slogan.").
-4. **"É sobre X" nunca.** Não afirma nada. Troque pelo verbo do que a coisa faz.
-5. **"Não é apenas X, é X e Y" nunca.** Nem "mais que apenas", "menos X e mais
+Style improvements go as a **proposal table in the report** (key, before, after),
+and the user picks row by row. Rewriting what was already good burns trust and
+makes the user review the reviewer.
+
+**The exception is an explicit request.** "Essa copy tá confusa, tem que ser na
+pegada X" is a work order, not an invitation to debate: apply it, show the
+before/after table, and leave **one or two ONE-line alternatives** at the end, so
+a swap costs one Edit and not a new round. Returning only options when the user
+already gave the direction pushes the work back to them.
+
+## The prohibitions
+
+Absolute. They apply to headline, body, CTA, FAQ, email, caption, alt text,
+error message, meta description. No "but here it worked" exception.
+
+1. **Dash (— or –) never.** Period, comma, colon or parentheses.
+2. **Separator dot (`·`, alt+7) never.** Not in metadata lists, not in a CTA with
+   a price, not in a phase label, not on the social card. In a list it becomes
+   period and comma ("34 páginas. 9 etapas, 1 case inteiro"), in a label a colon
+   ("Fase 1: A Estratégia"), in a CTA a preposition ("Quero o e-book por R$ 47").
+3. **"Não é X, é Y" never.** Not split in two sentences ("Não é uma lista. É uma
+   cascata."). Not the sentence that defines by negation ("Não é slogan.").
+4. **"É sobre X" never.** It asserts nothing. Swap it for the verb of what the
+   thing does.
+5. **"Não é apenas X, é X e Y" never.** Nor "mais que apenas", "menos X e mais
    Y", "não se trata de".
-6. **Negação pendurada no fim nunca.** "Feito pra ler, não pra arquivar." Apaga
-   o rabo e a frase fica mais forte.
-7. **Emoji nunca. Ponto-e-vírgula nunca.** (`©`, `®`, `™` são marca e ficam.)
-8. **Abertura de guru nunca.** "Imagine que", "E se eu te dissesse", "Prepare-se
-   pra", "Chegou a hora de". Comece pelo fato ou pela cena.
-9. **Urgência clichê nunca.** "Últimas vagas", "corre que acaba", "por tempo
-   limitado". A escassez do Club é contável: diga o número ("este lote tem 30
+6. **Negation dangling at the end never.** "Feito pra ler, não pra arquivar."
+   Delete the tail and the sentence gets stronger.
+7. **Emoji never. Semicolon never.** (`©`, `®`, `™` are trademarks and stay.)
+8. **Guru openings never.** "Imagine que", "E se eu te dissesse", "Prepare-se
+   pra", "Chegou a hora de". Start with the fact or the scene.
+9. **Cliché urgency never.** "Últimas vagas", "corre que acaba", "por tempo
+   limitado". Scarcity must be countable: say the number ("este lote tem 30
    vagas", "a cota sobe a cada compra").
-10. **Selo de credibilidade no máximo uma vez por página.** "real", "de
-    verdade", "na prática", "de fato", "genuíno", "autêntico". Uma passa. Duas
-    o leitor conta e posta print ("trajetória real, projeto real, técnica real,
-    processo real"). Adjetivo não prova; número e cena provam. `Sete anos de
-    projeto real` → `Sete anos entregando marca`.
+10. **Credibility seal at most once per page.** "real", "de verdade", "na
+    prática", "de fato", "genuíno", "autêntico". One passes. With two, the reader
+    counts and posts a screenshot ("trajetória real, projeto real, técnica real,
+    processo real"). An adjective does not prove; numbers and scenes do.
+    `Sete anos de projeto real` → `Sete anos entregando marca`.
 
-**A regra que resolve de 3 a 6: corte a metade negativa.** A frase que sobra é
-quase sempre a certa. Se o contraste é mesmo o argumento, mostre a
-**consequência** em vez de negar: em vez de "não é falta de talento, é falta de
-ordem", escreva "Talento você já tem. O que falta é ordem."
+**The rule that solves 3 to 6: cut the negative half.** The sentence that remains
+is almost always the right one. If the contrast really is the argument, show the
+**consequence** instead of negating: instead of "não é falta de talento, é falta
+de ordem", write "Talento você já tem. O que falta é ordem."
 
-Rodar o linter é obrigatório antes de entregar copy:
+## The linter
+
+Running it before delivering copy is mandatory. Plain node, no dependencies, runs
+in any repo:
 
 ```bash
-npm run copy:lint                                    # dentro do visantismo
-node ~/.claude/skills/visant-copy/scripts/copy-lint.mjs copy.json  # em outro repo
-node ~/.claude/skills/visant-copy/scripts/copy-lint.mjs hero.tsx page.tsx og.tsx
+L=~/.claude/skills/visant-copy/scripts/copy-lint.mjs
+node $L copy.json                       # copy JSON
+node $L hero.tsx page.tsx og.tsx        # components, passed TOGETHER
+node $L README.md docs/landing.md       # markdown or plain text
+npm run copy:lint                       # if the repo uses Visant's pipeline
 ```
 
-Exit 1 com a chave, o trecho e o conserto. Dois avisos saem **fora do exit
-code**, porque copy boa não pode reprovar por detalhe:
+What it accepts, exactly:
 
-- **tamanho por tipo de linha** (headline 60, CTA 28, lead 180, corpo 280, SEO
-  title 60, meta description 160), pra flagrar a headline que quebra em três
-  linhas no mobile;
-- **eco**, quando a mesma frase mora em dois dos arquivos passados na mesma
-  chamada. Por isso **passe os arquivos juntos**, nunca um por vez.
-
-Em arquivo de código, **comentário não é lintado**. É proposital: JSDoc que
-explica decisão de design pro próximo dev não é copy, e apontar vício ali treina
-a pessoa a ignorar o linter. `--include-comments` volta atrás quando você quer
-auditar a prosa interna.
-
-### Orçamento de repetição é por PEÇA, e o arquivo nem sempre é a peça
-
-O `selo-de-credibilidade` tem limite 1, e o limite é de uma página. Rodado no
-`pt-BR.json` do visantlabs-os — **5173 chaves, dezenas de telas independentes** —
-ele acusava 11 ocorrências como se fossem a mesma peça. Regra que grita 11 vezes
-ensina a pessoa a ignorar o linter, que é pior que não ter a regra.
-
-Duas correções, e as duas valem como princípio pra qualquer regra de repetição:
-
-- **em JSON o grupo é o primeiro segmento da chave** (`onboarding.*`,
-  `mockup.*`), o mais perto de "uma peça" que a estrutura oferece. Em componente
-  segue por arquivo, que já É a peça;
-- **moeda não é selo.** Em produto brasileiro "real"/"reais" é dinheiro antes de
-  ser retórica: `R$ 47`, "Real brasileiro", "1200 reais". Unidade que fala de
-  dinheiro sai da conta.
-
-Depois disso o mesmo arquivo devolve três grupos de 2 e 3 ocorrências, cada um
-inspecionável, em vez de um bloco de 11 que ninguém lê. O resíduo é semântico e
-regex não resolve: "produtos reais" e "projeto real" têm a mesma forma e
-significados opostos. Confirme no `arquivo:linha` antes de mexer, sempre.
-
-## A voz
-
-Padrão vindo da landing do e-book (`copy.ebook.json`). Em ordem de importância:
-
-1. **Brasileiro falado, dose média.** "pra", "a gente", "tá". Sem "cê", "mano",
-   "tá ligado". Imperativo curto: "Lê e julga", "Observa uma coisa".
-2. **Frase curta atrás de frase curta.** Média de 12 palavras. **Fragmento sem
-   verbo é recurso**, sempre como golpe depois da frase longa: "…e a marca se
-   comporta de outro jeito três meses depois. Toda vez."
-3. **Cena no lugar de adjetivo.** Nunca "inconsistência de marca". Escreva o que
-   se vê: "Um post fala uma coisa, o atendimento fala outra, o site parece de
-   outra empresa."
-4. **A culpa começa no autor.** Confessa antes de cobrar: "A gente começava pelo
-   logo também. Perdeu semanas assim, até inverter a ordem." Acusar o leitor
-   direto ("você começa pelo logo porque é a parte divertida") só depois da
-   confissão, se depois.
-5. **Número cru, sem arredondar pra impressionar.** `R$450k`, `160+ lives`,
-   `34 páginas`, `7 dias`.
-6. **Admite limite.** "Se algo não funcionou pra gente, tá escrito que não
-   funcionou." É o que mais separa a voz de um texto de IA.
-7. **Humor por deboche do mercado**, seco e sem sinalização: "Sem aula de 40
-   horas ensinando a centralizar retângulo." Alveja a prática, nunca a pessoa.
-8. **Palavrão leve, no máximo um por página**, e só onde o argumento dói:
-   "porcaria", "cagada". Nunca no CTA nem na headline principal.
-9. **Objeção na voz do leitor.** FAQ é o que a pessoa pensa, com as palavras
-   dela: "Já faço branding há anos. Vou ver algo novo?". A resposta abre
-   respondendo ("Serve.", "É."), nunca com "Ótima pergunta".
-
-Detalhe linha a linha, vocabulário, anglicismo, dinheiro, CTA, glossário de
-marca e a tabela antes/depois: `references/voz.md`. Leia antes de escrever peça
-nova ou reescrever seção inteira.
-
-### A dobra nomeia a TAREFA, não o estado
-
-Vale pra H1, para o `<title>` e pro card social, e é o erro mais caro porque
-passa em todo linter.
-
-Copy de estado descreve o mundo do leitor e deixa ele montando sozinho o que
-ganha: "Você tem centenas de mockups parados no disco." Está certa, é dor
-verdadeira, e não pede nada. Copy de tarefa nomeia o verbo que a pessoa foi ali
-fazer: "Ache o mockup certo sem abrir um PSD."
-
-O teste é uma pergunta: **qual verbo o leitor digitaria no Google?** Se a
-headline não tem esse verbo, ela fala do estado. E cuidado com a tarefa errada:
-antes de escrever, confira qual etapa realmente dói. Naquela LP o produto
-vendia o render, mas o tempo do designer ia embora em **achar** o arquivo, então
-o render desceu pro corpo, como consequência de já ter achado.
-
-Quando a dor precisa aparecer (e às vezes precisa), ela vai na **seção seguinte**,
-abrindo o mecanismo. Na dobra você tem 5 segundos e gastar os cinco descrevendo o
-problema é gastar a vez.
-
-## Glossário de marca (SSoT de termos)
-
-| termo | o que é | onde usa |
+| input | how it reads | where it reports |
 |---|---|---|
-| **Visionário®** | plano vitalício, pagamento único | tier, CTA, FAQ, subtítulo de planos |
-| **Visantista** | assinante mensal, e o gentílico da comunidade | plano mensal, comunidade |
-| **Visantismo** | o movimento e a marca da landing | logo, nav, footer |
-| **Visant** | a agência / empresa | corpo de texto, autoria |
-| ~~Fundador~~ | **aposentado.** Era sinônimo solto de Visionário e criava duas marcas pro mesmo plano | não usar |
+| `.json` (any structure, must be valid JSON) | every string value, at any depth | the dotted key (`hero.title`) |
+| code (`.js .jsx .ts .tsx .mjs .cjs .vue .svelte .astro`) | line by line, comments masked | `L<n>` |
+| any other text (`.md`, `.html`, `.txt`) | line by line, no masking | `L<n>` |
 
-`js/ratchet.js` ainda escreve "Fundador nº X" em runtime no hero. Se for mexer
-nele, unifique pra Visionário.
+- **Files only**, one or many. A directory crashes with `EISDIR`: expand it with
+  the shell, `node $L $(git ls-files '*.tsx')`.
+- Invalid JSON crashes the script with the parser error.
+- Three rules run **only on `.json`**: emoji, semicolon and pipe separator (in
+  `.md` the pipe is a table, in code `;` is syntax). In `.md`/`.tsx`, check emoji
+  and semicolons by eye.
+- Flags: `--quiet` (exit code only, for CI) and `--include-comments` (lint code
+  comments too).
+- No arguments prints usage and exits 1. Output is in Portuguese.
 
-## O pipeline (SSoT)
+Exit 1 with the key, the excerpt and the fix. Two warnings come **outside the
+exit code**, because good copy cannot fail on a detail:
 
-**Copy vive no JSON. HTML e Markdown são views geradas.** Editar texto no `.html`
-é sempre erro: o próximo build sobrescreve e o check quebra o deploy.
+- **length per line type** (headline 60, CTA 28, lead 180, body 280, SEO title
+  60, meta description 160), inferred from the key suffix, so `.json` only; it
+  flags the headline that breaks into three lines on mobile;
+- **echo**, when the same sentence lives in two of the files passed in the same
+  call. That is why you **pass the files together**, never one at a time.
+
+In code files **comments are not linted** on purpose: a JSDoc is not copy.
+
+### Repetition budget is per PIECE, and the file is not always the piece
+
+Repetition rules (`selo-de-credibilidade`, limit 1) count per piece, because a
+rule that shouts 11 times across an i18n file teaches people to ignore the
+linter. In JSON the group is the first key segment (`onboarding.*`); in a
+component, the file. "real"/"reais" as money (`R$ 47`) is not a seal. The
+residue is semantic ("produtos reais" vs "projeto real"): confirm at `file:line`
+before touching. The case: [references/cases.md](references/cases.md).
+
+## The voice
+
+Pattern taken from Visant's e-book landing. In order of importance:
+
+1. **Spoken Brazilian, medium dose.** "pra", "a gente", "tá". No "cê", "mano",
+   "tá ligado". Short imperative: "Lê e julga", "Observa uma coisa".
+2. **Short sentence after short sentence.** Average 12 words. **A verbless
+   fragment is a device**, always as a punch after the long sentence: "…e a marca
+   se comporta de outro jeito três meses depois. Toda vez."
+3. **Scene instead of adjective.** Never "inconsistência de marca". Write what is
+   seen: "Um post fala uma coisa, o atendimento fala outra, o site parece de
+   outra empresa."
+4. **Blame starts with the author.** Confess before charging: "A gente começava
+   pelo logo também. Perdeu semanas assim, até inverter a ordem." Accusing the
+   reader directly ("você começa pelo logo porque é a parte divertida") only
+   after the confession, if at all.
+5. **Raw numbers, not rounded to impress.** `R$450k`, `160+ lives`,
+   `34 páginas`, `7 dias`.
+6. **Admit limits.** "Se algo não funcionou pra gente, tá escrito que não
+   funcionou." It is what most separates the voice from AI text.
+7. **Humor by mocking the market**, dry and unsignposted: "Sem aula de 40 horas
+   ensinando a centralizar retângulo." It targets the practice, never the person.
+8. **Mild swearing, at most one per page**, and only where the argument hurts:
+   "porcaria", "cagada". Never in the CTA or the main headline.
+9. **Objections in the reader's voice.** The FAQ is what the person thinks, in
+   their words: "Já faço branding há anos. Vou ver algo novo?". The answer opens
+   by answering ("Serve.", "É."), never with "Ótima pergunta".
+
+Line-by-line detail, vocabulary, anglicisms, money, CTA, and the before/after
+table: [references/voice.md](references/voice.md). Read it before writing a new
+piece or rewriting a whole section.
+
+### The fold names the TASK, not the state
+
+Applies to the H1, the `<title>` and the social card, and it is the most
+expensive mistake because it passes every linter.
+
+State copy describes the reader's world and leaves them to work out what they
+gain: "Você tem centenas de mockups parados no disco." It is correct, real pain,
+and asks for nothing. Task copy names the verb the person came to do: "Ache o
+mockup certo sem abrir um PSD."
+
+The test is one question: **which verb would the reader type into Google?** If
+the headline lacks that verb, it talks about the state. And beware the wrong
+task: before writing, check which step really hurts (example in
+[references/cases.md](references/cases.md)).
+
+When the pain needs to show (and sometimes it does), it goes in the **next
+section**, opening the mechanism. On the fold you have 5 seconds, and spending
+all five describing the problem is wasting your turn.
+
+## Brand glossary (Visant's own copy only)
+
+In client copy, the glossary is the client brand's, not this one.
+
+| term | what it is | where it is used |
+|---|---|---|
+| **Visionário®** | lifetime plan, one-time payment | tier, CTA, FAQ, plans subtitle |
+| **Visantista** | monthly subscriber, and the community's demonym | monthly plan, community |
+| **Visantismo** | the movement and the landing's brand | logo, nav, footer |
+| **Visant** | the agency / company | body copy, authorship |
+| ~~Fundador~~ | **retired.** It was a loose synonym for Visionário and created two brands for the same plan | do not use |
+
+## If the repo uses Visant's pipeline (`copy.json`)
+
+**Copy lives in the JSON. HTML and Markdown are generated views.** Editing text
+in the `.html` is always wrong: the next build overwrites it and the check breaks
+the deploy. Flow: edit the JSON, `npm run copy:lint`, `npm run copy:build`,
+commit json + html + md together (`copy:check` in the gate catches drift). SEO
+(`meta.title`, `meta.description`, `meta.og_*`) lives in the JSON too, injected
+via `data-copy-attr="content"`.
+
+Full mechanics (new key, new page, `data-copy-attr`, `\n` becoming `<br>`, orphan
+key error, setting it up in a new repo): [references/pipeline.md](references/pipeline.md).
+
+## When there is no `copy.json` (any other repo)
+
+Outside that pipeline, **the component is the SSoT**. Do not set up a
+`copy.json` in the middle of a text task: the user asked for copy, not a new
+architecture.
+
+The risk changes shape. There is no build to sync views, so the same sentence
+exists copied in three or four places, and changing only the `<h1>` leaves the
+rest selling last month's promise. **After changing the headline, hunt the
+echoes** (social card and `<title>` are the ones most often left behind):
 
 ```bash
-npm run copy:lint    # vícios de linguagem (fora do gate, roda à mão)
-npm run copy:build   # injeta o json nos HTMLs e regera os docs/COPY*.md
-npm run copy:check   # exit 1 se qualquer view divergir (está no npm run check)
+rg -n "trecho da frase antiga" src   # and repeat with 4 or 5 words from the middle
 ```
 
-Fluxo: editar o JSON, `copy:lint`, `copy:build`, commitar json + html + md juntos.
+Where they hide, in order of being forgotten:
 
-**SEO mora no SSoT também.** `meta.title`, `meta.description`, `meta.og_title`,
-`meta.og_description` e `meta.og_image_alt` são chaves como qualquer outra,
-injetadas em atributo via `data-copy-attr="content"`. Antes viviam soltas no
-`<head>` e drift(av)am em silêncio.
-
-Mecânica completa (chave nova, página nova, `data-copy-attr`, `\n` virando
-`<br>`, erro de chave órfã, montar em repo novo): `references/pipeline.md`.
-
-## Quando não existe `copy.json` (LP em React)
-
-Fora do visantismo, a copy costuma morar dentro do componente e **o componente é
-o SSoT**. Não monte um `copy.json` no meio de uma tarefa de texto: virar a
-arquitetura do repo é decisão de outro momento, e o usuário pediu copy.
-
-O risco muda de forma. Não tem build pra sincronizar view, então a mesma frase
-existe copiada em três a quatro lugares, e trocar só o `<h1>` deixa o resto
-vendendo a promessa do mês passado. **Depois de mudar a headline, procure os
-ecos** (foi assim que o card social e o `<title>` apareceram):
-
-```bash
-rg -n "trecho da frase antiga" src   # e repita com 4 ou 5 palavras do meio
-```
-
-Onde eles se escondem, em ordem de esquecimento:
-
-| lugar | arquivo típico |
+| place | typical file |
 |---|---|
-| `<h1>` e lead | `components/**/hero.tsx` |
-| card de link | `app/**/opengraph-image.tsx`, e o `alt` exportado nele |
-| `<title>` e description | `app/**/page.tsx` (e o `twitter`/`openGraph` do mesmo objeto) |
-| `alt` de print e `figcaption` | o mesmo hero |
-| seção que repete o argumento | `components/**/` da mesma pasta |
+| `<h1>` and lead | `components/**/hero.tsx` |
+| link card | `app/**/opengraph-image.tsx`, and the `alt` exported there |
+| `<title>` and description | `app/**/page.tsx` (and the `twitter`/`openGraph` of the same object) |
+| screenshot `alt` and `figcaption` | the same hero |
+| section that repeats the argument | `components/**/` in the same folder |
 
-Fecha com `npx tsc --noEmit`: string em JSX é código, e vírgula perdida numa
-reescrita quebra o build, não o texto.
+Close with `npx tsc --noEmit` in TS repos: a lost comma in JSX breaks the build.
+The `<title>` is the only one that changes voice: it answers search, so it
+carries the noun people search for ("mockups"), while the `<h1>` carries the verb.
 
-O `<title>` é o único que troca de voz: ele responde a busca, então carrega o
-substantivo que a pessoa procura ("mockups"), enquanto o `<h1>` carrega o verbo.
+## Work order on "review/write the copy"
 
-## Ordem de trabalho ao receber "revisa/escreve a copy"
-
-1. Ler o JSON inteiro da página (ou o componente inteiro) antes de tocar em
-   qualquer chave. Inclui os comentários: eles guardam o PORQUÊ da linha atual, e
-   copy que contraria a decisão documentada ali é retrabalho.
-2. Rodar `copy:lint` pra ter o mapa dos vícios.
-3. **Aplicar só os consertos de vício**, e a reescrita que o usuário pediu com
-   direção. Todo o resto vira proposta em tabela.
-4. Conferir cada número contra a fonte de verdade (preço no servidor via
-   `price:check`, nº de lives, nº de membros). A skill não guarda esses valores
-   de propósito: eles envelhecem. Na dúvida, pergunte antes de publicar.
-5. **Caçar o eco** da frase antiga (`rg`, ou o aviso de eco do linter passando os
-   arquivos juntos) e atualizar card social, `<title>`, description e `alt`.
-6. Se mexeu em comentário de código, atualizar o que ele explica: comentário que
-   defende a copy velha mente pro próximo dev.
-7. Rodar `copy:lint`, `copy:build` e `copy:check` de novo. Em repo React, o
-   `tsc --noEmit`.
-8. Reportar o antes/depois das linhas mudadas. O usuário aprova texto lendo
-   texto, nunca lendo resumo do texto.
+1. Read the page's whole JSON (or the whole component) before touching any key.
+   Including comments: they hold the WHY of the current line, and copy that
+   contradicts the decision documented there is rework.
+2. Run `copy-lint` to get the map of tics.
+3. **Apply only the tic fixes**, and the rewrite the user asked for with a
+   direction. Everything else becomes a proposal in a table.
+4. Check every number against the source of truth (server-side price, client
+   count, member count). The skill does not store those values on purpose: they
+   age. When in doubt, ask before publishing.
+5. **Hunt the echo** of the old sentence (`rg`, or the linter's echo warning with
+   the files passed together) and update the social card, `<title>`, description
+   and `alt`.
+6. If you touched a code comment, update what it explains: a comment defending
+   the old copy lies to the next dev.
+7. Run `copy-lint` again. With Visant's pipeline, also `copy:build` and
+   `copy:check`. In a React/TS repo, `tsc --noEmit`.
+8. Report the before/after of the changed lines. The user approves text by
+   reading text, never by reading a summary of the text.

@@ -8,7 +8,7 @@
 #   SRC=... PERFIL=reels bash tudo.sh        # 9:16, enxuto
 #
 # Roda em background quando a midia esta no Google Drive: cada arquivo e virtual
-# e cada leitura forca download. Ver references/armadilhas.md #10.
+# e cada leitura forca download. Ver references/pitfalls.md #10.
 set -euo pipefail
 
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

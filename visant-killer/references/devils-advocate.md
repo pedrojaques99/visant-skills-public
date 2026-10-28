@@ -1,281 +1,291 @@
-# Advogado do diabo
+# Devil's advocate
 
-Banco de perguntas para o Passo 4. Não é checklist de UI: é interrogatório de
-conceito. Pergunta boa aqui apaga trabalho de pixel que nunca precisou existir.
+Question bank for Step 4. Not a UI checklist: it is a concept interrogation. A
+good question here erases pixel work that never needed to exist.
 
-**Como usar:** T1 usa as 5 marcadas `[T1]`. T2 usa as 12 marcadas `[T1]` e `[T2]`.
-T3 usa todas. O **bloco fixo** (seção 7, F1 a F6) roda em todo tier, sem exceção:
-são as seis perguntas que o usuário faz de qualquer jeito, então chegar sem elas
-respondidas é chegar incompleto. Responda cada uma **você**, com `arquivo:linha`,
-antes de subir qualquer coisa pro usuário.
+**How to use:** T1 uses the 5 marked `[T1]`. T2 uses the 12 marked `[T1]` and `[T2]`.
+T3 uses all of them. The **fixed block** (section 7, F1 to F6) runs in every tier, no
+exceptions: they are the six questions the user asks anyway, so arriving without
+them answered is arriving incomplete. Answer each one **yourself**, with
+`file:line`, before escalating anything to the user.
 
-Índice:
-- [1. Existência](#1-existência)
-- [2. Decisão](#2-decisão)
-- [3. Verdade do dado](#3-verdade-do-dado)
-- [4. Hierarquia de atenção](#4-hierarquia-de-atenção)
-- [5. Produto, escopo e posicionamento](#5-produto-escopo-e-posicionamento)
-- [6. Custo e futuro](#6-custo-e-futuro)
-- [7. Bloco fixo: as cinco de casa](#7-bloco-fixo-as-cinco-de-casa)
-- [Como reportar a resposta](#como-reportar-a-resposta)
-
----
-
-## 1. Existência
-
-**Q1 `[T1]` Se eu apagasse isto hoje, quem reclama em 48 horas, e o que essa
-pessoa faz no lugar?**
-Resposta "ninguém" mata o elemento na hora. Resposta "ela abre a planilha" é pior
-que "ninguém": a tela perdeu de uma planilha e ainda custa manutenção.
-
-**Q2 `[T1]` Este elemento existe porque alguém precisa dele, ou porque o dado
-estava disponível?**
-O vício central de painel administrativo. Dado disponível é matéria-prima, não
-motivo. Se a origem foi disponibilidade, o elemento vira linha de log, não card.
-
-**Q3 `[T2]` Qual é a versão disto que caberia numa frase de texto? Por que a tela
-é melhor que a frase?**
-Se a frase entrega o mesmo, a tela é decoração com custo de render. Se a tela é
-melhor, o motivo é comparação, ordenação ou ação, e esse motivo tem que estar
-visível no layout.
-
-**Q4 `[T3]` Qual é o menor número de telas que entrega este resultado? Por que não
-é esse número?**
-Toda tela a mais é uma navegação que o usuário precisa aprender. Sem defesa
-escrita, funde.
+Index:
+- [1. Existence](#1-existence)
+- [2. Decision](#2-decision)
+- [3. Data truth](#3-data-truth)
+- [4. Attention hierarchy](#4-attention-hierarchy)
+- [5. Product, scope and positioning](#5-product-scope-and-positioning)
+- [6. Cost and future](#6-cost-and-future)
+- [7. Fixed block: the six house questions](#7-fixed-block-the-six-house-questions)
+- [How to report the answer](#how-to-report-the-answer)
 
 ---
 
-## 2. Decisão
+## 1. Existence
 
-**Q5 `[T1]` Qual decisão isto produz? Escreva a frase que o usuário diz em voz
-alta depois de olhar.**
-Se a frase for "ok", é relatório, não ferramenta. Ferramenta produz "então vou
-fazer X".
+**Q1 `[T1]` If I deleted this today, who complains within 48 hours, and what does
+that person do instead?**
+"Nobody" kills the element on the spot. "They open the spreadsheet" is worse than
+"nobody": the screen lost to a spreadsheet and still costs maintenance.
 
-**Q6 `[T1]` Qual é o número que decide, e ele é o elemento de maior peso? Se não
-é, por quê?**
-Mecanismo: **hierarquia de atenção** (RCD). O usuário usa o que é mais saliente,
-que raramente é o que retém. Peso é contextual: o mesmo dado pesa diferente numa
-grade onde se escolhe e numa fila já ordenada onde se processa.
+**Q2 `[T1]` Does this element exist because someone needs it, or because the data
+was available?**
+The core vice of admin dashboards. Available data is raw material, not a reason.
+If the origin was availability, the element becomes a log line, not a card.
 
-**Q7 `[T2]` Isto é a resposta, ou a matéria-prima da resposta?**
-Se o usuário ainda precisa de calculadora, ou de olhar um segundo card, ou de
-somar duas colunas com o dedo, o produto terminou metade do trabalho e chamou de
-feature. A pergunta que segue é sempre a mesma: qual conta a interface deveria ter
-feito no lugar dele.
+**Q3 `[T2]` What is the version of this that would fit in one sentence of text? Why
+is the screen better than the sentence?**
+If the sentence delivers the same, the screen is decoration with a render cost. If
+the screen is better, the reason is comparison, ordering or action, and that
+reason has to be visible in the layout.
 
-**Q8 `[T2]` Qual default você escolheu pelo usuário aqui, e você defende esse
-default por escrito?**
-Mecanismo: **default é a decisão que você tomou pelo usuário** (RCD 6). Ordenação
-inicial, filtro inicial, período inicial e plano pré-marcado são recomendação com
-o seu nome. A regra do default tem que caber numa linha visível onde ele escolhe.
-
-**Q9 `[T3]` Modele a jogada ótima do usuário aqui. Ela te paga?**
-Produto onde a jogada ótima do usuário é receita zero tem cada regra funcionando e
-o conjunto vazando.
-
-**Q10 `[T3]` Onde está o limite que motiva o upgrade, e ele aparece no momento em
-que o limite é atingido?**
-Mecanismo: **expansão nasce do uso** (RCD 8), nunca de interrupção.
+**Q4 `[T3]` What is the smallest number of screens that delivers this result? Why
+isn't it that number?**
+Every extra screen is a navigation the user has to learn. Without a written
+defense, merge.
 
 ---
 
-## 3. Verdade do dado
+## 2. Decision
 
-**Q11 `[T1]` Este número mente em qual cenário?**
-Os quatro clássicos, todos já vistos em produção: fetch que falhou e pinta zero;
-denominador zero virando "0,0%"; estoque (fila, saldo, pipeline) recebendo filtro
-de data que só evento deveria receber; dois números da mesma unidade e de espécies
-diferentes (orçado e realizado) lado a lado sem rótulo que diga qual é qual.
+**Q5 `[T1]` What decision does this produce? Write the sentence the user says out
+loud after looking.**
+If the sentence is "ok", it is a report, not a tool. A tool produces "so I'll do X".
 
-**Q12 `[T2]` Se o backend cair, isto mostra erro ou mostra zero?**
-Zero silencioso é a mentira dominante, e ela costuma ser contada uma camada
-abaixo: o serviço captura a falha e devolve payload vazio, então o estado de erro
-da página fica inalcançável e o conserto parece pronto. Verifique **rodando com o
-backend parado**.
+**Q6 `[T1]` What is the number that decides, and is it the heaviest element? If
+not, why?**
+Mechanism: **attention hierarchy** (RCD). The user uses what is most salient,
+which is rarely what retains. Weight is contextual: the same data weighs
+differently in a grid where you choose and in an already sorted queue where you
+process.
 
-**Q13 `[T2]` Que promessa isto faz que o banco não sustenta?**
-Preço digitado em copy enquanto o valor cobrado vive no servidor; rótulo de status
-que não é o status; contagem que exclui o que a lista inclui. Conserto não é
-vigilância, é trava de build.
+**Q7 `[T2]` Is this the answer, or the raw material of the answer?**
+If the user still needs a calculator, or a second card, or to add two columns with
+a finger, the product did half the work and called it a feature. The follow-up
+question is always the same: which calculation should the interface have done for
+them.
 
-**Q14 `[T3]` Se a escrita otimista falhar, o que fica registrado?**
-UI não pode mentir pro banco. Registrar ação que não aconteceu corrompe a métrica
-pela qual o negócio se guia, e número falsificado não se otimiza.
+**Q8 `[T2]` What default did you pick for the user here, and do you defend that
+default in writing?**
+Mechanism: **a default is the decision you made for the user** (RCD 6). Initial
+sort, initial filter, initial period and preselected plan are recommendations with
+your name on them. The default's rule has to fit in a visible line where they
+choose.
 
-**Q15 `[T3]` Papel ou propriedade? Quem vê isto é quem age aqui?**
-Controle pessoal (preferência, "minhas horas", cronômetro) se libera por
-propriedade do recurso, não por cargo. Admin olhando o quadro de outra pessoa não
-pode ver ação pessoal renderizada no nome dela.
+**Q9 `[T3]` Model the user's optimal play here. Does it pay you?**
+A product where the user's optimal play is zero revenue has every rule working and
+the whole leaking.
 
----
-
-## 4. Hierarquia de atenção
-
-**Q16 `[T2]` Quantos pixels verticais até o primeiro dado real?**
-Cromo é orçamento. Gaste dentro do conteúdo e pague cortando cromo, nunca
-conteúdo.
-
-**Q17 `[T2]` Onde este elemento VAI FALTAR?**
-Rode com o melhor registro e com o pior. Ausência é argumento: elemento que falta
-exatamente nos seus melhores registros é pior que elemento nenhum. Vazio também
-esconde todo estouro de layout, então medir sem dado real é medir nada.
-
-**Q18 `[T2]` O que isto ensina o usuário a fazer errado?**
-Cor em tudo ensina que cor não significa nada. Badge que 100% das linhas carregam
-ensina a ignorar badge. Primário desabilitado ensina que o botão mente.
-
-**Q19 `[T3]` Se esta tela é a única coisa que o cliente vê do produto, ele
-renova?**
-Retenção se constrói no interior, na tela que a pessoa encara todo dia. Teclado,
-latência e ritmo são feature de retenção (RCD 7).
+**Q10 `[T3]` Where is the limit that motivates the upgrade, and does it show up at
+the moment the limit is hit?**
+Mechanism: **expansion is born from usage** (RCD 8), never from interruption.
 
 ---
 
-## 5. Produto, escopo e posicionamento
+## 3. Data truth
 
-**Q20 `[T3]` Qual feature eu mato para abrir espaço cognitivo para esta?**
-Mecanismo: **Swiss Knife Index** = features usadas por mais de 40% dos ativos em
-30 dias, dividido por features totais. Abaixo de 0,3 o produto é canivete
-desajeitado. Esconder resolve o que apagar não precisa resolver: manda o raro pro
-avançado, alcançável pros 3% e sumido pros 97%.
+**Q11 `[T1]` In which scenario does this number lie?**
+The four classics, all seen in production: a fetch that failed and paints zero; a
+zero denominator becoming "0,0%"; a stock (queue, balance, pipeline) receiving a
+date filter that only events should receive; two numbers of the same unit and
+different kinds (budgeted and actual) side by side with no label saying which is
+which.
 
-**Q21 `[T3]` Quem é o ICP desta tela? Se a resposta é "a equipe", qual papel? Se
-serve dois papéis, qual dos dois está sendo servido pior?**
-Quem fala com todos não convence ninguém (RCD 2). Tela que serve dois papéis
-costuma servir mal os dois e bem nenhum.
+**Q12 `[T2]` If the backend goes down, does this show an error or a zero?**
+Silent zero is the dominant lie, and it is usually told one layer down: the
+service catches the failure and returns an empty payload, so the page's error
+state becomes unreachable and the fix looks done. Verify **by running with the
+backend stopped**.
 
-**Q22 `[T3]` Se o concorrente copiar isto pixel a pixel amanhã, o que sobra de
-nosso?**
-Igual compete por preço, diferente compete por categoria (RCD 5). O diferente
-mora em mecanismo, narrativa ou experiência, e precisa ser nomeável em uma frase.
+**Q13 `[T2]` What promise does this make that the database doesn't back?**
+Price typed in copy while the charged value lives on the server; a status label
+that isn't the status; a count that excludes what the list includes. The fix isn't
+vigilance, it is a build lock.
 
-**Q23 `[T3]` A promessa é do tamanho da prova?**
-O mercado acredita no que você demonstra (RCD 4). Prova que chega depois da
-dúvida chega tarde.
+**Q14 `[T3]` If the optimistic write fails, what gets recorded?**
+UI can't lie to the database. Recording an action that didn't happen corrupts the
+metric the business steers by, and a faked number can't be optimized.
 
-**Q24 `[T3]` As quatro camadas dizem a mesma frase?**
-Landing, onboarding, produto e preço. Desalinhamento aqui torna toda decisão de
-design a jusante impossível de ganhar, e nenhum conserto de tela resolve.
-
-**Q25 `[T3]` Este é um erro de categoria?**
-A pergunta que mais muda preço na Visant: o objeto é a marca ou o site? A
-prateleira errada define a régua errada e o valor errado. Vale para qualquer
-entregável que o produto nomeia.
+**Q15 `[T3]` Role or ownership? Is the person seeing this the one who acts here?**
+Personal controls (preference, "my hours", timer) are unlocked by ownership of the
+resource, not by role. An admin looking at someone else's board can't see a
+personal action rendered under that person's name.
 
 ---
 
-## 6. Custo e futuro
+## 4. Attention hierarchy
 
-**Q26 `[T2]` Quem mantém isto em seis meses, e como essa pessoa descobre que
-quebrou?**
-Regra que só existe na cabeça de quem escreveu não é regra, é sorte. Defeito que é
-padrão, e não valor, vira teste que varre a árvore por a forma proibida.
+**Q16 `[T2]` How many vertical pixels until the first real data?**
+Chrome is a budget. Spend it inside the content and pay by cutting chrome, never
+content.
 
-**Q27 `[T3]` Se eu cobrasse por isto, quanto? Se a resposta é "nada", quem paga a
-manutenção eterna?**
-Preço é filtro (RCD 9). Serve inclusive para tela interna: o que não vale nada
-para ninguém é custo com aparência de feature.
+**Q17 `[T2]` Where WILL this element be missing?**
+Run with the best record and with the worst. Absence is an argument: an element
+missing exactly on your best records is worse than no element. Empty also hides
+every layout overflow, so measuring without real data measures nothing.
 
-**Q28 `[T3]` Qual decisão desta auditoria eu vou lamentar em três meses?**
-Última pergunta, sempre. Escreva a resposta no relatório. Ela é a próxima rodada.
+**Q18 `[T2]` What does this teach the user to do wrong?**
+Color on everything teaches that color means nothing. A badge that 100% of rows
+carry teaches people to ignore badges. A disabled primary teaches that the button
+lies.
+
+**Q19 `[T3]` If this screen is the only thing the customer sees of the product, do
+they renew?**
+Retention is built in the interior, on the screen the person faces every day.
+Keyboard, latency and rhythm are retention features (RCD 7).
 
 ---
 
-## 7. Bloco fixo: as seis de casa
+## 5. Product, scope and positioning
 
-Rodam em T1, T2 e T3. Cada uma exige uma busca ou uma medição, nunca uma opinião.
+**Q20 `[T3]` Which feature do I kill to open cognitive room for this one?**
+Mechanism: **Swiss Knife Index** = features used by more than 40% of actives in 30
+days, divided by total features. Below 0.3 the product is a clumsy pocketknife.
+Hiding solves what deleting doesn't need to solve: send the rare thing to
+advanced, reachable for the 3% and gone for the 97%.
 
-**F1 O quanto estamos reinventando a roda?**
-Antes de qualquer construção, procurar: componente já existente no repo, item no
-registry da Visant (`visant-registry`), primitivo oficial do shadcn ou do Radix,
-lib validada. Custom é fallback, não default.
-Como responder: liste o que foi **reusado** e o que foi **escrito novo**, e para
-cada novo a busca que justificou. Duas implementações da mesma coisa em rotas
-diferentes é dívida: extraia hook ou componente compartilhado, e o dono original
-adota primeiro (comportamento inalterado), depois a superfície nova consome.
-Sinal de alarme: utilitário de formatação, de data, de moeda ou de status escrito
-dentro do componente.
+**Q21 `[T3]` Who is this screen's ICP? If the answer is "the team", which role? If
+it serves two roles, which of the two is served worse?**
+Whoever talks to everyone convinces no one (RCD 2). A screen serving two roles
+usually serves both badly and neither well.
 
-**F2 Nosso design system está consistente?**
-Token, não cor crua. Primitivo compartilhado, não cópia. Mesmo padrão de rótulo,
-de régua, de raio e de espaçamento que o card vizinho da mesma rota.
-Como responder: `npm run audit:design` no alvo em zero erro, mais uma comparação
-lado a lado com o componente exemplar da mesma pasta (o que já passou por
-revisão). Divergência achada vira ou conserto no alvo, ou proposta de mudança no
-exemplar, nunca uma terceira variante.
+**Q22 `[T3]` If a competitor copies this pixel by pixel tomorrow, what is left that
+is ours?**
+Same competes on price, different competes on category (RCD 5). The difference
+lives in mechanism, narrative or experience, and has to be nameable in one
+sentence.
 
-**F3 Está tudo responsivo e otimizado?**
-Responsivo se mede, não se olha: `documentElement.scrollWidth - innerWidth` a
-390px com dado real, e remedir depois de **cada** conserto, porque conserto de
-responsivo troca um estouro por outro. Default mobile de primitivo se sobrescreve
-no consumidor, nunca no primitivo.
-Otimizado tem número antes do esforço: o dev do Next mente por dois (StrictMode e
-compilação sob demanda), então meça em produção. Suspeitos de sempre: valor que
-tica a cada segundo dentro de contexto compartilhado, descrição pesada viajando no
-payload de lista, e `keepPreviousData` desmontando componente com estado interno.
+**Q23 `[T3]` Is the promise the size of the proof?**
+The market believes what you demonstrate (RCD 4). Proof that arrives after the
+doubt arrives late.
 
-**F4 A estratégia end-to-end está progressiva e intuitiva pro ICP?**
-Percorra o fluxo inteiro, não a tela: como se chega aqui, o que se faz, e para
-onde se vai depois. Landing, onboarding, produto e preço têm que dizer a mesma
-frase, e cada passo precisa devolver valor antes de pedir esforço (valor primeiro,
-pedido depois).
-Como responder: escreva o caminho em passos numerados, marque em qual passo o
-usuário descobre o valor (o tempo até o "aha"), e nomeie o passo onde ele
-abandona. Se o ICP não estiver nomeado por papel, essa é a resposta.
+**Q24 `[T3]` Do the four layers say the same sentence?**
+Landing, onboarding, product and pricing. Misalignment here makes every downstream
+design decision unwinnable, and no screen fix solves it.
 
-**F5 O que podemos esconder, compactar ou virar ícone?**
-Esconder resolve o que apagar não precisa resolver: o raro vai pro avançado,
-alcançável pros 3% e sumido pros 97%. Compactar é fundir duas linhas que dizem a
-mesma coisa. Virar ícone só vale com rótulo acessível (`aria-label`) e quando o
-significado é universal; ícone obscuro troca um rótulo legível por um enigma, e
-isso é regressão disfarçada de densidade.
-Como responder: uma tabela com três colunas, esconder / compactar / virar ícone, e
-uma quarta com o que **não** deve ser escondido e por quê. Toda linha nomeia
-quantos pixels verticais devolve.
+**Q25 `[T3]` Is this a category error?**
+The question that moves price the most at Visant: is the object the brand or the
+site? The wrong shelf sets the wrong yardstick and the wrong value. It applies to
+any deliverable the product names.
 
-**F6 O que falta para ficar no nível de um produto do Vale do Silício?**
-Pergunta de fechamento, e a mais fácil de responder com vibe. Não responda com
-adjetivo: responda com a lista do que falta, cada item com esforço e alavanca.
+---
 
-O nível se mede em treze detalhes, e nenhum deles é estético:
+## 6. Cost and future
 
-1. Teclado alcança toda ação, e o atalho aparece onde a ação aparece.
-2. `focus-visible` chega em tudo que hover revela.
-3. Zero salto de layout entre carregando e carregado (skeleton com a forma final).
-4. Escrita otimista com desfazer, nunca modal de confirmação para ação reversível.
-5. Erro, vazio e carregando são três estados distintos, e o vazio argumenta.
-6. Nada mente: sem zero silencioso, sem denominador zero, sem rótulo que não é o
+**Q26 `[T2]` Who maintains this in six months, and how does that person find out
+it broke?**
+A rule that only exists in the author's head isn't a rule, it's luck. A defect that
+is a pattern, not a value, becomes a test that sweeps the tree for the forbidden
+shape.
+
+**Q27 `[T3]` If I charged for this, how much? If the answer is "nothing", who pays
+the eternal maintenance?**
+Price is a filter (RCD 9). It applies to internal screens too: what is worth
+nothing to anyone is cost dressed as a feature.
+
+**Q28 `[T3]` Which decision of this audit will I regret in three months?**
+Last question, always. Write the answer in the report. It is the next round.
+
+---
+
+## 7. Fixed block: the six house questions
+
+They run in T1, T2 and T3. Each one demands a search or a measurement, never an
+opinion.
+
+**F1 How much are we reinventing the wheel?**
+Before building anything, search: an existing component in the repo, an item in
+the Visant registry (`visant-registry`), an official shadcn or Radix primitive, a
+validated lib. Custom is the fallback, not the default.
+How to answer: list what was **reused** and what was **written new**, and for each
+new one the search that justified it. Two implementations of the same thing on
+different routes are debt: extract a shared hook or component, the original
+consumer adopts it first (behavior unchanged), then the new surface consumes it.
+Alarm signal: a formatting, date, currency or status utility written inside the
+component.
+
+**F2 Is our design system consistent?**
+Token, not raw color. Shared primitive, not a copy. Same label, ruler, radius and
+spacing pattern as the neighboring card on the same route.
+How to answer: the repo's token gate (`audit:design` or equivalent; without one,
+the `killer-scan` fallback) at zero errors on the target, plus a side-by-side
+comparison with the exemplary component in the same folder (the one that already
+passed review). A divergence found becomes either a fix on the target or a change
+proposal on the exemplar, never a third variant.
+
+**F3 Is everything responsive and optimized?**
+Responsive is measured, not eyeballed: `documentElement.scrollWidth - innerWidth`
+at 390px with real data, and re-measure after **each** fix, because a responsive
+fix trades one overflow for another. A primitive's mobile default is overridden in
+the consumer, never in the primitive.
+Optimized has a number before the effort: the Next dev server lies by a factor of
+two (StrictMode and on-demand compilation), so measure in production. Usual
+suspects: a value that ticks every second inside a shared context, a heavy
+description traveling in a list payload, and `keepPreviousData` unmounting a
+component with internal state.
+
+**F4 Is the end-to-end strategy progressive and intuitive for the ICP?**
+Walk the whole flow, not the screen: how you get here, what you do, and where you
+go next. Landing, onboarding, product and pricing have to say the same sentence,
+and each step has to return value before asking for effort (value first, ask
+later).
+How to answer: write the path as numbered steps, mark the step where the user
+discovers the value (time to "aha"), and name the step where they drop off. If the
+ICP isn't named by role, that is the answer.
+
+**F5 What can we hide, compact or turn into an icon?**
+Hiding solves what deleting doesn't need to solve: the rare thing goes to
+advanced, reachable for the 3% and gone for the 97%. Compacting is merging two
+lines that say the same thing. Turning into an icon only counts with an accessible
+label (`aria-label`) and when the meaning is universal; an obscure icon trades a
+readable label for a riddle, and that is a regression dressed as density.
+How to answer: a table with three columns, hide / compact / turn into icon, and a
+fourth with what should **not** be hidden and why. Every row names how many
+vertical pixels it gives back.
+
+**F6 What is missing to reach the level of a Silicon Valley product?**
+Closing question, and the easiest to answer on vibes. Don't answer with an
+adjective: answer with the list of what's missing, each item with effort and
+leverage.
+
+The level is measured in thirteen details, and none of them is aesthetic:
+
+1. Keyboard reaches every action, and the shortcut shows where the action shows.
+2. `focus-visible` reaches everything hover reveals.
+3. Zero layout shift between loading and loaded (skeleton with the final shape).
+4. Optimistic write with undo, never a confirmation modal for a reversible action.
+5. Error, empty and loading are three distinct states, and empty makes a case.
+6. Nothing lies: no silent zero, no zero denominator, no label that isn't the
    status.
-7. Latência percebida tratada onde ela nasce (só espera o que a tela precisa; o
-   resto sai do caminho crítico).
-8. Movimento vindo do SSoT, abaixo de 300ms, interrompível, e respeitando
-   `prefers-reduced-motion` sem cancelar o resultado.
-9. Densidade defensável: cromo contado em pixels até o primeiro dado real.
-10. Um primário por superfície, e primário desabilitado não existe.
-11. Default que você defende por escrito, com a regra visível onde se escolhe.
-12. Volta na mesma posição depois de agir (a ação não perde o lugar do usuário).
-13. Copy na voz da casa, sem vício, e mensagem de erro que diz o que fazer.
+7. Perceived latency handled where it is born (wait only for what the screen
+   needs; the rest leaves the critical path).
+8. Motion from the SSoT, under 300ms, interruptible, and respecting
+   `prefers-reduced-motion` without canceling the result.
+9. Defensible density: chrome counted in pixels until the first real data.
+10. One primary per surface, and a disabled primary doesn't exist.
+11. A default you defend in writing, with the rule visible where people choose.
+12. Comes back to the same position after acting (the action doesn't lose the
+    user's place).
+13. Copy in the house voice, no vices, and error messages that say what to do.
 
-Como responder: marque os treze com feito, falta ou não se aplica; depois nomeie
-os **três** de maior alavanca por esforço e pare aí. Lista de treze pendências não
-é plano, é desânimo.
+How to answer: mark the thirteen as done, missing or not applicable; then name the
+**three** with the highest leverage per effort and stop there. A list of thirteen
+pending items isn't a plan, it's discouragement.
 
 ---
 
-## Como reportar a resposta
+## How to report the answer
 
-Para cada pergunta feita, três linhas no relatório:
+For each question asked, three lines in the report:
 
 ```
-Q7 Isto é a resposta ou a matéria-prima?
-   Matéria-prima. Os dois cards entregam dois totais e nenhum diz qual regime
-   custa menos (MeiTaxCard.tsx:60, TaxSummaryCard.tsx:79). A comparação é o
-   trabalho, e ela está sendo feita de cabeça pelo usuário.
-   OBRIGA: uma linha de veredito no topo, ou fundir os dois cards. Decisão do
-   usuário, porque muda escopo.
+Q7 Is this the answer or the raw material?
+   Raw material. The two cards deliver two totals and neither says which tax
+   regime costs less (MeiTaxCard.tsx:60, TaxSummaryCard.tsx:79). The comparison
+   is the work, and the user is doing it in their head.
+   FORCES: a verdict line at the top, or merge the two cards. The user's call,
+   because it changes scope.
 ```
 
-Pergunta sem evidência não entra. Resposta que não obriga nada sai do relatório:
-interrogatório que termina em "está tudo bem" não interrogou.
+A question without evidence doesn't go in. An answer that forces nothing leaves the
+report: an interrogation that ends in "everything is fine" didn't interrogate.

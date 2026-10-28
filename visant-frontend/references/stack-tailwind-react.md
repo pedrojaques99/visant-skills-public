@@ -2,18 +2,32 @@
 
 The principles are stack-agnostic; this file is the Visant implementation.
 
-**Common denominator across Visant frontends: Tailwind v4 + React + Radix-family
-primitives.** The three targets differ above that line — check before assuming:
+**Common denominator these patterns assume: Tailwind v4 + React + Radix-family
+primitives.** Above that line every repo differs, so check the target repo
+before assuming:
 
-| Project | Build | Primitives | Notes |
-|---|---|---|---|
-| app de CRM | Vite | shadcn/ui (`components.json` present) | lucide, framer-motion, sonner |
-| visantlabs-os | Vite | Radix packages directly, own `src/components/ui/` | **no `components.json` — `npx shadcn add` does not apply** |
-| Client sites | Next.js App Router | per template | next-intl, next-themes, framer-motion |
+- **Build:** look for `vite.config.*` or `next.config.*` (and for Next, is there
+  an `app/` folder, i.e. App Router?).
+- **Primitives:** is there a `components.json` at the root? Then it is shadcn/ui
+  and `npx shadcn@latest add` applies. No `components.json` but `@radix-ui/*`
+  packages in `package.json`? Then it is raw Radix with its own `ui/` folder, and
+  `npx shadcn add` does not apply.
+- **DS pieces:** find the `components/ui/` (or `src/components/ui/`) folder and
+  read what already exists (media card, segmented picker, tab strip, dropzone,
+  modal) before using the generic snippets below.
+- **Icons, motion, toast, i18n, theme:** check `package.json` (e.g.
+  `lucide-react`, `framer-motion`, `sonner`, `next-intl`, `next-themes`).
 
-In visantlabs-os, the media card, the segmented picker, narrow tab strips and the
-upload zone are already DS pieces: read [ds-visantlabs-os.md](ds-visantlabs-os.md)
-before using the generic snippets below there.
+Example of how this varied across three real projects:
+
+- CRM app: Vite, shadcn/ui (`components.json` present), lucide, framer-motion,
+  sonner.
+- Product app with its own DS: Vite, Radix packages directly, own
+  `src/components/ui/`, **no `components.json`**. Its media card, segmented
+  picker, narrow tab strips and upload zone were already DS pieces; see
+  [ds-visantlabs-os.md](ds-visantlabs-os.md) as an example of such a contract.
+- Client sites: Next.js App Router, per template, next-intl, next-themes,
+  framer-motion.
 
 Always use semantic theme tokens (`bg-card`, `text-muted-foreground`,
 `border-border`, `text-success`, `text-warning`) — never hard-coded colour. That
@@ -353,6 +367,9 @@ allowlist is one edit permanently behind the routes. In Next.js App Router, let
 the **folder** be the rule: put the shell in a route group's `layout.tsx` and the
 membership becomes structural, with no default-wrong case.
 
+Example from a real repo (in the target repo, find where the shell is decided
+today, usually the root `app/layout.tsx`):
+
 ```
 app/team/
   layout.tsx          ← app-shell: one auth gate + nav + providers for the zone
@@ -419,7 +436,8 @@ it("no control is revealed by breakpoint instead of (hover:hover)", () => {
 it("actually scanned the zone", () => expect(FILES.length).toBeGreaterThan(20))
 ```
 
-Use sparingly — one per genuinely systemic, invisible-to-other-tooling defect,
+Point `collect([...])` at the target repo's source folders (e.g. `src`,
+`components`, `app`). Use sparingly — one per genuinely systemic, invisible-to-other-tooling defect,
 not for anything a type or a unit test already covers.
 
 ### Test the exemption, not only the detection

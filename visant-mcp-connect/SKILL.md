@@ -1,6 +1,6 @@
 ---
 name: visant-mcp-connect
-description: 'Conecta e opera o MCP do Visant Labs: brand, mockup, creative studio, canvas, orçamento, moodboard, extração de PDF. Use em "conecta o visant", "usar as tools do visant", "setup visant mcp", "extrair PDF pelo visant".'
+description: 'Connects and operates the Visant Labs MCP (requires a Visant Labs account): brand guidelines, mockups, creative studio, canvas, budgets, moodboard, PDF extraction. Use on "connect visant", "use the visant tools", "setup visant mcp", "conecta o visant", "usar as tools do visant", "extrair PDF pelo visant".'
 tags:
   - mcp
   - visant
@@ -10,33 +10,38 @@ tags:
 
 # Visant Labs MCP
 
+> **Requires a Visant Labs account** (visantlabs.com). Without one, none of these
+> tools work: there is no anonymous mode. Generation tools also spend the
+> account's credits.
+
 **API:** `https://api.visantlabs.com`
 **MCP:** `https://api.visantlabs.com/api/mcp`
-**Auth:** OAuth 2.1 + PKCE (dynamic client registration) or API Key (`visant_sk_...`)
+**Auth:** OAuth 2.1 + PKCE (dynamic client registration) or API key (`visant_sk_...`)
 
 ---
 
-## Conectar (fluxo Claude-first)
+## Connect (Claude-first flow)
 
-### Passo 1 — Verificar se já tem credenciais
+### Step 1: check for existing credentials
 
 ```bash
 cat ~/.visant/credentials.json
 ```
 
-Se existir e tiver `apiKey`, pule para o Passo 3.
+If it exists and has `apiKey`, skip to Step 3.
 
-### Passo 2 — Autenticar
+### Step 2: authenticate
 
-Peça o email e senha ao usuário, depois rode:
+Ask the user for their Visant Labs email and password, then run:
 
 ```bash
-npx visantlabs login -e EMAIL -p SENHA
+npx visantlabs login -e EMAIL -p PASSWORD
 ```
 
-Isso salva `~/.visant/credentials.json` com o `apiKey` permanente (`visant_sk_...`).
+This saves `~/.visant/credentials.json` with the permanent `apiKey`
+(`visant_sk_...`).
 
-### Passo 3 — Configurar o MCP (global, qualquer diretório)
+### Step 3: configure the MCP (global, any directory)
 
 ```bash
 claude mcp add --transport http \
@@ -45,188 +50,201 @@ claude mcp add --transport http \
   visant https://api.visantlabs.com/api/mcp
 ```
 
-> **Não use** `mcpServers` no `settings.json` nem `mcp-remote` — o servidor suporta Streamable HTTP direto.
+> **Do not use** `mcpServers` in `settings.json` or `mcp-remote`: the server
+> speaks Streamable HTTP directly.
 
-### Passo 4 — Verificar
+### Step 4: verify
 
 ```bash
 claude mcp list
-# deve mostrar: visant: https://api.visantlabs.com/api/mcp (HTTP) - ✓ Connected
+# should show: visant: https://api.visantlabs.com/api/mcp (HTTP) - ✓ Connected
 ```
 
-As tools aparecem com o prefixo `mcp__visant__` na próxima sessão.
+The tools show up with the `mcp__visant__` prefix in the next session.
 
 ---
 
-## Tools disponíveis (~50 tools)
+## Available tools (~50)
 
 ### Account & Auth
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `account-profile` | Perfil do user (nome, email, plano) |
-| `account-usage` | Créditos restantes, limites, ciclo billing |
-| `auth-login` | Login email/senha → JWT |
-| `auth-register` | Criar conta → JWT |
-| `api-key-create` | Gerar API key `visant_sk_xxx` |
-| `api-key-list` | Listar API keys existentes |
+| `account-profile` | User profile (name, email, plan) |
+| `account-usage` | Remaining credits, limits, billing cycle |
+| `auth-login` | Email/password login → JWT |
+| `auth-register` | Create account → JWT |
+| `api-key-create` | Generate a `visant_sk_xxx` API key |
+| `api-key-list` | List existing API keys |
 
 ### Brand Guidelines (16 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `brand-guidelines-list` | Lista todas as brand guidelines |
-| `brand-guidelines-get` | Dados completos (JSON ou `format:"prompt"` para LLM-ready) |
-| `brand-guidelines-create` | Criar nova guideline |
-| `brand-guidelines-update` | Patch parcial (cores, tipografia, strategy, tokens) |
-| `brand-guidelines-delete` | Deletar (requer `confirm: true`) |
-| `brand-guidelines-duplicate` | Duplicar guideline |
-| `brand-guidelines-share` | Gerar/revogar link público |
-| `brand-guidelines-public` | Acessar por slug (sem auth) |
-| `brand-guidelines-ingest` | Extrair de URL/texto e mergear na guideline |
-| `brand-guidelines-compliance-check` | Auditoria AI (contraste, tipografia, voz, completude) |
-| `brand-guidelines-versions` | Histórico de versões |
-| `brand-guidelines-restore-version` | Restaurar versão anterior |
+| `brand-guidelines-list` | List all brand guidelines |
+| `brand-guidelines-get` | Full data (JSON, or `format:"prompt"` for LLM-ready text) |
+| `brand-guidelines-create` | Create a new guideline |
+| `brand-guidelines-update` | Partial patch (colors, typography, strategy, tokens) |
+| `brand-guidelines-delete` | Delete (requires `confirm: true`) |
+| `brand-guidelines-duplicate` | Duplicate a guideline |
+| `brand-guidelines-share` | Create/revoke a public link |
+| `brand-guidelines-public` | Access by slug (no auth) |
+| `brand-guidelines-ingest` | Extract from URL/text and merge into the guideline |
+| `brand-guidelines-compliance-check` | AI audit (contrast, typography, voice, completeness) |
+| `brand-guidelines-versions` | Version history |
+| `brand-guidelines-restore-version` | Restore a previous version |
 | `brand-guidelines-upload-logo` | Upload logo (base64/URL, variants: primary/dark/light/icon) |
-| `brand-guidelines-upload-media` | Upload media kit (imagem/PDF) |
-| `brand-guidelines-delete-logo` | Deletar logo por ID |
-| `brand-guidelines-delete-media` | Deletar media por ID |
+| `brand-guidelines-upload-media` | Upload media kit (image/PDF) |
+| `brand-guidelines-delete-logo` | Delete logo by ID |
+| `brand-guidelines-delete-media` | Delete media by ID |
 
 ### Branding Machine (5 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `branding-generate` | Gerar identidade visual por prompt (steps: full/market-research/swot/persona/archetype/concept-ideas/color-palettes/moodboard) |
-| `branding-list` | Listar projetos de branding |
-| `branding-get` | Detalhar projeto |
-| `branding-save` | Salvar/atualizar projeto |
-| `branding-delete` | Deletar projeto |
+| `branding-generate` | Generate a visual identity from a prompt (steps: full/market-research/swot/persona/archetype/concept-ideas/color-palettes/moodboard). Follows `metodologia-visant` |
+| `branding-list` | List branding projects |
+| `branding-get` | Project details |
+| `branding-save` | Save/update a project |
+| `branding-delete` | Delete a project |
 
 ### Mockup Machine (5 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `mockup-generate` | Gerar mockup AI. Models: `gpt-image-2` (best), `gemini-3.1-flash-image-preview`, `seedream-3-0`. Resolutions: 1K/2K/4K. Aspect ratios: 1:1/16:9/9:16/4:5. Auto-injeta brand context via `brandGuidelineId`. |
-| `mockup-list` | Listar mockups |
-| `mockup-get` | Detalhar mockup |
-| `mockup-update` | Atualizar metadata |
-| `mockup-delete` | Deletar |
-| `mockup-presets` | Presets por categoria (business-card, social-media, packaging, apparel, etc.) |
+| `mockup-generate` | Generate an AI mockup. Models: `gpt-image-2` (best), `gemini-3.1-flash-image-preview`, `seedream-3-0`. Resolutions: 1K/2K/4K. Aspect ratios: 1:1/16:9/9:16/4:5. Auto-injects brand context via `brandGuidelineId`. |
+| `mockup-list` | List mockups |
+| `mockup-get` | Mockup details |
+| `mockup-update` | Update metadata |
+| `mockup-delete` | Delete |
+| `mockup-presets` | Presets by category (business-card, social-media, packaging, apparel, etc.) |
 
 ### Creative Studio (8 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `creative-full` | Pipeline completo: plan → background → render PNG → save. One-shot. |
-| `creative-generate` | Gerar layout estruturado (layers, overlay, background prompt) |
-| `creative-render` | Renderizar plan em PNG server-side |
-| `creative-projects-create` | Salvar projeto creative |
-| `creative-projects-list` | Listar projetos |
-| `creative-projects-get` | Detalhar projeto |
-| `creative-projects-update` | Atualizar projeto |
-| `creative-projects-delete` | Deletar projeto |
+| `creative-full` | Full pipeline: plan → background → render PNG → save. One shot. |
+| `creative-generate` | Generate a structured layout (layers, overlay, background prompt) |
+| `creative-render` | Render a plan to PNG server-side |
+| `creative-projects-create` | Save a creative project |
+| `creative-projects-list` | List projects |
+| `creative-projects-get` | Project details |
+| `creative-projects-update` | Update a project |
+| `creative-projects-delete` | Delete a project |
 
 ### Canvas / Whiteboard (8 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `canvas-create` | Criar whiteboard |
-| `canvas-list` | Listar projetos |
-| `canvas-list-projects` | Listar com summary de node types |
-| `canvas-get` | Detalhar (nodes, edges, drawings) |
-| `canvas-update` | Atualizar nodes/edges/linkedGuideline |
-| `canvas-delete` | Deletar |
-| `canvas-share` | Compartilhar (canEdit/canView por email) |
+| `canvas-create` | Create a whiteboard |
+| `canvas-list` | List projects |
+| `canvas-list-projects` | List with a summary of node types |
+| `canvas-get` | Details (nodes, edges, drawings) |
+| `canvas-update` | Update nodes/edges/linkedGuideline |
+| `canvas-delete` | Delete |
+| `canvas-share` | Share (canEdit/canView by email) |
 | `canvas-parse-csv` | Preview CSV → DataNode rows |
-| `canvas-resolve-variables` | Resolver `{{placeholders}}` em prompt |
+| `canvas-resolve-variables` | Resolve `{{placeholders}}` in a prompt |
 
 ### Budget (6 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `budget-create` | Criar orçamento (clientName, projectDescription) |
-| `budget-list` | Listar orçamentos |
-| `budget-get` | Detalhar com line items |
-| `budget-update` | Atualizar campos |
-| `budget-delete` | Deletar |
-| `budget-duplicate` | Duplicar |
+| `budget-create` | Create a budget (clientName, projectDescription) |
+| `budget-list` | List budgets |
+| `budget-get` | Details with line items |
+| `budget-update` | Update fields |
+| `budget-delete` | Delete |
+| `budget-duplicate` | Duplicate |
 
-### AI Utilities (grátis)
-| Tool | O que faz |
+### AI Utilities (free)
+| Tool | What it does |
 |------|-----------|
-| `ai-describe-image` | Descrever imagem (URL ou base64). 0 créditos. |
-| `ai-improve-prompt` | Melhorar prompt text. 0 créditos. |
+| `ai-describe-image` | Describe an image (URL or base64). 0 credits. |
+| `ai-improve-prompt` | Improve prompt text. 0 credits. |
 
-> **Lei da casa — prompt gerado, prompt salvo.** Toda chamada de
+> **House rule: a generated prompt is a saved prompt.** Every call to
 > `ai-generate-image` / `creative-generate` / `mockup-generate` / `video-generate`
-> vai pro ledger `prompts.jsonl` do projeto: uma linha por chamada, com
-> modelo/params, refs **com o papel de cada uma**, `sha256` da saída, status
-> (aprovado/descartado), custo, e a nota do que deu errado nas descartadas.
-> Registrar na hora — depois não é recuperável. Contrato em
-> `visant-mockup-creator/references/prompt-ledger.md`; implementação pronta pra
-> copiar em `projeto-cliente/tools/registrar-prompt.py`.
+> goes to the project's `prompts.jsonl` ledger: one line per call, with
+> model/params, refs **with each one's role**, `sha256` of the output, status
+> (approved/discarded), cost, and a note on what went wrong for discarded ones.
+> Record it on the spot: it cannot be recovered later. If `visant-mockup-creator`
+> is installed, the contract is in its `references/prompt-ledger.md`.
 
 ### Document & Image Extraction
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `document-extract` | **Dual-mode:** (1) URL mode — extrai imagens HD de qualquer URL pública (Behance, Pinterest, Dribbble, portfolios). Params: `url` + `limit` (max 200). Retorna lista de image URLs com metadata. Suporta lazy-load, srcset, background images. (2) PDF mode — extrai PDF → markdown + brand tokens (2-phase: algorithmic + Gemini). Params: `pdf_path` ou `pdf_base64` + `output` (disk/inline). |
+| `document-extract` | **Dual mode**, see "Document Extract" below. URL mode pulls HD images from any public page; PDF mode turns a PDF into markdown + brand tokens. |
 
 ### Moodboard (3 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `moodboard-detect-grid` | Detectar bounding boxes em moodboard grid |
-| `moodboard-suggest` | Sugerir animações/vídeo para cada cell |
-| `moodboard-upscale` | Upscale imagem para 1K/2K/4K. **⚠ Instável — devolveu `INTERNAL_ERROR` em 3/3 chamadas em ago/2026.** Ver "Quando a ferramenta cai" abaixo. |
-
-### Quando a ferramenta cai
-
-Ferramenta de MCP quebra, e a resposta certa nunca é insistir nem fingir que o
-resultado saiu. Regra da casa:
-
-1. **Duas tentativas, não mais.** `INTERNAL_ERROR` repetido é servidor, não
-   payload — tentar uma terceira só queima tempo.
-2. **Use a alternativa e diga qual usou.** Nunca troque em silêncio: quem lê o
-   resultado precisa saber por qual caminho ele veio.
-3. **Reporte a quebra** no `.md` do trabalho, com a data e a mensagem exata.
-
-| Se cair | Alternativa |
-|---|---|
-| `moodboard-upscale` | Procure o ORIGINAL em alta antes de ampliar — quase sempre existe e ninguém olhou (rode [[visant-preflight]]). Só depois considere ampliação. Ampliar já é o plano B; ampliar sem ter procurado o original é plano C disfarçado de A. |
-| `ai-generate-image` cai no modelo errado | O retorno traz `fellBack: true` e o `model` real. **Leia o retorno** — pedir gemini e receber gpt-image-1 muda o resultado e o custo. |
-| `brand-guidelines-health-check` | Não confie nele; confira com `brand-guidelines-get`. Ele já reportou vault vazio com vault cheio. |
-| Upload de arquivo local | `visant upload <file> --json` pelo CLI, ou presigned URL (`media-upload-urls` + `curl -X PUT` + `media-commit`). Base64 inline trunca e sobe imagem corrompida. |
+| `moodboard-detect-grid` | Detect bounding boxes in a moodboard grid |
+| `moodboard-suggest` | Suggest animations/video for each cell |
+| `moodboard-upscale` | Upscale an image to 1K/2K/4K. **⚠ Unstable: returned `INTERNAL_ERROR` on 3/3 calls in Aug 2026.** See "When a tool goes down". |
 
 ### Community (2 tools)
-| Tool | O que faz |
+| Tool | What it does |
 |------|-----------|
-| `community-presets` | Browse presets públicos de mockup |
-| `community-profiles` | Browse perfis da comunidade |
+| `community-presets` | Browse public mockup presets |
+| `community-profiles` | Browse community profiles |
 
 ---
 
-## Document Extract (dual-mode)
+## When a tool goes down
 
-### Mode 1 — Image extraction from URL
+MCP tools break, and the right response is never to insist or to pretend the
+result came out:
+
+1. **Two attempts, no more.** Repeated `INTERNAL_ERROR` is the server, not the
+   payload; a third try only burns time.
+2. **Use the alternative and say which one.** Never swap silently: whoever reads
+   the result needs to know which path it came through.
+3. **Report the breakage** in the work's `.md`, with the date and the exact
+   message.
+
+| If it fails | Alternative |
+|---|---|
+| `moodboard-upscale` | Look for the high-res ORIGINAL before upscaling: it almost always exists and nobody looked (run [[visant-preflight]]). Upscaling is plan B; upscaling without searching for the original is plan C dressed as plan A. |
+| `ai-generate-image` falls back to the wrong model | The response carries `fellBack: true` and the real `model`. **Read the response**: asking for gemini and getting gpt-image-1 changes the result and the cost. |
+| `brand-guidelines-health-check` | Do not trust it; confirm with `brand-guidelines-get`. It has reported an empty vault on a full one. |
+| Local file upload | `visant upload <file> --json` via the CLI, or a presigned URL (`media-upload-urls` + `curl -X PUT` + `media-commit`). Inline base64 truncates and uploads a corrupted image. |
+
+---
+
+## Document Extract (dual mode)
+
+### Mode 1: image extraction from a URL
 ```json
 { "url": "https://www.behance.net/gallery/...", "limit": 80 }
 ```
-Retorna lista de image URLs com width, height, alt text. Funciona com Behance, Pinterest, Dribbble, portfolios, blogs. Suporta lazy-loaded images, srcset, e background images. Scope: `read`.
+Returns image URLs with width, height and alt text (`limit` max 200). Works with
+Behance, Pinterest, Dribbble, portfolios, blogs. Handles lazy-loaded images,
+srcset and background images. Scope: `read`.
 
-### Mode 2 — PDF extraction
+### Mode 2: PDF extraction
 ```json
 { "pdf_base64": "<base64>", "output": "inline", "include_brand_tokens": true }
 ```
-Também aceita `pdf_path` para arquivos no servidor. `output: "disk"` salva `.md`, `"inline"` retorna texto. `include_brand_tokens: true` extrai cores, tipografia, estratégia.
+Also accepts `pdf_path` for files on the server. `output: "disk"` saves a `.md`,
+`"inline"` returns text. `include_brand_tokens: true` extracts colors, typography
+and strategy (two phases: algorithmic + Gemini).
 
 ---
 
-## Token expirado / 401
+## Expired token / 401
 
 ```bash
-cat ~/.visant/credentials.json   # extrai .apiKey
+cat ~/.visant/credentials.json   # take .apiKey
 ```
 
-Atualize o Bearer no MCP config e reinicie a sessão. Se não existir: `npx visantlabs login`.
+Update the Bearer in the MCP config and restart the session. If the file does not
+exist: `npx visantlabs login`.
 
 ---
 
-## Dicas de uso
+## Usage tips
 
-- **Brand context em geração**: passe `brandGuidelineId` em mockup-generate, creative-full, creative-generate para injetar cores/tipografia/voz automaticamente.
-- **format: "prompt"** no `brand-guidelines-get` retorna texto otimizado para LLM context, não JSON.
-- **creative-full** é o atalho — evita encadear generate + mockup-generate + render manualmente.
-- **Créditos**: `account-usage` mostra saldo. AI utilities (describe-image, improve-prompt) são grátis.
-- **Scope enforcement**: tokens OAuth respeitam scopes `read`, `write`, `generate` — tools de geração requerem scope `generate`.
+- **Brand context in generation:** pass `brandGuidelineId` to mockup-generate,
+  creative-full and creative-generate to inject colors/typography/voice.
+- **`format: "prompt"`** on `brand-guidelines-get` returns text optimized for LLM
+  context, not JSON.
+- **creative-full** is the shortcut: it avoids chaining generate + mockup-generate
+  + render by hand.
+- **Credits:** `account-usage` shows the balance. AI utilities (describe-image,
+  improve-prompt) are free.
+- **Scopes:** OAuth tokens enforce `read`, `write`, `generate`; generation tools
+  need `generate`.

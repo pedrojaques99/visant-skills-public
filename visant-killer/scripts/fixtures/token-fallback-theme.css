@@ -1,0 +1,3 @@
+/* Fixture of the killer-scan token fallback (--self-test): a theme file by name.
+   It is full of raw colors on purpose and must be skipped entirely. */
+.brand-a { color: #7c3aed; background: rgb(10, 10, 10); }

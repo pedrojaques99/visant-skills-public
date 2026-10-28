@@ -10,7 +10,8 @@
 #       MIN_FALA=25 bash transcreve.sh     # so os takes longos
 #       MODELO=medium bash transcreve.sh   # mais preciso, bem mais lento
 #
-# O CLI `whisper` esta quebrado neste ambiente; usamos faster_whisper como modulo.
+# Usa faster_whisper como modulo Python (pip install faster-whisper); o CLI `whisper`
+# ja quebrou na invocacao. PYTHON=<interpretador> escolhe o python (default: python, senao python3).
 set -uo pipefail
 
 BASE="${PROJ:-$PWD}"
@@ -24,10 +25,19 @@ IDIOMA="${IDIOMA:-pt}"
 
 [ -f "$MAN" ] || { echo "Sem manifest. Roda antes: ingest.sh"; exit 1; }
 mkdir -p "$OUTDIR"
+if [ -z "${PYTHON:-}" ]; then
+  for p in python python3; do
+    "$p" -c "import sys; sys.exit(sys.version_info[0] < 3)" 2>/dev/null && { PYTHON="$p"; break; }
+  done
+fi
+[ -n "${PYTHON:-}" ] || { echo "Sem Python 3 no PATH (ou defina PYTHON=)"; exit 1; }
+"$PYTHON" -c "import faster_whisper" 2>/dev/null || { echo "Falta faster-whisper: $PYTHON -m pip install faster-whisper"; exit 1; }
 
 # candidatos: video, com faixa de audio, acima do minimo. Ordem: mais longo primeiro,
 # porque take longo e onde mora a tese - se voce interromper, ja tem o que importa.
-mapfile -t ALVOS < <(awk -F'\t' -v m="$MIN_FALA" 'NR>1 && $2=="video" && $8>0 && $3+0>=m {print $3"\t"$1}' "$MAN" \
+# while-read em vez de mapfile: roda tambem no bash 3.2 do macOS
+ALVOS=()
+while IFS= read -r l; do ALVOS+=("$l"); done < <(awk -F'\t' -v m="$MIN_FALA" 'NR>1 && $2=="video" && $8>0 && $3+0>=m {print $3"\t"$1}' "$MAN" \
                      | sort -rn | cut -f2)
 
 echo "== ${#ALVOS[@]} takes de fala (>= ${MIN_FALA}s), modelo=$MODELO"
@@ -47,7 +57,7 @@ for f in "${ALVOS[@]}"; do
   wav="$(mktemp -u).wav"
   ffmpeg -nostdin -y -v error -i "$src" -vn -ac 1 -ar 16000 "$wav" 2>/dev/null || { echo "    (sem audio)"; continue; }
 
-  MODELO="$MODELO" IDIOMA="$IDIOMA" WAV="$wav" DST="$dst" python - <<'PY' || echo "    (falhou)"
+  MODELO="$MODELO" IDIOMA="$IDIOMA" WAV="$wav" DST="$dst" "$PYTHON" - <<'PY' || echo "    (falhou)"
 import os, sys
 from faster_whisper import WhisperModel
 mdl = os.environ["MODELO"]; wav = os.environ["WAV"]; dst = os.environ["DST"]

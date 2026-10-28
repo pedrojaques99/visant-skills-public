@@ -9,7 +9,8 @@
  * afoga o achado novo) e imprime um placar só:
  *
  *   1. npx impeccable detect        tells de IA genérica
- *   2. npm run audit:design         token e cor crua (pulado se o repo não tiver)
+ *   2. npm run audit:design         token e cor crua (repo without a token gate:
+ *                                   built-in fallback, raw hex/rgb/hsl + Tailwind palette)
  *   3. copy-lint do visant-copy     vício de linguagem
  *
  * O pulo do gato está no 3: rodar copy-lint direto num .tsx enche a tela de
@@ -47,11 +48,24 @@ if (!targets.length && !selfTest) {
   console.error('uso: node killer-scan.mjs [--quiet] --report AUDIT.md <arquivos-ou-pastas>');
   console.error('     node killer-scan.mjs --init-report AUDIT.md <alvo>   (gera o esqueleto, uma linha por ROTA)');
   console.error('     node killer-scan.mjs --roots <alvo>                  (raiz primeiro: peça compartilhada × fan-out)');
-  console.error('     node killer-scan.mjs --self-test                     (checa o extrator de copy e o leitor de rotas)');
+  console.error('     node killer-scan.mjs --self-test                     (checa o extrator de copy, o leitor de rotas e o fallback de token)');
   process.exit(2);
 }
 
-const ROOT = process.cwd();
+/* The repo being audited is the nearest folder above the first target that has
+   a package.json or .git, not the cwd: run from anywhere, the token gate and
+   the npm scripts still read the audited repo. No marker found: cwd. */
+function repoRoot(start) {
+  let d = resolve(start);
+  if (existsSync(d) && !statSync(d).isDirectory()) d = dirname(d);
+  for (;;) {
+    if (existsSync(join(d, 'package.json')) || existsSync(join(d, '.git'))) return d;
+    const up = dirname(d);
+    if (up === d) return process.cwd();
+    d = up;
+  }
+}
+const ROOT = targets.length ? repoRoot(targets[0]) : process.cwd();
 const isWin = process.platform === 'win32';
 const npx = isWin ? 'npx.cmd' : 'npx';
 const npm = isWin ? 'npm.cmd' : 'npm';
@@ -101,7 +115,7 @@ if (!selfTest) {
     /* `resolve`, não o argumento cru: agente que chama o portão de fora manda
        caminho absoluto do Windows, e o script precisa tratar isso como o caso
        normal, não como a exceção. */
-    const a = resolve(ROOT, t);
+    const a = resolve(t);
     if (!existsSync(a)) {
       console.error(`alvo não existe: ${t}`);
       console.error(`  (resolvido para ${a})`);
@@ -169,11 +183,7 @@ function runDesignScannerFile() {
   ];
   const found = CANDIDATES.find((rel) => existsSync(join(ROOT, rel)));
   if (!found) {
-    return {
-      skipped:
-        'repo não tem audit:design/lint:design nem scripts/scan-design-*.mjs',
-      findings: [],
-    };
+    return runTokenFallback('repo has no audit:design/lint:design script nor scripts/scan-design-*.mjs');
   }
 
   /* `--all`: o scanner imprime só 5 locais por regra por padrão, e o portão
@@ -208,9 +218,113 @@ function runDesignScannerFile() {
   return { skipped: null, findings, via: found };
 }
 
+/* ---------- 2b. built-in token fallback ----------
+ *
+ * A repo without `audit:design` (no alias, no scanner file) used to lose one of
+ * the four gates: the scoreboard said SKIPPED and anyone running the skill
+ * outside the house had no color check at all. This is the minimum that holds
+ * in any repo, and it runs ONLY when the repo has no gate of its own (the
+ * repo's gate always wins).
+ *
+ * Conservative on purpose, because a noisy gate teaches people to ignore it:
+ *   hex-cru         `#abc` in .css (outside custom-property definitions and
+ *                   theme blocks) and, in .tsx/.jsx, only inside an arbitrary
+ *                   class (`bg-[#123456]`) or a color string in a style context
+ *   rgb-hsl-cru     `rgb(10,...)` / `hsl(210 ...)` with a literal number;
+ *                   `hsl(var(--x))` is the right way and is not flagged
+ *   paleta-tailwind `text-purple-500`, `bg-slate-900`: fixed palette color
+ *                   instead of a semantic token (in .css only via `@apply`)
+ *
+ * Left out: token/theme files (`tokens.css`, `theme.css`, `globals.css`,
+ * `*-theme.*`, `tailwind.config.*`, a `tokens/` or `theme/` folder), `:root`,
+ * `.dark`, `[data-theme]` and `@theme` blocks, comment lines, and any line with
+ * a written exception: `EXCEÇÃO ao token-fallback/<rule>: reason` on the same
+ * line or up to 8 lines above (same contract as the other scanners).
+ */
+const TF_EXT = /\.(tsx|jsx|css)$/;
+const TF_DIR_TEMA = /\/(tokens?|themes?)\//i;
+const TF_ARQ_TEMA = /(^|[-_.])(tokens?|themes?|globals?|palette|variables)$/i;
+const TF_TW_CONFIG = /^tailwind\.config\./i;
+const TF_PALETA = /\b(?:bg|text|border|ring|fill|stroke|from|via|to|outline|decoration|divide|placeholder|caret|accent|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|[1-9]00|950)\b/;
+const TF_ARBITRARIO = /\b(?:bg|text|border|ring|fill|stroke|from|via|to|outline|decoration|divide|shadow|caret|accent)-\[(?:#[0-9a-fA-F]{3,8}|rgba?\(\s*\d|hsla?\(\s*\d)/;
+const TF_COR_STRING = /(['"`])(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\(\s*\d[^)'"`]*\)|hsla?\(\s*\d[^)'"`]*\))\1/;
+const TF_CONTEXTO_ESTILO = /\b(?:color|colou?r|background|bg|fill|stroke|border|shadow|outline|style)\w*\s*[:=]/i;
+const TF_HEX_CSS = /(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b/;
+const TF_FUNC_CSS = /\b(?:rgba?|hsla?)\(\s*\d/;
+const TF_BLOCO_TEMA = /(:root|\.dark\b|\[data-theme|@theme)/;
+const TF_COMENTARIO = /^\s*(\{\s*)?(\/\/|\/\*|\*)/;
+
+function arquivoDeTema(f) {
+  const n = norm(f);
+  const base = n.split('/').pop();
+  const stem = base.replace(/\.[^.]+$/, '');
+  return TF_DIR_TEMA.test(n) || TF_ARQ_TEMA.test(stem) || TF_TW_CONFIG.test(base);
+}
+
+function excecaoTF(lines, i, regra) {
+  const re = new RegExp(`EXCE[ÇC][ÃA]O ao token-fallback/${regra}(?![\\w-])`);
+  for (let k = Math.max(0, i - 8); k <= i; k++) if (re.test(lines[k])) return true;
+  return false;
+}
+
+/** Scans the files and returns findings `{ file, linha, regra, amostra }`. */
+export function scanTokenFallback(lista) {
+  const achados = [];
+  for (const f of lista) {
+    if (!TF_EXT.test(f) || arquivoDeTema(f)) continue;
+    const lines = readFileSync(f, 'utf8').split(/\r?\n/);
+    const css = f.endsWith('.css');
+    const pilha = []; // .css only: true when the open block is a theme block
+    const acusa = (i, regra) => {
+      if (excecaoTF(lines, i, regra)) return;
+      achados.push({ file: f, linha: i + 1, regra, amostra: lines[i].trim().slice(0, 80) });
+    };
+    lines.forEach((line, i) => {
+      if (css) {
+        if (TF_COMENTARIO.test(line)) return;
+        const corte = line.lastIndexOf('{') + 1;
+        const tema = TF_BLOCO_TEMA.test(line);
+        for (const ch of line.slice(0, corte)) {
+          if (ch === '{') pilha.push(tema);
+          else if (ch === '}') pilha.pop();
+        }
+        const resto = line.slice(corte).replace(/\/\*.*?\*\//g, '');
+        if (!pilha.includes(true)) {
+          for (const decl of resto.split(/[;}]/)) {
+            if (!/^\s*[a-z-]+\s*:/i.test(decl) || /^\s*--/.test(decl)) continue;
+            if (TF_HEX_CSS.test(decl)) { acusa(i, 'hex-cru'); break; }
+            if (TF_FUNC_CSS.test(decl)) { acusa(i, 'rgb-hsl-cru'); break; }
+          }
+          if (/@apply/.test(resto) && TF_PALETA.test(resto)) acusa(i, 'paleta-tailwind');
+        }
+        for (const ch of resto) if (ch === '}') pilha.pop();
+        return;
+      }
+      if (TF_COMENTARIO.test(line)) return;
+      if (TF_ARBITRARIO.test(line)) acusa(i, /\[#/.test(line) ? 'hex-cru' : 'rgb-hsl-cru');
+      else if (TF_CONTEXTO_ESTILO.test(line) && TF_COR_STRING.test(line)) {
+        acusa(i, /(['"`])#/.test(line.match(TF_COR_STRING)[0]) ? 'hex-cru' : 'rgb-hsl-cru');
+      }
+      if (TF_PALETA.test(line)) acusa(i, 'paleta-tailwind');
+    });
+  }
+  return achados;
+}
+
+const TF_ROTULO = 'killer-scan built-in FALLBACK (raw hex/rgb/hsl, Tailwind palette)';
+
+function runTokenFallback(motivo) {
+  const achados = scanTokenFallback(files);
+  return {
+    skipped: null,
+    via: `${TF_ROTULO}; ${motivo}`,
+    findings: achados.map((a) => `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`),
+  };
+}
+
 function runAuditDesign() {
   const pkgPath = join(ROOT, 'package.json');
-  if (!existsSync(pkgPath)) return { skipped: 'sem package.json', findings: [] };
+  if (!existsSync(pkgPath)) return runTokenFallback('repo has no package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
   /* Nem todo repo batiza o portão de token de `audit:design`. O boxy-app chama
@@ -249,7 +363,7 @@ function runAuditDesign() {
       const f = norm(resolve(ROOT, m[1]));
       if (files.includes(f)) findings.push(`${disp(f)}:${m[2]}  ${section || 'token'}`);
     }
-    return { skipped: null, findings };
+    return { skipped: null, findings, via: `npm run ${scriptName}` };
   }
 
   const r = spawnSync(npm, ['run', '--silent', scriptName, '--', `--file=${targets[0]}`], {
@@ -271,7 +385,7 @@ function runAuditDesign() {
       findings.push(`${current}:${m[2]}  ${m[1]}`);
     }
   }
-  return { skipped: null, findings };
+  return { skipped: null, findings, via: 'npm run audit:design' };
 }
 
 /* ---------- 3. copy: extrai só o que o usuário lê ---------- */
@@ -1018,7 +1132,43 @@ function runSelfTest() {
     console.log('[OK]    leitor de rotas (3 rotas, 1 redirecionamento, pista de shell)');
   }
 
-  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length;
+  /*
+   * The built-in token fallback, both ways: it must fire on the dirty fixtures
+   * (every ACUSA line flagged, no CALA line flagged) and stay silent on the
+   * clean ones and on a theme file full of raw colors.
+   */
+  const tokenFalhas = [];
+  {
+    const fx = (n) => norm(join(here, 'fixtures', n));
+    const sujos = ['token-fallback-sujo.tsx', 'token-fallback-sujo.css'].map(fx);
+    const limpos = ['token-fallback-limpo.tsx', 'token-fallback-limpo.css', 'token-fallback-theme.css'].map(fx);
+    for (const f of [...sujos, ...limpos]) if (!existsSync(f)) tokenFalhas.push(`fixture missing: ${f}`);
+    if (!tokenFalhas.length) {
+      const got = scanTokenFallback(sujos);
+      const hit = new Set(got.map((a) => `${a.file}:${a.linha}`));
+      for (const f of sujos) {
+        readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => {
+          if (/^\s*(\{\s*)?(\/\/|\/\*|\*)/.test(line) && !/;\s*\/\*/.test(line)) return;
+          const k = `${f}:${i + 1}`;
+          const nome = `${f.split('/').pop()} line ${i + 1}`;
+          if (line.includes('ACUSA') && !hit.has(k)) tokenFalhas.push(`${nome}: marked ACUSA, not flagged`);
+          if (line.includes('CALA') && hit.has(k)) tokenFalhas.push(`${nome}: marked CALA, flagged`);
+        });
+      }
+      for (const a of scanTokenFallback(limpos)) {
+        tokenFalhas.push(`${a.file.split('/').pop()} line ${a.linha}: clean fixture flagged (${a.regra})`);
+      }
+      if (!got.length) tokenFalhas.push('fallback flagged nothing on the dirty fixtures');
+    }
+  }
+  if (tokenFalhas.length) {
+    console.log(`[FALHA] token fallback: ${tokenFalhas.length}`);
+    for (const f of tokenFalhas) console.log(`          ${f}`);
+  } else {
+    console.log('[OK]    token fallback (fires on the dirty fixtures, silent on clean and theme files)');
+  }
+
+  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length;
   console.log('-'.repeat(64));
   console.log(
     failed
@@ -1053,7 +1203,7 @@ if (selfTest) runSelfTest();
 const SURFACE_RE = /\b(A|B|C)\b/;
 
 function readReport(path) {
-  const abs = resolve(ROOT, path);
+  const abs = resolve(path);
   if (!existsSync(abs)) return { fatal: `relatório não existe: ${abs}` };
   const text = readFileSync(abs, 'utf8');
 
@@ -1190,7 +1340,7 @@ function gateZero(reportPath) {
    montar a tabela na mão é exatamente o motivo de todo mundo pular esse passo,
    e um passo que se pula não é um portão. */
 if (initReport) {
-  const abs = resolve(ROOT, initReport);
+  const abs = resolve(initReport);
   if (existsSync(abs)) {
     console.error(`já existe: ${abs} — não vou sobrescrever.`);
     process.exit(2);
@@ -1320,6 +1470,20 @@ for (const g of gates) {
     const extra = g.strings != null ? ` (${g.strings} string(s) de interface)` : '';
     console.log(`[OK]     ${g.id}  zero${extra}`);
   }
+  if (g.via && !quiet) console.log(`           via ${g.via}`);
+}
+
+/* One line that says what ran and what did not. A skipped gate read as a pass
+   is the most expensive failure of this script; here it has nowhere to hide. */
+{
+  const nome = (g) => g.id.trim().split(/\s+/)[0];
+  const ran = gates.filter((g) => !g.skipped).map((g) => (g.via?.startsWith(TF_ROTULO) ? `${nome(g)} (fallback)` : nome(g)));
+  const skipped = gates.filter((g) => g.skipped).map((g) => `${nome(g)} (${g.skipped})`);
+  console.log('');
+  console.log(
+    `gates: ${ran.length}/${gates.length} ran [${ran.join(', ')}]` +
+      (skipped.length ? `; SKIPPED: ${skipped.join('; ')}` : '; none skipped'),
+  );
 }
 
 /* ---------- --roots: raiz primeiro ----------

@@ -7,6 +7,10 @@
 #   MUSIC="../musica.mp3" bash _tools/build.sh
 #   OUT=v2 bash _tools/build.sh
 set -euo pipefail
+# md5 portavel: md5sum (Linux/Git Bash), md5 -q (macOS) ou openssl
+md5_de() { if command -v md5sum >/dev/null 2>&1; then md5sum | cut -d' ' -f1
+           elif command -v md5 >/dev/null 2>&1; then md5 -q
+           else openssl md5 -r | cut -d' ' -f1; fi; }
 
 BASE="${PROJ:-$PWD}"      # raiz do projeto (_build/ e _out/ moram aqui)
 ROOT="${SRC:-$BASE}"          # pasta com as midias (SRC= aponta pra fora)
@@ -149,7 +153,7 @@ while IFS=$'\t' read -r -u 9 f tin tout afile ain || [ -n "${f:-}" ]; do
   fi
 
   key="$(printf '%s|%s|%s|%s|%s|%s|%s|%s|%s|%s' \
-          "$f" "$tin" "$tout" "$fl" "$W" "$H" "$FPS" "$LOUD-$SR-a2" "${afile:-}" "$ain" | md5sum | cut -c1-12)"
+          "$f" "$tin" "$tout" "$fl" "$W" "$H" "$FPS" "$LOUD-$SR-a2" "${afile:-}" "$ain" | md5_de | cut -c1-12)"
   dst="$CLIPS/${key}.mp4"
 
   if [ -f "$dst" ] && [ "$dst" -nt "$src" ]; then

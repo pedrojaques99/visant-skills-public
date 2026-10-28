@@ -9,6 +9,10 @@
 #       bash self-test.sh -v         # mostra a saida dos scripts
 #       KEEP=1 bash self-test.sh     # nao apaga o sandbox (pra debugar)
 set -uo pipefail
+# md5 portavel: md5sum (Linux/Git Bash), md5 -q (macOS) ou openssl
+md5_de() { if command -v md5sum >/dev/null 2>&1; then md5sum | cut -d' ' -f1
+           elif command -v md5 >/dev/null 2>&1; then md5 -q
+           else openssl md5 -r | cut -d' ' -f1; fi; }
 
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VERBOSE=0; [ "${1:-}" = "-v" ] && VERBOSE=1
@@ -98,9 +102,9 @@ aval "todo corte do roteiro chega no concat (5 de 5)" "$n" "5"
 # Chave de cache por POSICAO (001.mp4) reaproveita o corte de um roteiro velho
 # pra um clipe diferente: video errado, silencioso.
 edl 'horiz.mp4\t0\t1\n'
-roda bash "$AQUI/build.sh" ; h1="$(md5sum "$PROJ/_out/vlog.mp4" | cut -d' ' -f1)"
+roda bash "$AQUI/build.sh" ; h1="$(md5_de < "$PROJ/_out/vlog.mp4")"
 edl 'horiz2.mp4\t0\t1\n'
-roda bash "$AQUI/build.sh" ; h2="$(md5sum "$PROJ/_out/vlog.mp4" | cut -d' ' -f1)"
+roda bash "$AQUI/build.sh" ; h2="$(md5_de < "$PROJ/_out/vlog.mp4")"
 if [ "$h1" != "$h2" ]; then passou "clipe diferente no mesmo slot re-encoda"
 else falha "clipe diferente no mesmo slot re-encoda" "saiu video identico: cache colidiu por posicao"; fi
 
@@ -296,10 +300,10 @@ fi
 
 # ---------------------------------------------------------------- 12. FONTE
 # O pipeline nunca pode escrever na pasta de midia do cliente.
-antes="$(ls -la "$SANDBOX/src" | md5sum)"
+antes="$(ls -la "$SANDBOX/src" | md5_de)"
 edl 'horiz.mp4\t0\t1\n'
 roda bash "$AQUI/build.sh"
-depois="$(ls -la "$SANDBOX/src" | md5sum)"
+depois="$(ls -la "$SANDBOX/src" | md5_de)"
 aval "pasta de origem intocada" "$depois" "$antes"
 
 # ---------------------------------------------------------------- resultado

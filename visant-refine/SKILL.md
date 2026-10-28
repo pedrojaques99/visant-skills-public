@@ -1,175 +1,194 @@
 ---
 name: visant-refine
-description: 'Sub-skill do visant-killer: desenha gráfico, gauge, sparkline, slider de simulação e tile de métrica com anatomia própria, pra tela parecer desenhada e não montada. Use em "adicionar chart", "gráfico", "slider", "simulador", "medidor", "sparkline", "burilar", "refinar", "deixar mais desenhado".'
+description: 'visant-killer sub-skill: designs charts, gauges, sparklines, simulation sliders and metric tiles with one shared anatomy, so a screen looks designed, not assembled. Use on "add a chart", "simulator slider", "sparkline", "polish this", "adicionar chart", "gráfico", "medidor", "burilar", "refinar", "deixar mais desenhado".'
 ---
 
 # Visant Refine
 
-Acabamento. Esta skill assume que a decisão de **incluir** o elemento já foi
-tomada e defendida em outro lugar, e responde só como ele é desenhado.
+Finishing. This skill assumes the decision to **include** the element was
+already made and defended elsewhere, and only answers how it is drawn.
 
-## A hierarquia, e ela não é negociável
+## The hierarchy, and it is not negotiable
 
-| Skill | Decide |
+| Skill | Decides |
 |---|---|
-| `visant-frontend` | **se** o elemento existe, e qual variável de negócio ele move. O *cut test* roda lá. |
-| `dataviz` | se o gráfico está **correto**: forma, cor por função, validação de paleta, anti-padrão. |
-| `visant-motion` | o **SSoT** de easing e duração, e as gotchas de React, Tailwind e Radix. |
-| `revenue-centric-design` | **por que** animar isto e não aquilo (para onde a atenção é dirigida). |
-| **esta skill** | como o elemento é desenhado, e como ele parece da mesma família dos vizinhos. |
+| `visant-frontend` | **whether** the element exists, and which business variable it moves. The *cut test* runs there. |
+| `dataviz` | whether the chart is **correct**: form, color by function, palette validation, anti-patterns. |
+| `visant-motion` | the **SSoT** for easing and duration, plus the React, Tailwind and Radix gotchas. |
+| `revenue-centric-design` | **why** animate this and not that (where attention is directed). |
+| **this skill** | how the element is drawn, and how it looks like the same family as its neighbors. |
 
-**Refine nunca justifica um elemento.** Se a resposta para "que variável isso
-move" for silêncio, o conserto é apagar, não burilar. Um gráfico bonito de um dado
-que ninguém usa é slop com acabamento melhor, e custa mais atenção que a versão
-feia.
+**Refine never justifies an element.** If the answer to "which variable does
+this move" is silence, the fix is to delete, not polish. A beautiful chart of
+data nobody uses is slop with better finishing, and it costs more attention than
+the ugly version.
 
-Ordem de trabalho, sempre nesta sequência:
+Work order, always in this sequence:
 
-1. Passar o *cut test* do `visant-frontend`. Nomeie a variável por elemento.
-2. Inventariar o que já existe. Ver "Antes de desenhar" abaixo.
-3. Escolher a forma. Carregue `dataviz` **antes** da primeira linha de gráfico.
-4. Desenhar com a anatomia única (tabela abaixo).
-5. Só então decidir a animação, com [references/motion-inteligente.md](references/motion-inteligente.md).
-6. Verificar como manda o `visant-frontend` (390px com dado real, backend parado,
-   teclado), e rodar os dois portões:
+1. Pass the `visant-frontend` *cut test*. Name the variable per element.
+2. Inventory what already exists. See "Before drawing" below.
+3. Pick the form. Load `dataviz` **before** the first line of chart code.
+4. Draw with the shared anatomy (table below).
+5. Only then decide the animation, with [references/smart-motion.md](references/smart-motion.md).
+6. Verify the way `visant-frontend` says (390px with real data, backend down,
+   keyboard), and run both gates:
 
 ```bash
-node ~/.claude/skills/visant-refine/scripts/refine-scan.mjs <alvo>   # camada de acabamento
-node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --report AUDIT.md <alvo>
+node ~/.claude/skills/visant-refine/scripts/refine-scan.mjs <target>   # finishing layer
+node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --report AUDIT.md <target>
 ```
 
-O `--report` não é opcional: o `killer-scan` recusa imprimir "portão aberto" sem
-a tabela de superfícies e a seção `## Tela vista` (gere o esqueleto com
-`--init-report AUDIT.md`). E um zero do `refine-scan` sozinho **não** é passada
-completa — foi exatamente assim que uma rodada real pulou o `visant-frontend`
-inteiro: dois detectores zerados dão sensação de acabamento porque terminam em
-exit code.
+`--report` is not optional: `killer-scan` refuses to print "gate open" without
+the surface table and the `## Tela vista` section (generate the skeleton with
+`--init-report AUDIT.md`). And a zero from `refine-scan` alone is **not** a
+complete pass: a clean detector feels like finishing because it ends in an exit
+code, and that is exactly how `visant-frontend` gets skipped entirely.
 
-`refine-scan` tem seis regras, todas de coisa que compila, passa no lint e mesmo
-assim quebra: cor crua em prop de gráfico (só em arquivo que importa recharts),
-gráfico sem `ChartState`, `id` de `defs` sem escopo, easing ou duração fora do
-SSoT, `transition-all` e `ease-in` em UI, e animação de largura ou altura.
-Achado em `components/ui` é suprimido (primitivo upstream) e **contado no fim**,
-nunca calado. `--self-test` prova as seis regras nos dois sentidos antes de você
-confiar num zero.
+`refine-scan` has six rules, all for things that compile, pass lint and still
+break: raw color in a chart prop (only in files that import recharts), chart
+without a state wrapper, unscoped `defs` `id`, easing or duration outside the
+SSoT, `transition-all` and `ease-in` in UI, and width or height animation.
+The state wrapper counts if the file mentions `ChartState`, `isEmpty`, `noData`,
+`semDado` or `vazio`, so it works in any repo. Findings in `components/ui` are
+suppressed (upstream primitive) and **counted at the end**, never hidden.
+`--self-test` proves the six rules both ways before you trust a zero. Its output
+is in Portuguese.
 
-## Antes de desenhar
+## Before drawing: discover what the repo already has
 
-Nada de primitivo novo sem procurar primeiro. No `visant-board` já existem, e é
-por isso que quase todo pedido de refino é composição e não construção:
+No new primitive without searching first. Almost every refine request is
+composition, not construction, but you only know after looking. Run at the root
+of the target repo, in this order:
 
-| Precisa de | Já existe |
-|---|---|
-| gráfico | `recharts` 2.x, mais `CustomChartTooltip` e `ChartState` em `components/admin/finance/` |
-| estados do gráfico | `ChartState` (skeleton em forma de barra, e vazio que fala) |
-| slider | `components/ui/slider.tsx` (Radix) |
-| barra de razão | `components/ui/progress.tsx` |
-| esqueleto | `components/ui/skeleton.tsx` |
-| easing e duração | `lib/motion.ts` e os tokens `--ease-*` e `--dur-*` |
-| peça já refinada, de qualquer projeto | a library da Visant, [ui.visantlabs.com](https://ui.visantlabs.com/llms.txt): `gauge`, `sim-slider`, `measure-bar`, `activity-heatmap`, `streamgraph`, `count-up`, `elastic-slider`, `skeleton-rail` |
+```bash
+# 1. installed chart lib (recharts, visx, nivo, chart.js, echarts, d3)
+grep -E '"(recharts|@visx/[a-z-]+|@nivo/[a-z-]+|chart\.js|react-chartjs-2|echarts|d3)"' package.json
+# 2. existing chart state wrapper and tooltip
+grep -rlE 'ChartState|ChartContainer|ChartTooltip|isEmpty' --include=*.tsx --exclude-dir=node_modules .
+# 3. slider, ratio bar and skeleton primitives
+find . -path ./node_modules -prune -o -type f \( -iname 'slider.tsx' -o -iname 'progress.tsx' -o -iname 'skeleton.tsx' \) -print
+# 4. motion tokens (easing and duration SSoT)
+grep -rnE -- '--(ease|dur|duration)-[a-z0-9-]+:' --include=*.css --exclude-dir=node_modules . | head
+find . -path ./node_modules -prune -o -type f -iname 'motion.ts*' -print
+# 5. color token format (bare HSL channels or full color)
+grep -nE -- '--(primary|muted-foreground|destructive):' $(find . -path ./node_modules -prune -o -name 'globals.css' -print)
+```
 
-Componente de design system não se cria nem se edita sem autorização explícita.
-Falta a peça: procure primeiro na library da Visant
-(`npx shadcn@latest add @visant/<nome>`, com
-`"@visant": "https://ui.visantlabs.com/r/{name}.json"` no `components.json`;
-a ficha de cada uma em `/r/<nome>.md`), depois o primitivo oficial
-(`npx shadcn@latest add ...`). Avise antes. Sobrescrita de default de primitivo vai **no consumidor**.
+Write down what you found in a "need | exists at" table before the first line.
+For whatever is missing, search in this order:
 
-## A anatomia única
+1. **The repo itself** (the commands above).
+2. **The Visant library**, [ui.visantlabs.com](https://ui.visantlabs.com/llms.txt),
+   already-refined pieces from any project: `gauge`, `sim-slider`, `measure-bar`,
+   `activity-heatmap`, `streamgraph`, `count-up`, `elastic-slider`, `skeleton-rail`.
+   Install with `npx shadcn@latest add @visant/<name>`, with
+   `"@visant": "https://ui.visantlabs.com/r/{name}.json"` in `components.json`;
+   each one's spec sheet at `/r/<name>.md`.
+3. **The official shadcn primitive** (`npx shadcn@latest add slider progress skeleton`).
 
-O que faz uma tela parecer desenhada não é cada elemento ser bonito, é todos
-contarem a mesma coisa na mesma ordem. Todo elemento de acabamento carrega estes
-quatro papéis, sempre na mesma sequência visual:
+Design system components are never created or edited without explicit
+permission. Warn before installing. Primitive default overrides go **in the
+consumer**.
 
-| Papel | O que é | Como aparece |
+## The shared anatomy
+
+What makes a screen look designed is not each element being beautiful, it is all
+of them telling the same thing in the same order. Every finishing element
+carries these four roles, always in the same visual sequence:
+
+| Role | What it is | How it shows |
 |---|---|---|
-| **rótulo** | o nome do que está sendo medido | `text-xs uppercase tracking-wider text-muted-foreground` |
-| **valor** | o número que decide | maior peso do bloco, `tabular-nums`, neutro |
-| **qualificador** | a régua que dá sentido ao valor (limite, meta, período, base) | `text-xs text-muted-foreground`, colado no valor |
-| **evidência** | a forma que mostra o valor contra a régua | barra, gauge, sparkline, faixa |
+| **label** | the name of what is measured | `text-xs uppercase tracking-wider text-muted-foreground` |
+| **value** | the number that decides | heaviest weight in the block, `tabular-nums`, neutral |
+| **qualifier** | the ruler that gives the value meaning (limit, goal, period, base) | `text-xs text-muted-foreground`, next to the value |
+| **evidence** | the shape that shows the value against the ruler | bar, gauge, sparkline, band |
 
-Regras que valem para os quatro, em qualquer elemento:
+Rules for all four, in any element:
 
-- **Cor é exceção.** Um neutro, e cor só onde existe exceção real. Texto usa token
-  de texto, nunca a cor da série. Cor segue a entidade, nunca a posição no ranking.
-- **Nenhum número sem régua.** Valor sem qualificador é trivia. "R$ 25.201,42" não
-  diz nada; "11,3% da receita bruta" diz.
-- **Sem denominador não existe razão.** Denominador zero é `null` e a linha não
-  renderiza. "0,0%" afirma fato falso.
-- **A forma só vale dentro do domínio dela.** Barra de razão tem escala enquanto o
-  valor cabe no limite; passando dele ela satura e mente, e o número que diz o
-  quanto passou substitui a barra. Isso não é detalhe, é a regra que mais aparece.
-- **Vazio, erro e carregando são três estados**, e os três têm desenho.
-- **A mesma família nas duas pontas:** ao adicionar o segundo elemento de um tipo,
-  extraia o primeiro. Duas variantes da mesma coisa é o começo de três.
+- **Color is the exception.** One neutral, and color only where there is a real
+  exception. Text uses a text token, never the series color. Color follows the
+  entity, never the ranking position.
+- **No number without a ruler.** A value without a qualifier is trivia.
+  "R$ 25.201,42" says nothing; "11,3% da receita bruta" does.
+- **No denominator, no ratio.** Zero denominator is `null` and the row does not
+  render. "0,0%" states a false fact.
+- **A shape is only valid inside its domain.** A ratio bar has scale while the
+  value fits the limit; past it, the bar saturates and lies, and the number
+  saying how far it went replaces the bar. This is not a detail, it is the rule
+  that shows up most.
+- **Empty, error and loading are three states**, and all three are designed.
+- **Same family at both ends:** when adding the second element of a kind,
+  extract the first. Two variants of the same thing is the start of three.
 
-Catálogo dos elementos, cada um com anatomia, props e o erro que ele costuma
-cometer: [references/elementos.md](references/elementos.md).
+Element catalog, each with anatomy, props and its typical mistake:
+[references/elements.md](references/elements.md).
 
-## Gráfico
+## Charts
 
-Carregue `dataviz` e siga o procedimento dele. O que muda na Visant, e não está lá:
+Load `dataviz` and follow its procedure. What changes here, and is not there:
 
-- **Cor de série sai de token, e o formato do token se confere antes da primeira
-  linha.** Onde o CSS guarda canal HSL solto (`--primary: 0 0% 9%`, o caso do
-  visant-board) a prop precisa do envelope: `stroke="hsl(var(--primary))"`. O
-  `var(--primary)` pelado entrega a string `0 0% 9%`, que não é cor, e o traço
-  desaparece sem erro em `tsc`, lint ou detector. Palette crua do Tailwind e hex
-  no JSX também não entram: `text-purple-400` já passou batido por dois
-  detectores neste repo.
-- **`ChartState` envolve todo gráfico.** Eixo vazio com moldura é o "0 itens" da
-  dataviz.
-- **`id` de `clipPath` e de `defs` colide por nome.** Dois gráficos na mesma página
-  com o mesmo `id` se sobrescrevem; escope por instância.
-- **Limite e meta são `ReferenceLine`**, com rótulo, não uma cor de fundo. A linha
-  é o fato; a cor seria opinião.
-- **`description` e payload pesado ficam fora do dado do gráfico.**
+- **Series color comes from a token, and the token format is checked before the
+  first line** (command 5 above). Where the CSS stores bare HSL channels
+  (`--primary: 0 0% 9%`, the older shadcn default) the prop needs the wrapper:
+  `stroke="hsl(var(--primary))"`. Bare `var(--primary)` yields the string
+  `0 0% 9%`, which is not a color, and the stroke disappears with no error in
+  `tsc`, lint or detector. Raw Tailwind palette and hex in JSX are out too: a
+  class like `text-purple-400` slips past generic detectors.
+- **A state wrapper surrounds every chart** (the repo's `ChartState`, or the
+  equivalent command 2 found). An empty framed axis is dataviz's "0 items".
+- **`clipPath` and `defs` ids collide by name.** Two charts on the same page with
+  the same `id` overwrite each other; scope per instance.
+- **Limits and goals are a `ReferenceLine`**, labeled, not a background color.
+  The line is the fact; the color would be opinion.
+- **`description` and heavy payloads stay out of the chart data.**
 
-Receitas prontas em recharts (limite com `ReferenceLine`, acumulado que cruza a
-faixa, sparkline sem eixo, gauge de razão) e o mapa de token por função:
+Ready recharts recipes (limit with `ReferenceLine`, cumulative crossing a band,
+axis-less sparkline, ratio gauge) and the token-by-function map:
 [references/charts.md](references/charts.md).
 
-## Simulação por slider
+## Slider simulation
 
-Um slider que projeta cenário é uma máquina de mentir se o desenho não separar
-projeção de fato. O contrato mínimo:
+A slider that projects a scenario is a lying machine if the design does not
+separate projection from fact. The minimum contract:
 
-1. **O valor real fica na tela, sempre**, marcado na própria trilha, e o rótulo
-   diz qual é qual. Dois números da mesma unidade e de espécies diferentes sem
-   rótulo corrompem a leitura.
-2. **Parada nos limites que importam.** O slider para nos números que mudam a
-   decisão (o teto do MEI, o teto do Simples), não em múltiplos redondos.
-3. **A faixa é desenhada na trilha**, para o usuário ver onde o regime muda antes
-   de arrastar.
-4. **Voltar ao real é um clique**, e ele aparece só quando há simulação em curso.
-5. **Nada persiste.** Simulação não escreve no banco, e a URL só carrega o estado
-   se o compartilhamento for parte do pedido.
-6. **Teclado move**, `aria-valuetext` fala o valor formatado.
+1. **The real value stays on screen, always**, marked on the track itself, and
+   the label says which is which. Two numbers of the same unit and different
+   kinds without labels corrupt the reading.
+2. **Stops at the limits that matter.** The slider stops at the numbers that
+   change the decision (a regime ceiling, a tax bracket), not at round multiples.
+3. **The band is drawn on the track**, so the user sees where the regime changes
+   before dragging.
+4. **Back to real is one click**, and it only shows while a simulation is active.
+5. **Nothing persists.** Simulation does not write to the database, and the URL
+   only carries state if sharing is part of the request.
+6. **Keyboard moves it**, `aria-valuetext` speaks the formatted value.
 
-Contrato completo, com o padrão de estado e os erros clássicos:
-[references/simuladores.md](references/simuladores.md).
+Full contract, with the state pattern and the classic mistakes:
+[references/simulators.md](references/simulators.md).
 
-## Animação inteligente
+## Smart animation
 
-Inteligente quer dizer **escolhida pela variável**, não pela oportunidade. A regra
-que gera as outras: anima o que carrega a decisão, na hora em que a decisão muda.
+Smart means **chosen by the variable**, not by opportunity. The rule that
+generates the others: animate what carries the decision, at the moment the
+decision changes.
 
-- Valor que o usuário está produzindo com a mão (arrastando o slider) **não anima**:
-  ele segue o dedo. Animar aqui é latência com boa aparência.
-- Valor que muda **por consequência** (o total que o slider recalculou, depois que
-  ele soltou) pode contar até o novo número, curto, uma vez.
-- **Cruzar um limite é evento**, e evento merece peso: a mudança de estado da faixa
-  é a animação, não um brilho no card.
-- Nada anima na montagem se o usuário já leu aquele número na navegação anterior.
-- Cem vezes por dia não anima.
+- A value the user is producing by hand (dragging the slider) **does not
+  animate**: it follows the finger. Animating here is latency that looks nice.
+- A value that changes **as a consequence** (the total the slider recalculated,
+  after release) may count up to the new number, short, once.
+- **Crossing a limit is an event**, and an event deserves weight: the band's
+  state change is the animation, not a glow on the card.
+- Nothing animates on mount if the user already read that number in the previous
+  navigation.
+- A hundred times a day does not animate.
 
-Tabela de decisão por caso, com os valores do SSoT:
-[references/motion-inteligente.md](references/motion-inteligente.md).
+Decision table per case, with SSoT values:
+[references/smart-motion.md](references/smart-motion.md).
 
-## Caso trabalhado: o painel fiscal
+## Worked case: tax panel
 
-`/admin/fiscal` é o exemplo canônico dos três assuntos juntos, e está escrito passo
-a passo (o que entrou, o que foi recusado e por quê) em
-[references/caso-painel-fiscal.md](references/caso-painel-fiscal.md). Leia antes de
-refinar qualquer painel de número, porque os erros são os mesmos: barra que satura,
-projeção que se confunde com fato, e animação em cima do dado errado.
+A tax simulation panel is the canonical example of all three topics together,
+written step by step (what went in, what was refused and why) in
+[references/tax-panel-case.md](references/tax-panel-case.md). Read it before
+refining any number panel, because the mistakes are the same: a saturating bar,
+projection confused with fact, and animation on the wrong data.
