@@ -9,14 +9,16 @@ description: 'Assembles a rough cut in Premiere Pro via premiere-pro-mcp from a 
 
 | Needed for | What | Check |
 |---|---|---|
-| everything | Windows or macOS with Adobe Premiere Pro (measured on 2026 / 26.x, PT-BR UI) | open Premiere |
+| everything | Windows or macOS with Adobe Premiere Pro (measured on 2026 / 26.x) | open Premiere |
 | everything | premiere-pro-mcp with the CEP backend and the MCP Bridge panel open (Window > Extensions > MCP Bridge); measured on 1.17 | MCP tool `verify_premiere_connection` |
 | everything | ffmpeg + ffprobe on PATH | `ffprobe -version` |
 | `premiere_xml.py` | Python 3 + `opentimelineio` + `otio-fcp-adapter` (`pip install opentimelineio otio-fcp-adapter`) | `python -c "import opentimelineio as o; o.adapters.from_name('fcp_xml')"` |
 | `figma_cards.py` | Python 3 (stdlib only) + Figma MCP (`use_figma`, `get_screenshot`) with skills `figma-use`, `figma-use-slides` | `python --version` |
 
-Effect names in this skill are the PT-BR UI names (`Movimento`, `Escala`, `Posição`). On another
-locale, read them with `get_effect_properties` first.
+Works with Premiere in English or Portuguese (PT-BR). The XML holds no effect names; the MCP calls
+take the UI names, mapped in `PREMIERE_NAMES` in `scripts/premiere_xml.py`. Another UI language:
+add its column there. Unsure which names this Premiere uses: save a `get_effect_properties`
+readback and run `python scripts/premiere_xml.py --names <file>`.
 
 **Shipped here:** `scripts/premiere_xml.py` (plan → FCP7 XML, motion table, checker),
 `scripts/figma_cards.py` (cards JS for Figma Slides) and `scripts/icons/` (Simple Icons, CC0).
@@ -57,12 +59,12 @@ This skill does not decide cuts, it only carries the plan into Premiere without 
 5. **Relink**: XML media comes in offline even with the right path. `search_project_items` with
    `offline_only`, then `relink_media` of each item to the same path. Up to 4 in parallel works.
 6. **Punch-in** (face shots only): `python scripts/premiere_xml.py --motion <plan.json>` gives the
-   table. Apply with `set_effect_property`, effect `Movimento`, `Escala` (%) and normalized
-   `Posição` `[x/w, y/h]`. In PT-BR `set_clip_properties_batch` fails.
+   table. Apply with `set_effect_property` on Motion > Scale (Movimento > Escala), in %, and
+   normalized Position (Posição) `[x/w, y/h]`. `set_clip_properties_batch` fails on a PT-BR UI.
    **Animated push-in** (only with the user's approval, showing first and last frame sheets
    first): `add_keyframe` only accepts numbers, so Position does not animate. Put the
-   `Ponto de ancoragem` (anchor point) on the face `[cx/w, cy/h]` and `Posição` on the target
-   `[0.5, 0.38]`, and animate only `Escala`. Keyframe time is SOURCE time: use `inPoint` from
+   Anchor Point (Ponto de ancoragem) on the face `[cx/w, cy/h]` and Position on the target
+   `[0.5, 0.38]`, and animate only Scale. Keyframe time is SOURCE time: use `inPoint` from
    `get_clip_properties` and `inPoint + duration − 1 frame`.
 7. **Marker colors**: the XML carries no color. Use `update_marker(time_seconds, color=1)` (red)
    on shot markers; speech stays default (0, green).

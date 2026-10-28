@@ -34,15 +34,15 @@ Nine rules, all with the same output format (`file:line`):
 
 | rule | what it flags | floor |
 |---|---|---|
-| `rotulo-gritado` | `uppercase` + `tracking-*` + micro body size, three or more on the same screen | 3 |
-| `ensina-a-usar` | imperative glued to the mechanism: "clique **para**", "arraste **o**", "click **to**", "hover over" | 1 |
-| `legenda-do-que-vem` | a sentence narrating the content right below: "as peças **abaixo**", "the panels **below**" | 1 |
-| `verbo-por-item` | a constant action word repeated once per list item ("add", "copiar", "open") | 1 |
-| `mesma-info-dois-tamanhos` | two sentences on the same screen sharing 50%+ of their content words | 1 |
-| `seta-glifo` | `→` in text where a library icon belongs | 1 |
-| `icone-desenhado-a-mao` | a hand-drawn 24×24 SVG that an import would replace | 1 |
-| `realce-que-nao-decide` | highlight hardcoded to `true` in an item factory: the whole list lights up | 1 |
-| `porta-repetida` | the same data entry point named in two files (the only rule ACROSS files) | 1 |
+| `shouting-label` | `uppercase` + `tracking-*` + micro body size, three or more on the same screen | 3 |
+| `usage-instruction` | imperative glued to the mechanism: "clique **para**", "arraste **o**", "click **to**", "hover over" | 1 |
+| `caption-of-what-follows` | a sentence narrating the content right below: "as peças **abaixo**", "the panels **below**" | 1 |
+| `verb-per-item` | a constant action word repeated once per list item ("add", "copiar", "open") | 1 |
+| `same-info-twice` | two sentences on the same screen sharing 50%+ of their content words | 1 |
+| `arrow-glyph` | `→` in text where a library icon belongs | 1 |
+| `hand-drawn-icon` | a hand-drawn UI glyph SVG (16/20/24 grid) that an import would replace; icon files and brand marks stay out | 1 |
+| `highlight-at-rest` | highlight hardcoded to `true` in an item factory: the whole list lights up | 1 |
+| `repeated-door` | the same data entry point named in two files (the only rule ACROSS files) | 1 |
 
 **A finding is a cut candidate, not an automatic fix.** One of those lines may be
 the only one that actually guides.
@@ -102,7 +102,7 @@ The detector honors the exception **if the reason is written**: a comment within
 the eight lines above the finding, naming the rule.
 
 ```tsx
-/* EXCEÇÃO ao `ruido-scan/ensina-a-usar`: o `shift` para ajuste fino é invisível
+/* EXCEÇÃO ao `ruido-scan/usage-instruction`: o `shift` para ajuste fino é invisível
    por natureza, não existe pixel que anuncie um modificador de teclado. */
 <span>arrasta pra cima e pra baixo, shift para fino</span>
 ```
@@ -144,8 +144,8 @@ Nothing to install. Three things to check on the first round:
    became 13.
 2. **The language.** The rules speak Portuguese and English. Another language
    needs the gesture verbs added, and only that: the class rules
-   (`rotulo-gritado`) and the overlap rules (`mesma-info`) are language-agnostic.
-3. **The size convention.** `rotulo-gritado` looks for `text-xs`, `text-micro`,
+   (`shouting-label`) and the overlap rules (`same-info-twice`) are language-agnostic.
+3. **The size convention.** `shouting-label` looks for `text-xs`, `text-micro`,
    `text-rotulo` and `text-[10px|11px]`. A repo with its own type scale needs
    that scale's name in the rule, or the rule finds nothing.
 

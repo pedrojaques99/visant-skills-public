@@ -21,7 +21,8 @@
 
 import { existsSync, readFileSync, readdirSync, statSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve, relative, isAbsolute, sep } from 'node:path';
+import { dirname, join, resolve, relative, isAbsolute, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes('--json');
@@ -48,9 +49,40 @@ function walk(dir, out = []) {
 /* Each rule receives the project context and returns findings. The context is a
    plain object so --self-test can build a fake project. */
 
+/* Rule ids were Portuguese until 2026-10. dist-scan has no in-code exception
+   syntax, so the old ids only live in notes, AUDIT.md files and scripts that
+   grep the output. `ruleId()` maps them to the current id, and --json carries
+   the old id as `legacyId` so a grep for the old name still finds the finding. */
+export const LEGACY_IDS = {
+  'sem-metadata': 'no-metadata',
+  'rota-sem-titulo-proprio': 'route-without-title',
+  'sem-description': 'no-description',
+  'sem-og-image': 'no-og-image',
+  'og-relativo-sem-metadataBase': 'relative-og-without-metadatabase',
+  'sem-sitemap': 'no-sitemap',
+  'sem-robots': 'no-robots',
+  'sem-lang': 'no-lang',
+  'conversao-nao-medida': 'conversion-not-measured',
+  'sem-favicon': 'no-favicon',
+};
+export const ruleId = (id) => LEGACY_IDS[id] || id;
+const legacyOf = (id) => Object.keys(LEGACY_IDS).find((k) => LEGACY_IDS[k] === id) || null;
+
+/* A private route competes in no search at all: nobody indexes what is behind
+   a login. Shared by every per-route rule.
+   `app` does NOT go in this list, however tempting: in the App Router `app/` is
+   the root of everything, so including it silenced the whole rule. Evidence:
+   the self-test stayed green with the rule dead. */
+const PRIVADA = /(^|\/)\(?(admin|auth|dashboard|painel|conta|settings|ajustes)\)?(\/|$)/i;
+
+const META_EXPORT = /export\s+(const\s+metadata|async\s+function\s+generateMetadata)/;
+/* Pages Router has no `metadata` export: the title lives in `next/head`
+   (`<Head><title>`) or in a SEO component. */
+const TITULO_PROPRIO = /export\s+(const\s+metadata|async\s+function\s+generateMetadata)|<title\b|<NextSeo\b|<Seo\b/;
+
 const RULES = [
   {
-    id: 'sem-metadata',
+    id: 'no-metadata',
     level: 'HIGH',
     /* PROJECT level, not file level. In the App Router metadata flows from the
        layout down to the page, so demanding `export const metadata` in every
@@ -59,24 +91,19 @@ const RULES = [
     check: ({ text }) =>
       /export\s+(const\s+metadata|async\s+function\s+generateMetadata)/.test(text)
         ? []
-        : [{ where: ['(projeto)'], msg: 'no `metadata` or `generateMetadata` anywhere in the project', fix: 'export const metadata: Metadata = { title, description } in the root layout. Without it, search and sharing read the file name.' }],
+        : [{ where: ['(project)'], msg: 'no `metadata` or `generateMetadata` anywhere in the project', fix: 'export const metadata: Metadata = { title, description } in the root layout. Without it, search and sharing read the file name.' }],
   },
   {
-    id: 'rota-sem-titulo-proprio',
+    id: 'route-without-title',
     level: 'MEDIUM',
     /* Only applies with more than one route: then they all inherit the SAME
        title from the layout, and the search result becomes a list of identical
        lines. A one-page site does not have this problem, and flagging it would
        be noise. */
     check: ({ pages, layouts }) => {
-      /* A private route competes in no search at all: nobody indexes what is
-         behind a login. Demanding an SEO title on `/admin/produtos/[id]` is the
-         same badly scoped rule defect that once returned 104 color findings
-         with ~1 real one, volume that drowns the real finding. */
-      /* `app` does NOT go in this list, however tempting: in the App Router
-         `app/` is the root of everything, so including it silenced the whole
-         rule. Evidence: the self-test stayed green with the rule dead. */
-      const PRIVADA = /(^|\/)\(?(admin|auth|dashboard|painel|conta|settings|ajustes)\)?(\/|$)/i;
+      /* Demanding an SEO title on `/admin/produtos/[id]` is the same badly
+         scoped rule defect that once returned 104 color findings with ~1 real
+         one, volume that drowns the real finding. */
       const publicas = pages.filter((p) => !PRIVADA.test(p.rel));
       if (publicas.length < 2) return [];
       /* In the App Router a route's metadata lives in the SIBLING `layout.tsx`
@@ -88,11 +115,12 @@ const RULES = [
       const pastaDe = (rel) => rel.replace(/[^/]+$/, '');
       const comTituloNoLayout = new Set(
         layouts
-          .filter((l) => /export\s+(const\s+metadata|async\s+function\s+generateMetadata)/.test(l.src))
+          .filter((l) => META_EXPORT.test(l.src))
           .map((l) => pastaDe(norm(l.rel))),
       );
       const nus = publicas.filter(
-        (p) => !/export\s+(const\s+metadata|async\s+function\s+generateMetadata)/.test(p.src)
+        (p) => !isHome(p.rel)
+          && !TITULO_PROPRIO.test(p.src)
           && !comTituloNoLayout.has(pastaDe(norm(p.rel))),
       );
       return nus.length
@@ -101,7 +129,7 @@ const RULES = [
     },
   },
   {
-    id: 'sem-description',
+    id: 'no-description',
     level: 'HIGH',
     check: ({ pages }) => {
       /* A page marked `robots: { index: false }` (or `noindex`) will not
@@ -111,8 +139,11 @@ const RULES = [
          HIGH, the kind of noise that teaches people to ignore the detector. */
       const naoIndexavel = (src) =>
         /\bindex\s*:\s*false/.test(src) || /["'`]noindex/.test(src);
+      /* Same scope as the title rule: a dashboard behind login shows up in
+         no search result, so its missing description is not a HIGH. */
       const nus = pages.filter(
-        (p) => /export\s+const\s+metadata/.test(p.src)
+        (p) => !PRIVADA.test(p.rel)
+          && /export\s+const\s+metadata/.test(p.src)
           && !/\bdescription\s*:/.test(p.src)
           && !naoIndexavel(p.src),
       );
@@ -122,7 +153,7 @@ const RULES = [
     },
   },
   {
-    id: 'sem-og-image',
+    id: 'no-og-image',
     level: 'HIGH',
     check: ({ all, text }) => {
       /* Next accepts `opengraph-image.(tsx|png|jpg)` by file convention OR
@@ -131,39 +162,39 @@ const RULES = [
       const byMeta = /openGraph\s*:/.test(text) && /images\s*:/.test(text);
       return byFile || byMeta
         ? []
-        : [{ where: ['(projeto)'], msg: 'no share card (og:image)', fix: 'app/opengraph-image.tsx (generated) or openGraph.images in the metadata. A link without a card gets half the clicks.' }];
+        : [{ where: ['(project)'], msg: 'no share card (og:image)', fix: 'app/opengraph-image.tsx (generated) or openGraph.images in the metadata. A link without a card gets half the clicks.' }];
     },
   },
   {
-    id: 'og-relativo-sem-metadataBase',
+    id: 'relative-og-without-metadatabase',
     level: 'HIGH',
     check: ({ text }) => {
       /* Silent Next trap: an OG image with a relative path and no
          metadataBase resolves to localhost in production. The build only warns. */
       const relImg = /images\s*:\s*\[?\s*["']\//.test(text);
       return relImg && !/metadataBase\s*:/.test(text)
-        ? [{ where: ['(projeto)'], msg: 'og:image with a relative path and no `metadataBase`', fix: 'metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL). Without it the card URL points to localhost in production.' }]
+        ? [{ where: ['(project)'], msg: 'og:image with a relative path and no `metadataBase`', fix: 'metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL). Without it the card URL points to localhost in production.' }]
         : [];
     },
   },
   {
-    id: 'sem-sitemap',
+    id: 'no-sitemap',
     level: 'MEDIUM',
     check: ({ all }) =>
       all.some((f) => /(^|\/)(sitemap\.(ts|js|xml)|sitemap\.xml)$/.test(norm(f)))
         ? []
-        : [{ where: ['(projeto)'], msg: 'no sitemap', fix: 'app/sitemap.ts exporting the public routes.' }],
+        : [{ where: ['(project)'], msg: 'no sitemap', fix: 'app/sitemap.ts exporting the public routes.' }],
   },
   {
-    id: 'sem-robots',
+    id: 'no-robots',
     level: 'MEDIUM',
     check: ({ all }) =>
       all.some((f) => /(^|\/)robots\.(ts|js|txt)$/.test(norm(f)))
         ? []
-        : [{ where: ['(projeto)'], msg: 'no robots', fix: 'app/robots.ts. Without it the default is permissive, but the sitemap is not announced.' }],
+        : [{ where: ['(project)'], msg: 'no robots', fix: 'app/robots.ts. Without it the default is permissive, but the sitemap is not announced.' }],
   },
   {
-    id: 'sem-lang',
+    id: 'no-lang',
     level: 'MEDIUM',
     check: ({ layouts }) => {
       const nus = layouts.filter((p) => /<html/.test(p.src) && !/<html[^>]*\blang=/.test(p.src));
@@ -173,39 +204,69 @@ const RULES = [
     },
   },
   {
-    id: 'conversao-nao-medida',
+    id: 'conversion-not-measured',
     level: 'HIGH',
-    check: ({ text, all }) => {
+    check: ({ text, sources }) => {
       /* The question is not "is there analytics", it is "does the act that pays
-         the bills fire an event". A page with a form or checkout and no event
-         call converts without anyone knowing how much. */
-      const temAtoDeConversao = /<form\b|onSubmit|checkout|["'`]\/api\/(lead|contato|subscribe|checkout)/i.test(text);
-      if (!temAtoDeConversao) return [];
+         the bills fire an event". A page with a lead form or checkout submit
+         and no event call converts without anyone knowing how much.
+         A conversion act is a SUBMIT (form, onSubmit, server action) in a file
+         that also names a lead or checkout. The old rule took any `<form` or
+         the bare word "checkout" anywhere: on vercel/commerce a search box, a
+         quantity stepper and the string "Calculated at checkout" became a HIGH. */
+      const SUBMIT = /<form\b|\bonSubmit\s*=|handleSubmit\(|type=["']submit["']|\bformAction\s*=/;
+      /* `\bleads?\b`, not `\blead`: the bare prefix matched every Tailwind
+         `leading-*` class. */
+      const LEAD = /\bleads?\b|contact|contato|newsletter|waitlist|sign[\s_-]?up\b|create (an )?account|criar conta|cadastr|or[cç]amento|request (a )?(demo|quote)|["'`]\/api\/(lead|contato|subscribe)/i;
+      const CHECKOUT = /checkout|\bbilling\b|\bupgrade\b|\bpurchase\b|\bpayment\b|["'`]\/api\/checkout/i;
+      const atos = sources.filter((s) => SUBMIT.test(s.src));
+      const leads = atos.filter((s) => LEAD.test(s.src));
+      const checkouts = atos.filter((s) => !LEAD.test(s.src) && CHECKOUT.test(s.src));
+      if (!leads.length && !checkouts.length) return [];
       const temEvento =
         /gtag\(\s*["']event["']/.test(text) ||
         /\bposthog\.capture\(/.test(text) ||
         /\bplausible\(/.test(text) ||
+        /\b(?:umami|mixpanel|analytics|amplitude)\.track\(/.test(text) ||
+        /\bfbq\(\s*["']track/.test(text) ||
+        /\bdataLayer\.push\(/.test(text) ||
+        /\bsend(?:GA|GTM)Event\(/.test(text) ||
         /\btrack\(\s*["']/.test(text) ||
         /@vercel\/analytics/.test(text) && /\btrack\(/.test(text);
-      return temEvento
-        ? []
-        : [{ where: ['(projeto)'], msg: 'has a conversion act (form/checkout) and no event fired', fix: 'fire a named event on submit. Without it there is no way to know which screen change moved conversion, and that is what justifies the next round.' }];
+      if (temEvento) return [];
+      /* Hosted checkout (Shopify `checkoutUrl`, a Stripe Checkout session):
+         the purchase itself happens and is measured on the provider's domain.
+         The repo only owns the handoff click. Calling that "a form that
+         converts with no event" overstates it, so it drops to LOW and names
+         the real gap: the cart-to-checkout step. A lead form is never a
+         handoff: the lead lands in this repo or nowhere. */
+      const HANDOFF = /checkoutUrl|checkout_url|stripe\.checkout\.sessions\.create|redirectToCheckout|lemonsqueezy|Paddle\.Checkout/;
+      if (!leads.length && HANDOFF.test(text)) {
+        return [{
+          level: 'LOW',
+          where: checkouts.map((s) => s.rel),
+          msg: 'checkout hands off to a hosted provider (the provider measures the purchase); the handoff submit fires no event',
+          fix: 'optional: fire `begin_checkout` on the handoff submit to see the drop between cart and checkout. The purchase number lives in the provider dashboard.',
+        }];
+      }
+      const onde = [...leads, ...checkouts].map((s) => s.rel);
+      return [{ where: onde, msg: 'has a conversion act (lead form or checkout submit) and no event fired', fix: 'fire a named event on submit. Without it there is no way to know which screen change moved conversion, and that is what justifies the next round.' }];
     },
   },
   {
-    id: 'sem-favicon',
+    id: 'no-favicon',
     level: 'LOW',
     check: ({ all }) =>
       all.some((f) => /(^|\/)(favicon\.ico|icon\.(png|svg|tsx)|apple-icon\.(png|tsx))$/.test(norm(f)))
         ? []
-        : [{ where: ['(projeto)'], msg: 'no favicon/icon', fix: 'app/icon.png (or favicon.ico). It is the brand on the tab and in the bookmark.' }],
+        : [{ where: ['(project)'], msg: 'no favicon/icon', fix: 'app/icon.png (or favicon.ico). It is the brand on the tab and in the bookmark.' }],
   },
   {
     id: 'title-placeholder',
     level: 'HIGH',
     check: ({ text }) =>
       /title\s*:\s*["'`](Create Next App|Next\.js|My App|Untitled|Home|App)["'`]/.test(text)
-        ? [{ where: ['(projeto)'], msg: 'title is still the template placeholder', fix: 'the real name of the property. "Create Next App" has shipped to production more than once.' }]
+        ? [{ where: ['(project)'], msg: 'title is still the template placeholder', fix: 'the real name of the property. "Create Next App" has shipped to production more than once.' }]
         : [],
   },
 ];
@@ -213,6 +274,36 @@ const RULES = [
 /* -------------------------------------------------------------------------- */
 /* Context                                                                    */
 /* -------------------------------------------------------------------------- */
+
+/* What is a ROUTE. The old test was "any `page.*` or `index.*`", so on
+   vercel/commerce `components/grid/index.tsx` and two other barrel files were
+   reported as public routes without a title. Next only has two conventions:
+     App Router    app/**\/page.(tsx|jsx|ts|js|mdx); route groups `(x)` and
+                   dynamic segments are routes, `_private` folders are not.
+     Pages Router  pages/**\/*.(tsx|jsx|ts|js|mdx|md) minus `_app`,
+                   `_document`, `_error` (any `_` file) and `api/`.
+   Both may sit under `src/` or a monorepo app folder; anything under a
+   `components/` (or `lib/`, `hooks/`) folder is never a route. */
+const ROUTE_EXT = /\.(tsx|jsx|ts|js|mdx|md)$/;
+/* The router folder must sit at the project root, under `src/`, or under a
+   monorepo `apps/<name>/`: taxonomy keeps contentlayer MDX in
+   `content/pages/*.mdx`, which is data, not the Pages Router. */
+const ROUTER_DIR = /^((?:apps|packages)\/[^/]+\/)?(src\/)?(app|pages)\/(.*)$/;
+function isRoute(rel) {
+  const p = norm(rel);
+  if (/\.d\.ts$/.test(p)) return false;
+  const m = p.match(ROUTER_DIR);
+  if (!m) return false;
+  const [, , , kind, rest] = m;
+  if (kind === 'app') {
+    return /(^|\/)page\.(tsx|jsx|ts|js|mdx)$/.test(rest) && !/(^|\/)_[^/]*\//.test(rest);
+  }
+  return ROUTE_EXT.test(rest) && !/^api\//.test(rest) && !/(^|\/)_/.test(rest);
+}
+
+/* The home route (`app/page`, `app/(group)/page`, `pages/index`) is the one
+   route whose title legitimately IS the layout default. */
+const isHome = (rel) => /^((?:apps|packages)\/[^/]+\/)?(src\/)?(app\/(\([^/]+\)\/)*page|pages\/index)\.[a-z]+$/.test(norm(rel));
 
 function buildContext(root) {
   const all = walk(root);
@@ -223,18 +314,19 @@ function buildContext(root) {
   };
   const read = (f) => ({ rel: disp(f), src: readFileSync(f, 'utf8') });
 
-  const pages = code.filter((f) => /(^|\/)(page|index)\.(tsx|jsx)$/.test(norm(f))).map(read);
+  const pages = all.filter((f) => isRoute(disp(f))).map(read);
   const layouts = code.filter((f) => /(^|\/)(layout|_app|_document)\.(tsx|jsx)$/.test(norm(f))).map(read);
-  const text = code.map((f) => readFileSync(f, 'utf8')).join('\n');
+  const sources = code.map(read);
+  const text = sources.map((s) => s.src).join('\n');
 
-  return { all, code, pages, layouts, text, disp };
+  return { all, code, pages, layouts, sources, text, disp };
 }
 
 function audit(root) {
   const ctx = buildContext(root);
   const findings = [];
   for (const rule of RULES) {
-    for (const f of rule.check(ctx)) findings.push({ rule: rule.id, level: rule.level, ...f });
+    for (const f of rule.check(ctx)) findings.push({ rule: rule.id, legacyId: legacyOf(rule.id), level: rule.level, ...f });
   }
   return { ctx, findings };
 }
@@ -252,9 +344,9 @@ if (SELF_TEST) {
   writeFileSync(join(bad, 'layout.tsx'), `export const metadata = { title: "Create Next App", openGraph: { images: ["/og.png"] } };
 export default function L({ children }) { return <html><body>{children}</body></html>; }
 `);
-  writeFileSync(join(bad, 'page.tsx'), `export default function P() { return <form onSubmit={() => {}}><input /></form>; }
+  writeFileSync(join(bad, 'page.tsx'), `export default function P() { return <form onSubmit={() => {}}><input name="email" /><button>Join the waitlist</button></form>; }
 `);
-  // second route without its own title -> fires rota-sem-titulo-proprio
+  // second route without its own title -> fires route-without-title
   mkdirSync(join(bad, 'sobre'), { recursive: true });
   writeFileSync(join(bad, 'sobre', 'page.tsx'), `export default function S() { return <main>sobre</main>; }\n`);
 
@@ -274,7 +366,7 @@ export default function L({ children }) { return <html lang="pt-BR"><body>{child
 `);
   writeFileSync(join(good, 'page.tsx'), `"use client";
 export default function P() {
-  return <form onSubmit={() => { window.gtag("event", "lead_enviado"); }}><input /></form>;
+  return <form onSubmit={() => { fetch("/api/lead"); window.gtag("event", "lead_enviado"); }}><input /></form>;
 }
 `);
   writeFileSync(join(good, 'sitemap.ts'), `export default function sitemap() { return [{ url: "https://exemplo.com.br" }]; }\n`);
@@ -287,7 +379,7 @@ export default function P() {
 
   const fired = new Set(badF.map((f) => f.rule));
   const problems = [];
-  /* `sem-description` does not fire on bad because the placeholder title is
+  /* `no-description` does not fire on bad because the placeholder title is
      already that file's finding; it has its own fixture. */
   const descOnly = mkdtempSync(join(tmpdir(), 'dist-scan-d-'));
   mkdirSync(join(descOnly, 'app'), { recursive: true });
@@ -306,8 +398,8 @@ export default function P() {
   const noindex = mkdtempSync(join(tmpdir(), 'dist-scan-ni-'));
   mkdirSync(join(noindex, 'app'), { recursive: true });
   writeFileSync(join(noindex, 'app', 'page.tsx'), `export const metadata = { title: "Dev - ferramenta interna", robots: { index: false } };\nexport default function D(){return null}\n`);
-  const niF = audit(noindex).findings.filter((f) => f.rule === 'sem-description');
-  if (niF.length) problems.push('false positive: sem-description fired on a noindex route');
+  const niF = audit(noindex).findings.filter((f) => f.rule === 'no-description');
+  if (niF.length) problems.push('false positive: no-description fired on a noindex route');
 
   /* False positive lock: a client component `page.tsx` cannot export
      metadata, so the route's own title lives in the sibling `layout.tsx`.
@@ -318,8 +410,44 @@ export default function P() {
     writeFileSync(join(porLayout, 'app', rota, 'layout.tsx'), `export const metadata = { title: "${rota} | Casa", description: "Texto de resultado de busca com tamanho de gente grande, escrito pra quem procura." };\nexport default function L({ children }) { return children; }\n`);
     writeFileSync(join(porLayout, 'app', rota, 'page.tsx'), `"use client";\nexport default function P(){return null}\n`);
   }
-  const tlF = audit(porLayout).findings.filter((f) => f.rule === 'rota-sem-titulo-proprio');
-  if (tlF.length) problems.push('false positive: rota-sem-titulo-proprio fired with a title in the sibling layout');
+  const tlF = audit(porLayout).findings.filter((f) => f.rule === 'route-without-title');
+  if (tlF.length) problems.push('false positive: route-without-title fired with a title in the sibling layout');
+
+  /* Route discovery and the hosted-checkout handoff, against the
+     fixtures/dist-routes project: `components/.../index.tsx` barrels, a
+     `_private` folder, `pages/_app` and `pages/api` are decoys; only the
+     product page lacks its own title; the only conversion act is a submit that
+     redirects to a hosted checkout, which is LOW, never the HIGH. */
+  {
+    const fx = join(dirname(fileURLToPath(import.meta.url)), 'fixtures', 'dist-routes');
+    const { ctx: rc, findings: rf } = audit(fx);
+    const got = rc.pages.map((p) => p.rel).sort().join(' ');
+    const want = 'app/(shop)/product/[handle]/page.tsx app/page.tsx app/search/page.tsx pages/about.tsx';
+    if (got !== want) problems.push(`route discovery: expected "${want}", got "${got}"`);
+    const t = rf.filter((f) => f.rule === 'route-without-title');
+    const tw = t.flatMap((f) => f.where).join(' ');
+    if (tw !== 'app/(shop)/product/[handle]/page.tsx') problems.push(`route-without-title on dist-routes: expected only the product page, got "${tw}"`);
+    const c = rf.filter((f) => f.rule === 'conversion-not-measured');
+    if (c.length !== 1 || c[0].level !== 'LOW') problems.push(`hosted checkout handoff: expected one LOW conversion-not-measured, got ${JSON.stringify(c.map((f) => f.level))}`);
+    else if (c[0].where.join(' ') !== 'components/cart/modal.tsx') problems.push(`handoff where: ${c[0].where.join(' ')}`);
+    for (const f of rf) if (f.where.some((w) => /^components\/(grid|layout)|search-box|_private|_app|api\/|^content\/|^app\/page\./.test(w))) problems.push(`decoy reported by ${f.rule}: ${f.where.join(' ')}`);
+  }
+
+  /* Same handoff, plus a lead form: the lead is not a handoff, so HIGH. */
+  {
+    const p = mkdtempSync(join(tmpdir(), 'dist-scan-lead-'));
+    mkdirSync(join(p, 'app'), { recursive: true });
+    writeFileSync(join(p, 'app', 'page.tsx'), `export default function P(){return <form onSubmit={go}><button>Sign up</button></form>}\nconst checkoutUrl = "x";\n`);
+    const c = audit(p).findings.filter((f) => f.rule === 'conversion-not-measured');
+    if (c.length !== 1 || c[0].level !== 'HIGH') problems.push('lead form next to a hosted checkout must stay HIGH');
+  }
+
+  /* Legacy ids: every old Portuguese id resolves to a live rule. */
+  for (const [velho, novo] of Object.entries(LEGACY_IDS)) {
+    if (ruleId(velho) !== novo || !RULES.some((r) => r.id === novo)) problems.push(`legacy id ${velho} does not resolve to a live rule`);
+    if (legacyOf(novo) !== velho) problems.push(`legacyId of ${novo} is not ${velho}`);
+  }
+  if (ruleId('conversao-nao-medida') !== 'conversion-not-measured') problems.push('ruleId does not normalize conversao-nao-medida');
 
   const silent = RULES.filter((r) => !fired.has(r.id)).map((r) => r.id);
   if (silent.length) problems.push(`rule(s) that never fired: ${silent.join(', ')}`);
@@ -330,7 +458,7 @@ export default function P() {
     for (const p of problems) console.error(`  - ${p}`);
     process.exit(1);
   }
-  console.log(`dist-scan --self-test ok: ${RULES.length}/${RULES.length} rules fire, clean project returns zero.`);
+  console.log(`dist-scan --self-test ok: ${RULES.length}/${RULES.length} rules fire, clean project returns zero, routes skip component barrels, hosted checkout is LOW, legacy ids resolve.`);
   process.exit(0);
 }
 

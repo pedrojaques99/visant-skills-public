@@ -1,0 +1,9 @@
+/* commerce-like: v4 import, reads a palette var but defines no color token. */
+@import "tailwindcss";
+
+@layer base {
+  *,
+  ::after {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}

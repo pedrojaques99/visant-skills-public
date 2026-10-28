@@ -1,0 +1,4 @@
+{
+  "style": "default",
+  "tailwind": { "css": "app/globals.css", "cssVariables": true }
+}

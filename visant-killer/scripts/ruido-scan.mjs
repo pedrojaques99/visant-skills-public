@@ -28,16 +28,16 @@
  * them have a FLOOR: one occurrence is a choice, three is a symptom.
  *
  * Two of them (2026-09-11) are NOT about text, and came in because text was not
- * the problem: `realce-que-nao-decide` finds highlight at rest (the highlight
- * that runs once per item and lights up the whole list) and `porta-repetida`
+ * the problem: `highlight-at-rest` finds highlight at rest (the highlight
+ * that runs once per item and lights up the whole list) and `repeated-door`
  * finds the same data door named in two files. The second is the first rule of
  * this skill that does not fit in one file, and the finding that produced it
  * had gotten past the seven previous rules, `tsc`, `ui:audit` and 2347 tests.
  *
  * Six came in on 2026-10-05 (slop killer phase 2 in visantlabs-os), all found
- * by OPENING the screen after the detectors went green: `capa-sintetica`,
- * `img-de-tile-sem-onerror`, `cascata-por-indice`, `hover-que-levanta`,
- * `grade-de-pontos` and `blur-em-card`. The same day `porta-repetida` started
+ * by OPENING the screen after the detectors went green: `synthetic-cover`,
+ * `tile-img-no-onerror`, `stagger-by-index`, `hover-lift`,
+ * `dot-grid` and `blur-on-card`. The same day `repeated-door` started
  * requiring the SAME SCREEN through the import graph (`grafo.mjs`): from 25
  * findings, almost all false, down to 2 real ones.
  *
@@ -58,6 +58,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { montarGrafo, ancestrais, nomesEm, normP, semComentario, semComentario as tirarComentario } from './grafo.mjs';
 
 const args = process.argv.slice(2);
@@ -147,7 +148,7 @@ function extrairTextos(src) {
    * TEXT INSIDE A CODE BLOCK IS NOT A SCREEN SENTENCE, and so it gets a mark.
    *
    * False positive confirmed in slop killer round 1 (visantlabs-os,
-   * 2026-10-05): 14 `mesma-info-dois-tamanhos` findings on DocsPage, all inside
+   * 2026-10-05): 14 `same-info-twice` findings on DocsPage, all inside
    * example blocks: `# Pass your API key in every request` against
    * `# Pass your API key in the Authorization header`, and endpoint lists
    * (`POST /api/...`) in different sections. API docs repeat the auth header in
@@ -328,7 +329,7 @@ function extrairTextos(src) {
    * rules. `<Group cap="link ou arquivo">` is how this codebase names a panel
    * section: it is a screen label, as visible as a `title`, and it was out of
    * the detector's scope. The pair it formed with an identical `placeholder` in
-   * another file (see R8, `porta-repetida`) was invisible because HALF OF THE
+   * another file (see R8, `repeated-door`) was invisible because HALF OF THE
    * PAIR was not extracted: a detector blind in one eye approves what it did
    * not see.
    *
@@ -434,7 +435,7 @@ const REGRAS = [];
  * legitimate and common.
  */
 REGRAS.push({
-  id: 'rotulo-gritado',
+  id: 'shouting-label',
   descricao: 'uppercase + tracking + micro-size label, repeated on the same screen',
   piso: 3,
   achar(src, file) {
@@ -488,7 +489,7 @@ REGRAS.push({
  * the reason written on the line.
  */
 REGRAS.push({
-  id: 'ensina-a-usar',
+  id: 'usage-instruction',
   descricao: 'sentence teaching how to operate a control that already has affordance',
   piso: 1,
   texto: true,
@@ -547,9 +548,16 @@ REGRAS.push({
  * the most expensive text on a screen: it takes the prime spot to say what the
  * content would say on its own, and it goes stale the first time someone
  * reorders the page (then it lies).
+ *
+ * A form description is NOT exempt, decided on 2026-10-28 (shadcn-ui/taxonomy):
+ * "Enter your email below to create your account" is shadcn's default auth
+ * copy, and the same repo's login page says "Enter your email to sign in to
+ * your account", with no pointer and nothing lost. That is the fix, one word.
+ * Exempting form or auth context would also exempt "fill in the form below",
+ * the canonical case of this rule.
  */
 REGRAS.push({
-  id: 'legenda-do-que-vem',
+  id: 'caption-of-what-follows',
   descricao: 'sentence narrating the content that appears right after it',
   piso: 1,
   texto: true,
@@ -573,7 +581,7 @@ REGRAS.push({
  * Detects a short constant string rendered INSIDE a `.map(`.
  */
 REGRAS.push({
-  id: 'verbo-por-item',
+  id: 'verb-per-item',
   descricao: 'constant action word repeated once per list item',
   piso: 1,
   achar(src) {
@@ -616,10 +624,10 @@ REGRAS.push({
  *
  * Case B is the `<svg>` drawn by hand inside the component. It aims NARROW, at
  * the only high-precision signature: a `viewBox` on the universal icon grid
- * (`0 0 16 16`, `0 0 20 20`, `0 0 24 24`). Nobody draws a brand logo on that
- * grid: whoever uses that box is redrawing an icon that already exists in any
- * library. Brand SVG, graphics and illustration have their own viewBox and are
- * left alone on purpose: the rule only flags what an import can replace.
+ * (`0 0 16 16`, `0 0 20 20`, `0 0 24 24`). Whoever draws a UI glyph in that box
+ * is redrawing an icon that already exists in any library. Logos also live on
+ * the 24 grid (Simple Icons), so brand marks and icon files are filtered out
+ * below: the rule only flags what an import can replace.
  *
  * No floor: a single one is already the law broken, and cheap to confirm.
  *
@@ -643,7 +651,7 @@ const SETA_GLIFO = /[←-⇿⟰-⟿⤀-⥿⬀-⬑➜-➾]/u;
  * need to quote the glyphs to be readable) would become findings.
  */
 REGRAS.push({
-  id: 'seta-glifo',
+  id: 'arrow-glyph',
   descricao: 'arrow as a character where a library icon should be',
   piso: 1,
   achar(src) {
@@ -680,20 +688,115 @@ REGRAS.push({
   },
 });
 
-REGRAS.push({
-  id: 'icone-desenhado-a-mao',
-  descricao: 'icon SVG written in the component instead of imported',
-  piso: 1,
-  achar(src) {
-    const out = [];
-    const GRADE = /<svg[^>]*viewBox\s*=\s*["']0 0 (16 16|20 20|24 24)["']/g;
-    for (const m of src.matchAll(GRADE)) {
-      out.push({
-        linha: src.slice(0, m.index).split('\n').length,
-        amostra: `viewBox 0 0 ${m[1]}`,
-      });
+/*
+ * Case B, CALIBRATED ON THIRD-PARTY REPOS (2026-10-28).
+ *
+ * The first version said "nobody draws a brand logo on the 24 grid". Wrong:
+ * Simple Icons (the source of almost every tech logo on the web) ships on
+ * `0 0 24 24`. Run on shadcn-ui/taxonomy, vercel/commerce and
+ * steven-tey/precedent, 11 of the 11 hits were noise or borderline: the
+ * Next.js/React/Prisma/Tailwind/Stripe/GitHub logos of a marketing grid, and
+ * the files of a dedicated `components/shared/icons/` folder. A logo has no
+ * library import that replaces it, and the icons folder is exactly where an
+ * inline SVG belongs. What stayed is the case the law is about: a UI glyph
+ * (shield, chevron, x, arrow) inlined in a regular component.
+ *
+ * Out of the rule:
+ *   - the file IS the icon set: inside an `icons/` or `icon/` folder, or named
+ *     `*icon*` / `*logo*` (any case);
+ *   - the SVG is a brand mark: a `<title>` or `aria-label` that is not a UI
+ *     glyph word (`close`, `menu`, `chevron`...), a path longer than
+ *     `PATH_DE_LOGO` characters (measured: the shortest logo, Prisma, has 214;
+ *     a chevron or an x has 20 to 150), or a literal color in `fill`/`stroke`
+ *     (a multicolor brand mark; `currentColor`, black and white do not count).
+ *
+ * And it reads the repo's `package.json`: with an icon library installed, every
+ * hand-drawn glyph is a finding that names the library to import from. Without
+ * one, the fix is adopting a library, not editing each SVG, so the file gets ONE
+ * finding with that hint instead of one per glyph.
+ */
+const PATH_DE_LOGO = 200;
+const LIBS_DE_ICONE = [
+  'lucide-react', 'lucide-vue-next', 'lucide-svelte', '@heroicons/react', '@radix-ui/react-icons',
+  'react-icons', '@tabler/icons-react', '@phosphor-icons/react', 'phosphor-react', '@iconify/react',
+];
+const PALAVRA_DE_GLIFO =
+  /\b(icon|close|x|menu|hamburger|chevron|caret|arrow|check|checkmark|tick|plus|minus|add|remove|delete|trash|search|expand|collapse|open|next|prev|previous|back|forward|more|dismiss|cancel|edit|copy|settings|loading|spinner|info|warning|error|external|link|fechar|abrir|voltar|avançar|próximo|anterior|buscar|mais|menos|adicionar|remover|excluir|editar|copiar|seta)\b/i;
+
+/* The icon library the file can import from, from the nearest package.json (plus a monorepo root). */
+const CACHE_DE_LIB = new Map();
+function libDeIcone(file) {
+  const ini = path.dirname(path.resolve(file ?? '.'));
+  if (CACHE_DE_LIB.has(ini)) return CACHE_DE_LIB.get(ini);
+  const pacotes = [];
+  for (let d = ini; ; d = path.dirname(d)) {
+    const pj = path.join(d, 'package.json');
+    if (fs.existsSync(pj)) {
+      try {
+        pacotes.push({ dir: d, json: JSON.parse(fs.readFileSync(pj, 'utf8')) });
+      } catch { /* a broken package.json counts as none */ }
     }
-    return out;
+    if (fs.existsSync(path.join(d, '.git')) || path.dirname(d) === d) break;
+  }
+  /*
+   * The nearest package.json always counts. An ancestor only counts when it is a
+   * monorepo root (`workspaces`, pnpm or lerna), where a hoisted dependency
+   * lives; otherwise an unrelated package.json above the project would decide.
+   */
+  const raizDeMonorepo = (p) =>
+    !!p.json.workspaces || ['pnpm-workspace.yaml', 'lerna.json'].some((f) => fs.existsSync(path.join(p.dir, f)));
+  const valem = pacotes.filter((p, i) => i === 0 || raizDeMonorepo(p));
+  let lib = null;
+  for (const p of valem) {
+    const deps = { ...p.json.dependencies, ...p.json.devDependencies, ...p.json.peerDependencies };
+    lib = LIBS_DE_ICONE.find((l) => l in deps) ?? null;
+    if (lib) break;
+  }
+  CACHE_DE_LIB.set(ini, lib);
+  return lib;
+}
+
+/** Is this `<svg ...>...</svg>` a brand mark rather than a UI glyph? See the block above. */
+function marcaDeMarca(svg) {
+  const abre = svg.match(/^<svg\b[^>]*>/)?.[0] ?? '';
+  const titulo = svg.match(/<title[^>]*>([^<]*)<\/title>/)?.[1]?.trim();
+  const aria = abre.match(/aria-label\s*=\s*(?:"([^"]*)"|'([^']*)'|\{\s*["'`]([^"'`]*)["'`]\s*\})/);
+  const rotulo = titulo || (aria && (aria[1] ?? aria[2] ?? aria[3] ?? '').trim());
+  if (rotulo && !PALAVRA_DE_GLIFO.test(rotulo)) return true;
+  const caminhos = [...svg.matchAll(/\bd\s*=\s*(?:"([^"]*)"|'([^']*)'|\{\s*["'`]([^"'`]*)["'`]\s*\})/g)];
+  if (caminhos.some((c) => (c[1] ?? c[2] ?? c[3] ?? '').length > PATH_DE_LOGO)) return true;
+  const COR_LITERAL = /\b(?:fill|stroke)\s*=\s*\{?\s*["'](#(?!(?:0{3}|f{3}|0{6}|f{6})\b)[0-9a-f]{3,8}|rgba?\()/i;
+  return COR_LITERAL.test(svg);
+}
+
+REGRAS.push({
+  id: 'hand-drawn-icon',
+  descricao: 'UI glyph SVG drawn inline in a component instead of imported from an icon library',
+  piso: 1,
+  achar(src, file) {
+    /* only the folders near the file: a repo cloned under some `icons/` path is not an icon set */
+    const pastas = path.dirname(path.resolve(file ?? '.')).split(/[\\/]/).slice(-3);
+    if (pastas.some((p) => /^icons?$/i.test(p)) || /(icon|logo)/i.test(path.basename(file ?? ''))) return [];
+    const linhas = src.split('\n');
+    const out = [];
+    const GRADE = /<svg\b[^>]*viewBox\s*=\s*["']0 0 (16 16|20 20|24 24)["']/g;
+    for (const m of src.matchAll(GRADE)) {
+      const fim = src.indexOf('</svg>', m.index);
+      const svg = src.slice(m.index, fim === -1 ? m.index + 4000 : fim + 6);
+      if (marcaDeMarca(svg)) continue;
+      const linha = src.slice(0, m.index).split('\n').length;
+      /* checked here too, not only by the caller: the single per-file finding below must not let one written reason release every glyph */
+      if (temMotivoEscrito(linhas, linha, 'hand-drawn-icon')) continue;
+      out.push({ linha, grade: m[1] });
+    }
+    if (!out.length) return [];
+    const lib = libDeIcone(file);
+    if (lib) return out.map((h) => ({ linha: h.linha, amostra: `viewBox 0 0 ${h.grade}: import it from ${lib}` }));
+    /* No library installed: one finding per file, the fix is adopting one. */
+    return [{
+      linha: out[0].linha,
+      amostra: `${out.length} inline glyph SVG(s), no icon library in package.json: adopt one (lucide-react, @heroicons/react...)`,
+    }];
   },
 });
 
@@ -734,7 +837,7 @@ const FALHA =
 const NOME_ACESSIVEL = new Set(['title', 'aria-label', 'alt']);
 
 REGRAS.push({
-  id: 'mesma-info-dois-tamanhos',
+  id: 'same-info-twice',
   descricao: 'two sentences on the same screen saying the same thing',
   piso: 1,
   texto: true,
@@ -877,7 +980,7 @@ const janelaDe = (linhas, l, antes, depois) =>
  *      has no such vocabulary nearby and passes.
  */
 REGRAS.push({
-  id: 'capa-sintetica',
+  id: 'synthetic-cover',
   descricao: 'invented gradient (name hash or brand colors) in place of an image that does not exist',
   piso: 1,
   achar(src) {
@@ -924,7 +1027,7 @@ REGRAS.push({
  * avatar).
  */
 REGRAS.push({
-  id: 'img-de-tile-sem-onerror',
+  id: 'tile-img-no-onerror',
   descricao: 'tile <img> (object-cover/aspect) without onError: a broken URL becomes a broken icon',
   piso: 1,
   achar(src, file) {
@@ -979,7 +1082,7 @@ REGRAS.push({
  * style template.
  */
 REGRAS.push({
-  id: 'cascata-por-indice',
+  id: 'stagger-by-index',
   descricao: 'entry delay multiplied by the item index (staircase list)',
   piso: 1,
   achar(src) {
@@ -1004,7 +1107,7 @@ REGRAS.push({
  * lifting, and stays out: the house Button's press-in uses it on `active:`.
  */
 REGRAS.push({
-  id: 'hover-que-levanta',
+  id: 'hover-lift',
   descricao: 'card/image that rises or grows on hover (negative translate-y, scale > 1)',
   piso: 1,
   achar(src) {
@@ -1014,8 +1117,22 @@ REGRAS.push({
       const n = v.startsWith('[') ? Number(v.slice(1, -1)) * 100 : Number(v);
       return Number.isFinite(n) && n > 100;
     };
+    /*
+     * A glyph that grows inside a fixed button is not a card that rises.
+     * Measured on vercel/commerce (2026-10-28): `<XMarkIcon className={clsx("h-6
+     * ... hover:scale-110")}>` and the same on `ShoppingCartIcon`, both inside an
+     * `h-11 w-11` box. The icon scales inside a box that does not move: no
+     * layout shift, no card jumping. The class belongs to the open tag named
+     * `*Icon`, `Icon*` or `svg` (no `>` closing it before the match).
+     */
+    const emIcone = (idx) => {
+      const j = s.lastIndexOf('<', idx);
+      if (j === -1 || /[^=]>/.test(s.slice(j, idx))) return false;
+      return /^<(svg|Icon\w*|\w+Icon)\b/.test(s.slice(j, j + 60));
+    };
     for (const m of s.matchAll(/(?<![\w-])((?:group-)?hover):(-translate-y-[\w.[\]]+|scale-(\[[\d.]+\]|\d+))/g)) {
       if (m[2].startsWith('scale-') && !escalaMaior(m[3])) continue;
+      if (m[2].startsWith('scale-') && emIcone(m.index)) continue;
       out.push({ linha: linhaEm(s, m.index), amostra: `${m[1]}:${m[2]}` });
     }
     for (const m of s.matchAll(/whileHover\s*=\s*\{\{([^}]*)\}\}/g)) {
@@ -1043,7 +1160,7 @@ REGRAS.push({
  * else and passes.
  */
 REGRAS.push({
-  id: 'grade-de-pontos',
+  id: 'dot-grid',
   descricao: 'dot texture as background (repeated radial-gradient, circle SVG, GridDots)',
   piso: 1,
   achar(src) {
@@ -1091,7 +1208,7 @@ REGRAS.push({
  * the DS's `SelectContent`.
  */
 REGRAS.push({
-  id: 'blur-em-card',
+  id: 'blur-on-card',
   descricao: 'backdrop-blur on an in-flow element (not a dialog/sheet/popover/fixed overlay)',
   piso: 1,
   achar(src, file) {
@@ -1607,7 +1724,7 @@ const JANELA_DA_EXCECAO = 8;
  * open). Then the reason gets written, like every exception in this skill.
  */
 REGRAS.push({
-  id: 'realce-que-nao-decide',
+  id: 'highlight-at-rest',
   descricao: 'highlight (`on`/`active`/`selected`) hard-set to `true` inside an item factory',
   piso: 1,
   achar(src) {
@@ -1684,24 +1801,53 @@ REGRAS.push({
  * console/HUD area uses caps + tracking + mono in DOZENS of places, on purpose:
  * `font-mono uppercase tracking-[0.2em]` with labels like `ID_003` is identity,
  * not the generic dashboard R1 hunts. Measured on 2026-08-12: 40
- * `rotulo-gritado` findings in visant-board, all inside `app/admin/agent/**`,
+ * `shouting-label` findings in visant-board, all inside `app/admin/agent/**`,
  * and none of them carelessness.
  *
  * The reason is still REQUIRED and on the same line as the marker: the
  * difference is the scope, not the license. Format (the English
  * `noise-ignore-file:` is accepted as an alias):
  *
- *   // ruido-ignore-file: rotulo-gritado, agent HUD: mono + caps is
+ *   // ruido-ignore-file: shouting-label, agent HUD: mono + caps is
  *   // this area's identity, not a dashboard label.
  */
+/*
+ * LEGACY rule ids. Until 2026-10-28 the rules had Portuguese ids; they were
+ * renamed to English so a third-party repo can read its own findings. Written
+ * exceptions and whole-file ignores already in the wild still name the old id,
+ * and a rename must not turn every one of them back into a finding: both
+ * markers accept the old id as an alias of the new one. Findings always carry
+ * the new id.
+ */
+export const LEGADO = {
+  'rotulo-gritado': 'shouting-label',
+  'ensina-a-usar': 'usage-instruction',
+  'legenda-do-que-vem': 'caption-of-what-follows',
+  'verbo-por-item': 'verb-per-item',
+  'seta-glifo': 'arrow-glyph',
+  'icone-desenhado-a-mao': 'hand-drawn-icon',
+  'mesma-info-dois-tamanhos': 'same-info-twice',
+  'capa-sintetica': 'synthetic-cover',
+  'img-de-tile-sem-onerror': 'tile-img-no-onerror',
+  'cascata-por-indice': 'stagger-by-index',
+  'hover-que-levanta': 'hover-lift',
+  'grade-de-pontos': 'dot-grid',
+  'blur-em-card': 'blur-on-card',
+  'realce-que-nao-decide': 'highlight-at-rest',
+  'porta-repetida': 'repeated-door',
+};
+/** The rule id plus its legacy aliases. */
+const nomesDaRegra = (regraId) => [regraId, ...Object.keys(LEGADO).filter((k) => LEGADO[k] === regraId)];
+
 function arquivoTemExcecao(src, regraId) {
   const m = src.match(/(?:ruido|noise)-ignore-file:(.+)/);
   if (!m) return false;
   const linha = m[1];
-  // It must cite the rule AND have text after it: a silent marker releases nothing.
-  const i = linha.indexOf(regraId);
-  if (i === -1) return false;
-  return linha.slice(i + regraId.length).trim().length > 3;
+  // It must cite the rule (new or legacy id) AND have text after it: a silent marker releases nothing.
+  return nomesDaRegra(regraId).some((nome) => {
+    const i = linha.search(new RegExp(String.raw`(?<![\w-])${escapaRe(nome)}(?![\w-])`));
+    return i !== -1 && linha.slice(i + nome.length).trim().length > 3;
+  });
 }
 
 /*
@@ -1711,10 +1857,10 @@ function arquivoTemExcecao(src, regraId) {
  * `EXCEPTION to ruido-scan/<rule>: <reason>`), and the reason needs 8+ letters,
  * with a 3+ letter word starting on the marker line itself (it may continue on
  * the next one). It used to be enough to have "EXCEÇÃO" and the rule name
- * anywhere in the window, so a silent `// EXCEÇÃO ao ruido-scan/blur-em-card`
+ * anywhere in the window, so a silent `// EXCEÇÃO ao ruido-scan/blur-on-card`
  * released the finding and the contract this file enforces (whoever silences
  * the detector writes why) was not executed. The rule name is exact: `blur`
- * does not release `blur-em-card`. An exception below the finding does not
+ * does not release `blur-on-card`. An exception below the finding does not
  * count.
  */
 const escapaRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1726,7 +1872,7 @@ function reExcecao(regraId) {
       regraId,
       new RegExp(
         String.raw`(?:EXCE(?:Ç|C)(?:Ã|A)O|EXCEPTION)\s+(?:ao|to)\s+` +
-          String.raw`\x60?(?:ruido-scan/)?${escapaRe(regraId)}(?![\w-])\x60?\s*:\s*(.*)`,
+          String.raw`\x60?(?:ruido-scan/)?(?:${nomesDaRegra(regraId).map(escapaRe).join('|')})(?![\w-])\x60?\s*:\s*(.*)`,
         'i',
       ),
     );
@@ -1873,7 +2019,7 @@ export function mesmaTela(g, a, b) {
 }
 
 REGRAS_GLOBAIS.push({
-  id: 'porta-repetida',
+  id: 'repeated-door',
   descricao: 'the same data door named in two components that show on the same screen',
   achar(porArquivo) {
     const chaves = new Map();
@@ -1989,16 +2135,20 @@ const executadoDireto = path.basename(process.argv[1] ?? '') === 'ruido-scan.mjs
  * who touches the regex reopens the hole without knowing it existed. The
  * fixture declares, per block, how many findings are expected.
  */
+/* Fixtures whose markers name OLD ids, and what their findings are once those ids are blanked. */
+const LEGADO_FIXTURES = ['ruido-legado.tsx', 'ruido-legado-b.tsx'];
+const LEGADO_CONTROLE = { 'dot-grid': 1, 'blur-on-card': 1, 'arrow-glyph': 1, 'shouting-label': 3, 'hover-lift': 1 };
+
 function selfTest() {
   const dir = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'fixtures');
   /*
-   * TWO files, because R9 (`porta-repetida`) only exists BETWEEN files:
+   * TWO files, because R9 (`repeated-door`) only exists BETWEEN files:
    * running the self-test against a single one would make the rule return zero
    * forever, and zero in a self-test reads as approval. The second is minimal
    * on purpose: everything in it counts for the other rules too.
    */
   /*
-   * `ruido-fase2.tsx` locks the six rules of 2026-10-05 and the `mesma-info`
+   * `ruido-fase2.tsx` locks the six rules of 2026-10-05 and the `same-info-twice`
    * false positives in code blocks and metadata. `porta/` locks R9's SAME
    * SCREEN requirement: each file there is one end, and the import graph
    * between them is the case (early return, ternary, dead import, unrelated
@@ -2009,6 +2159,10 @@ function selfTest() {
     /* `sinais-sujo.tsx` fires every rule for catalog signals 47-57; `sinais-limpo.tsx` is its legitimate twin and must stay silent. */
     ...['ruido-casos.tsx', 'ruido-porta-b.tsx', 'ruido-fase2.tsx', 'sinais-sujo.tsx', 'sinais-limpo.tsx'].map((f) => path.join(dir, f)),
     ...(fs.existsSync(porta) ? fs.readdirSync(porta).filter((f) => f.endsWith('.tsx')).map((f) => path.join(porta, f)) : []),
+    /* `icones/` locks hand-drawn-icon against a package.json with (com-lib) and without (sem-lib) an icon library. */
+    ...walk(path.join(dir, 'icones')),
+    /* old Portuguese ids in written exceptions and whole-file ignores: see LEGADO */
+    ...LEGADO_FIXTURES.map((f) => path.join(dir, f)),
   ];
   for (const f of fixtures) {
     if (fs.existsSync(f)) continue;
@@ -2023,10 +2177,10 @@ function selfTest() {
     /* 2 = the Portuguese imperative + the English one. A quoted example, a
        subordinate clause (in both languages) and an exception with a reason do
        not count. */
-    'ensina-a-usar': 2,
-    'legenda-do-que-vem': 2, // "as dez peças abaixo" + "the three panels below"
-    'rotulo-gritado': 3,
-    'verbo-por-item': 0,
+    'usage-instruction': 2,
+    'caption-of-what-follows': 2, // "as dez peças abaixo" + "the three panels below"
+    'shouting-label': 3,
+    'verb-per-item': 0,
     /*
      * 2 = the `title`/`placeholder` pair in the same render + the pair of JSX
      * sentences with balanced parentheses.
@@ -2044,7 +2198,7 @@ function selfTest() {
      * unbalanced-parenthesis sieve cannot be loosened until it swallows screen
      * sentences.
      */
-    'mesma-info-dois-tamanhos': 2,
+    'same-info-twice': 2,
     /*
      * 2 = the button arrow (`→` alone in a span) + the one on the back link.
      *
@@ -2054,17 +2208,22 @@ function selfTest() {
      * top of the extracted text, the self-test applauds, and the most common
      * habit gets through again.
      */
-    'seta-glifo': 2,
-    /* 1 = the icon on the 24×24 grid. The brand graphic (viewBox 0 0 1017 135)
-       stays out: the rule only flags what an import would replace. */
-    'icone-desenhado-a-mao': 1,
+    'arrow-glyph': 2,
+    /*
+     * 5 = the icon on the 24×24 grid in ruido-casos (the brand graphic, viewBox
+     * 0 0 1017 135, stays out) + 3 glyphs in icones/com-lib/painel.tsx (lucide
+     * installed: one finding per glyph; its four brand marks stay out) + 1 in
+     * icones/sem-lib/cartao.tsx (three glyphs, no library: one per file). The
+     * `icons/` folder file and the `*logo*` file add zero.
+     */
+    'hand-drawn-icon': 5,
     /*
      * 1 = the `on: true` in the card factory. The two negatives exist to lock
      * the two ways the rule turns into noise: the call argument
      * (`setScreen({ on: true })`, the false positive confirmed in Director.tsx)
      * and the single piece lit on purpose, with the reason written.
      */
-    'realce-que-nao-decide': 1,
+    'highlight-at-rest': 1,
     /*
      * 4 = the TWO ENDS of the jukebox pair (`cap` in ruido-casos, which now
      * renders the box, and `placeholder` in ruido-porta-b) + the two ends of
@@ -2072,11 +2231,11 @@ function selfTest() {
      * cites only one end sends you to fix the wrong side. The other six cases
      * in porta/ are negatives and must stay at zero.
      */
-    'porta-repetida': 4,
+    'repeated-door': 4,
     /* phase 2: see the EXPECTED comments in fixtures/ruido-fase2.tsx */
-    'capa-sintetica': 2, // name hash + brand colors in place of the cover
-    'img-de-tile-sem-onerror': 2, // tile <img> and <motion.img>; 5 negatives
-    'cascata-por-indice': 2, // delay: index * … and animationDelay `${i * …}`
+    'synthetic-cover': 2, // name hash + brand colors in place of the cover
+    'tile-img-no-onerror': 2, // tile <img> and <motion.img>; 5 negatives
+    'stagger-by-index': 2, // delay: index * … and animationDelay `${i * …}`
     /*
      * 7 = the 3 from R13 (-translate-y, group-hover:scale-105, whileHover y<0) +
      * 4 from the "THE WRITTEN EXCEPTION NEEDS A REASON" block: a silent
@@ -2086,9 +2245,9 @@ function selfTest() {
      * breaks, this becomes 8). Under the old contract (only "EXCEÇÃO" + name in
      * the window) it gave 5.
      */
-    'hover-que-levanta': 7,
-    'grade-de-pontos': 3, // <GridDots…>, repeated radial, circle SVG
-    'blur-em-card': 1, // the in-flow card; sticky bar and dialog stay out
+    'hover-lift': 7,
+    'dot-grid': 3, // <GridDots…>, repeated radial, circle SVG
+    'blur-on-card': 1, // the in-flow card; sticky bar and dialog stay out
     /*
      * Signals 47-57 (2026-10-28): every count below comes from sinais-sujo.tsx
      * alone. sinais-limpo.tsx holds the legitimate twin of each block (below
@@ -2121,7 +2280,30 @@ function selfTest() {
     falhou++;
     console.log(`  FAIL  ${regra.padEnd(26)} outside the contract, found ${porRegra[regra]}`);
   }
-  console.log(falhou ? `\nself-test: ${falhou} rule(s) off the expected count.` : `\nself-test: all ${Object.keys(esperado).length} rules match the fixture.`);
+  /*
+   * The legacy fixtures add zero above. That zero only proves the alias if the
+   * rules DO fire there without it: scan a copy with every old id blanked
+   * (same basenames, in a temp folder) and require each released rule back.
+   */
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ruido-legado-'));
+  try {
+    const copias = LEGADO_FIXTURES.map((f) => {
+      let txt = fs.readFileSync(path.join(dir, f), 'utf8');
+      for (const velho of Object.keys(LEGADO)) txt = txt.split(velho).join('id-apagado');
+      const destino = path.join(tmp, f);
+      fs.writeFileSync(destino, txt);
+      return destino;
+    });
+    const semAlias = scanRuido(copias).reduce((a, x) => ((a[x.regra] = (a[x.regra] ?? 0) + 1), a), {});
+    for (const [regra, n] of Object.entries(LEGADO_CONTROLE)) {
+      const ok = (semAlias[regra] ?? 0) === n;
+      if (!ok) falhou++;
+      console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${`legacy ${regra}`.padEnd(26)} without the old id expected ${n}, found ${semAlias[regra] ?? 0}`);
+    }
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+  console.log(falhou ? `\nself-test: ${falhou} rule(s) off the expected count.` : `\nself-test: all ${Object.keys(esperado).length} rules match the fixture, and the ${Object.keys(LEGADO_CONTROLE).length} legacy aliases hold.`);
   process.exit(falhou ? 1 : 0);
 }
 

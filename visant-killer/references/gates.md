@@ -16,19 +16,32 @@ Detector 2 resolves in this order and prints the source on a `via` line:
    scanner right next to it). Only `ERR` counts as gate; `WRN` stays judgment;
 3. **the built-in fallback**, only when neither exists. Labeled
    `killer-scan built-in FALLBACK` in the output. It flags, conservatively:
-   - `hex-cru`: `#abc` in `.css` declarations, and in `.tsx/.jsx` only inside an
+   - `raw-hex`: `#abc` in `.css` declarations, and in `.tsx/.jsx` only inside an
      arbitrary class (`bg-[#1a1a2e]`) or a color string in a style context
      (`style={{ color: '#f00' }}`);
-   - `rgb-hsl-cru`: `rgb(`/`rgba(`/`hsl(`/`hsla(` with a literal number
+   - `raw-rgb-hsl`: `rgb(`/`rgba(`/`hsl(`/`hsla(` with a literal number
      (`hsl(var(--x))` passes);
-   - `paleta-tailwind`: fixed palette classes (`text-purple-500`,
-     `bg-slate-900`, `@apply text-red-500`) instead of a semantic token.
+   - `tailwind-palette`: fixed palette classes (`text-purple-500`,
+     `bg-slate-900`, `@apply text-red-500`) instead of a semantic token;
+   - token layer: a palette class is only a bypass when the repo has a semantic
+     color layer (shadcn `components.json`, color custom properties such as
+     `--primary`/`--background`/`--color-*`, Tailwind v4 `@theme` colors, or
+     semantic keys under `colors` in tailwind.config). With one, every palette
+     class fires. Without one (the repo uses Tailwind's palette AS its design
+     system), no per-class finding: ONE aggregated `tailwind-palette` finding
+     only when more than 3 non-neutral hue families show up, else the gate
+     passes and its `via` line says "no token layer; Tailwind palette used as
+     the design system (N neutral, M accent hues)";
+   - brand marks: raw colors are exempt in files under an `icons/` or `logos/`
+     folder and on `fill`/`stroke`/`stop-color` of a `<path>` or `<polygon>`.
 
    It skips token/theme files (`tokens.*`, `theme.*`, `globals.*`,
    `palette.*`, `variables.*`, `*-theme.*`, `tailwind.config.*`, a `tokens/` or
    `theme/` folder), CSS custom-property definitions (`--x: #fff`), `:root`,
    `.dark`, `[data-theme]` and `@theme` blocks, and comments. Proven both ways
-   by `killer-scan --self-test` against `scripts/fixtures/token-fallback-*`.
+   by `killer-scan --self-test` against `scripts/fixtures/token-fallback-*` and
+   `scripts/fixtures/token-layer/`. Exceptions written with the old Portuguese
+   ids (`hex-cru`, `rgb-hsl-cru`, `paleta-tailwind`) still waive the rule.
 
 The run ends with one summary line, `gates: N/4 ran [...]; SKIPPED: ...`. A
 skipped gate is never a pass: it goes into the report.
@@ -76,10 +89,10 @@ not, no house tokens: [declutter.md](declutter.md).
 **Of its fifteen rules, nine are not about text.** Three came from a panel that
 passed the four detectors, `tsc`, a UI audit and 2347 tests:
 
-- `realce-que-nao-decide`: a hand-written highlight (`on: true`) inside an item
+- `highlight-at-rest`: a hand-written highlight (`on: true`) inside an item
   factory. It runs once per item, the whole list lights up, and the screen's
   only emphasis is spent on a fact a badge already told.
-- `porta-repetida`: **the rule that does not fit in one file.** The same data
+- `repeated-door`: **the rule that does not fit in one file.** The same data
   door (a field with `placeholder`) in two components **of the same screen**:
   people choose by luck. "Same screen" means a common ancestor up to two levels
   up in the import graph (`grafo.mjs`), no lazy `import()`, no router/barrel as
@@ -88,26 +101,31 @@ passed the four detectors, `tsc`, a UI audit and 2347 tests:
   real. The finding points at both ends. **Form 2** (one name for different
   things on different screens) left the detector and went back to judgment: it
   is vocabulary, see `slop-catalog.md` item 21.
-- `icone-desenhado-a-mao`: what a library import would replace.
+- `hand-drawn-icon`: a UI glyph (chevron, x, check, arrow) drawn inline on the
+  16/20/24 grid, which a library import would replace. Icon files (`icons/`
+  folder, `*icon*`/`*logo*` names) and brand marks (a `<title>`/`aria-label`
+  naming the brand, a path over 200 characters, a literal brand color) stay
+  out. It reads `package.json`: with an icon library, one finding per glyph
+  naming it; without one, one finding per file asking to adopt one.
 
 Six more were all seen **by opening the screen** after the detectors went
 green. One line of reason each; the full case is in the catalog.
 
 | Rule | Catches | Why |
 |---|---|---|
-| `capa-sintetica` | hue from a hash of the name, data colors turned into a gradient next to a missing image | an invented cover looks like data and means nothing (catalog 24) |
-| `img-de-tile-sem-onerror` | `<img>` with `object-cover`/`aspect-*` and no `onError` | a broken URL becomes a split icon or an eternal blur; 128 dead refs on one route (25) |
-| `cascata-por-indice` | `delay`/`animationDelay` = `index * ...` | the 30th item waits 1.5s on every filter (30) |
-| `hover-que-levanta` | `hover:-translate-y-*`, `hover:scale` > 1, `whileHover` with `y<0` | 26 admin cards jumping; it does not exist on touch (31) |
-| `grade-de-pontos` | repeated `radial-gradient`, SVG of circles, `<GridDots>` | template texture; it lived in the page shell and shipped on every route (32) |
-| `blur-em-card` | `backdrop-blur` on an in-flow element | with nothing behind it blurs nothing, it only costs GPU (18) |
+| `synthetic-cover` | hue from a hash of the name, data colors turned into a gradient next to a missing image | an invented cover looks like data and means nothing (catalog 24) |
+| `tile-img-no-onerror` | `<img>` with `object-cover`/`aspect-*` and no `onError` | a broken URL becomes a split icon or an eternal blur; 128 dead refs on one route (25) |
+| `stagger-by-index` | `delay`/`animationDelay` = `index * ...` | the 30th item waits 1.5s on every filter (30) |
+| `hover-lift` | `hover:-translate-y-*`, `hover:scale` > 1 (not on an icon inside its button), `whileHover` with `y<0` | 26 admin cards jumping; it does not exist on touch (31) |
+| `dot-grid` | repeated `radial-gradient`, SVG of circles, `<GridDots>` | template texture; it lived in the page shell and shipped on every route (32) |
+| `blur-on-card` | `backdrop-blur` on an in-flow element | with nothing behind it blurs nothing, it only costs GPU (18) |
 
 - **Its finding is a cut candidate, not an automatic fix.** One of those lines
   may be the only one that really guides. Confirm at `file:line`.
 - **The exception exists and must justify itself** (format below). A gesture
   with no native affordance (keyboard modifier, window resize) is the most common
   legitimate exception; the other is the static detector that cannot see a
-  runtime swap (`porta-repetida` with a composer that disappears when the chat
+  runtime swap (`repeated-door` with a composer that disappears when the chat
   panel is open).
 
 ## Written exception: one contract, every scanner
@@ -117,8 +135,8 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
-| `ruido-scan` (this skill) | `EXCEPTION to ruido-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 15 in the script (`ensina-a-usar`, `porta-repetida`, `blur-em-card`...) |
-| token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` |
+| `ruido-scan` (this skill) | `EXCEPTION to ruido-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 24 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
+| token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `raw-hex`, `raw-rgb-hsl`, `tailwind-palette` (legacy `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` still accepted) |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
 | repo `scan-ui-scale` | `EXCEÇÃO ao ui-scale/<rule>: reason` | `// ui-scale-ignore-file: <rule> — reason` | `micro-label`, `px-cru`, `peso-pesado`, `raio-sortido`, `accent-repouso`, `matiz-cru`, `opacidade-cru` |
 | repo `scan-design-violations` | `EXCEÇÃO ao audit:design/<rule>: reason` | `// audit:design-ignore-file: <rule> — reason` | the rule `id` in the script |
@@ -130,7 +148,10 @@ parse; keep it as written.
 This skill's own scanners (`ruido-scan`, token fallback) accept `EXCEPTION to`
 and the original Portuguese `EXCEÇÃO ao` (`EXCECAO` without accents also
 counts), and `ruido-ignore-file:` as well as `noise-ignore-file:`, so markers
-already written keep working. The repo scanners in the last four rows match only
+already written keep working. `ruido-scan` rule ids were Portuguese until
+2026-10-28 (`hover-que-levanta`, `blur-em-card`...); both markers still accept
+the old id as an alias of the English one (map `LEGADO` in the script), while
+findings always print the new id. The repo scanners in the last four rows match only
 `EXCEÇÃO ao`, so there it stays in Portuguese.
 
 ```tsx

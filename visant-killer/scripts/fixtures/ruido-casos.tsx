@@ -88,7 +88,7 @@ export function VerdadeiroRotulos() {
  * announce a keyboard modifier. EXPECTED: zero, because the reason is
  * written and cites the rule by name.
  *
- * EXCEÇÃO ao `ruido-scan/ensina-a-usar`: gesto sem afordância nativa. */
+ * EXCEÇÃO ao `ruido-scan/usage-instruction`: gesto sem afordância nativa. */
 export function ExcecaoComMotivo() {
   return <span>arrasta pra cima e pra baixo, shift para fino</span>;
 }
@@ -99,7 +99,7 @@ export function ExcecaoComMotivo() {
 /* The rule's first version only spoke Portuguese, and on an English repo it
  * returned zero, which is WORSE than not running, because zero passes as clean.
  * A Brazilian repo has both: a third-party piece arrives with English copy out
- * of the box. EXPECTED: 1 in ensina-a-usar, 1 in legenda-do-que-vem. */
+ * of the box. EXPECTED: 1 in usage-instruction, 1 in caption-of-what-follows. */
 export function VerdadeiroIngles() {
   return (
     <div>
@@ -165,7 +165,7 @@ export function FalsoPositivoAtribuicaoNaoEhAtributo() {
  * the person SEES (`title` is a tooltip, `placeholder` is the field's text):
  * the pair with `alt` that used to live here left with the fix of
  * 2026-08-19, see the "ALT TEXT" block right below.
- * EXPECTED: 1 mesma-info-dois-tamanhos finding. */
+ * EXPECTED: 1 same-info-twice finding. */
 export function PositivoAtributoRepetido() {
   return (
     <div>
@@ -227,7 +227,7 @@ export function FalsoPositivoGenericoEmCallback() {
 
 /* The counterexample that keeps the sieve from becoming cowardice: BALANCED
  * parentheses inside a screen sentence are still a screen sentence, and these
- * two say the same thing. EXPECTED: 1 mesma-info-dois-tamanhos finding. */
+ * two say the same thing. EXPECTED: 1 same-info-twice finding. */
 export function PositivoFraseComParenteses() {
   return (
     <div>
@@ -302,7 +302,7 @@ export function FalsoPositivoPlaceholderEAriaLabelDoMesmoCampo() {
 /* An icon is a library asset. An arrow glyph inherits the font metrics,
  * misaligns with the baseline, has no weight or size, and the screen reader
  * reads it as text. There are TWO findings here: the button arrow and the back link one.
- * EXPECTED seta-glifo: 2. */
+ * EXPECTED arrow-glyph: 2. */
 export function SetaEmCaractere() {
   return (
     <div>
@@ -329,7 +329,7 @@ export function SetaComoIconeDeBiblioteca({ ArrowRight }: { ArrowRight: React.Co
 /* ============================================================== */
 /* The 24×24 grid is the universal icon box: whoever draws on it is
  * redrawing something that already exists in any library.
- * EXPECTED icone-desenhado-a-mao: 1 (only the one below). */
+ * EXPECTED hand-drawn-icon: 1 (only the one below). */
 export function IconeDesenhadoAMao() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -356,7 +356,7 @@ export function GrafismoDaMarca() {
  * ITEM, so the whole list lights up and the highlight stops highlighting.
  * Real case: jukebox, 2026-09-11: three records in the box, all three in the
  * queue, the whole grid in cyan and "on air" indistinguishable from "3rd in queue".
- * EXPECTED realce-que-nao-decide: 1. */
+ * EXPECTED highlight-at-rest: 1. */
 export function GradeToraAcesa({ discos }: { discos: { url: string }[] }) {
   return (
     <ul>
@@ -382,7 +382,7 @@ export function InterruptorDaTela({ setScreen }: { setScreen: (v: { on: boolean 
   }));
 }
 
-/* EXCEÇÃO ao `ruido-scan/realce-que-nao-decide`: esta peça é UMA na tela — o
+/* EXCEÇÃO ao `ruido-scan/highlight-at-rest`: esta peça é UMA na tela — o
    plano que o cliente já assina — e está acesa de propósito, não uma vez por
    item de lista.
  * EXPECTED: zero. */
@@ -402,7 +402,7 @@ export function PlanoAtual() {
  * Since 2026-10-05 the rule requires the SAME SCREEN, so this room RENDERS the
  * box (`<PortaDaCaixa />`, imported at the top of the file), as in the jukebox:
  * without the import, the two ends would be unrelated screens and the rule would go quiet.
- * EXPECTED porta-repetida: 2 (one end here, one end there). */
+ * EXPECTED repeated-door: 2 (one end here, one end there). */
 export function PortaDaSala({ Group }: { Group: React.ComponentType<{ cap: string; children?: React.ReactNode }> }) {
   return (
     <>
@@ -420,7 +420,7 @@ export function PortaDaSala({ Group }: { Group: React.ComponentType<{ cap: strin
  * only spelling that matches the physical object: no library icon replaces "the
  * Enter key" without becoming a generic arrow. It holds inside `<kbd>` and in a
  * prop that names a shortcut.
- * EXPECTED seta-glifo: zero of these. */
+ * EXPECTED arrow-glyph: zero of these. */
 export function TeclaDeAtalho({ Btn }: { Btn: React.ComponentType<{ hint: string }> }) {
   return (
     <>
@@ -434,7 +434,7 @@ export function TeclaDeAtalho({ Btn }: { Btn: React.ComponentType<{ hint: string
  * 2026-09-21 the rule climbed ONE level and stopped: the brace containing `on: true`
  * is preceded by `? `, not by `name(`, and a room config setter became
  * "lit card factory".
- * EXPECTED realce-que-nao-decide: zero. */
+ * EXPECTED highlight-at-rest: zero. */
 export function LigaJogo({ struct }: { struct: (p: Record<string, unknown>) => void }) {
   const setJogo = (id: string) =>
     struct({ game: id ? { on: true, minigame: id, tempo: 80 } : null });
@@ -445,7 +445,7 @@ export function LigaJogo({ struct }: { struct: (p: Record<string, unknown>) => v
  * on neighboring lines make the extractor read the CODE between them as a screen
  * sentence. The chunk has balanced parentheses and no reserved word: it got past
  * every sieve.
- * EXPECTED mesma-info-dois-tamanhos: zero. */
+ * EXPECTED same-info-twice: zero. */
 export function LampadasFalsas({ N }: { N: number }) {
   const falsa = {
     ids: Array<string | null>(N).fill(null),
@@ -456,7 +456,7 @@ export function LampadasFalsas({ N }: { N: number }) {
 
 /* AN IDENTICAL ACCESSIBLE NAME on sibling controls is symmetry, not repetition:
  * two buttons that do the same thing in opposite directions need the same name.
- * EXPECTED mesma-info-dois-tamanhos: zero. */
+ * EXPECTED same-info-twice: zero. */
 export function MoverNaFileira({ Btn, slot }: { Btn: React.ComponentType<{ label: string }>; slot: number }) {
   return (
     <>

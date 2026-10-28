@@ -23,7 +23,8 @@
  */
 
 import { readdir, readFile, stat } from "node:fs/promises";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { existsSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 /* -------------------------------------------------------------------------- */
 /* Rules                                                                      */
@@ -287,9 +288,25 @@ function lineAt(src, index) {
  * across drives, as a path that opens nowhere. A printed path you cannot paste
  * back costs a trip to the terminal per finding.
  */
-function displayBase(absTarget, cwd) {
-  const r = relative(cwd, absTarget);
-  return r && !r.startsWith("..") && !isAbsolute(r) ? cwd : absTarget;
+/* The base is the TARGET's project root (nearest folder at or above the
+   target with a package.json or .git), never the cwd. Shortening against the
+   cwd printed `Users/<name>/.../repo/components/mode-toggle.tsx` when the
+   lint ran from `C:\` on a repo under it: technically relative, useless to
+   paste. No project marker: the target folder itself (a file's folder). */
+function displayBase(absTarget, isDir) {
+  const start = isDir ? absTarget : dirname(absTarget);
+  for (let d = start; ; ) {
+    if (existsSync(join(d, "package.json")) || existsSync(join(d, ".git"))) return d;
+    const up = dirname(d);
+    if (up === d) return start;
+    d = up;
+  }
+}
+
+/** Path relative to the base, or the absolute path when it is not under it. */
+function relToBase(base, path) {
+  const r = relative(base, path);
+  return r && !r.startsWith("..") && !isAbsolute(r) ? r : path;
 }
 
 /**
@@ -306,9 +323,9 @@ const isTestFile = (p) => /(^|[\\/])(tests?|__tests__)[\\/]|\.(test|spec)\.[cm]?
 async function lintFile(path, root) {
   const raw = await readFile(path, "utf8");
   if (raw.includes("motion-lint-disable-file")) return [];
-  if (isTestFile(relative(root, path) || path)) return [];
+  const rel = relToBase(root, path);
+  if (isTestFile(rel)) return [];
 
-  const rel = relative(root, path) || path;
   const src = blankComments(raw);
   const rawLines = raw.split("\n");
   const blankLines = src.split("\n");
@@ -411,6 +428,20 @@ if (argv.includes("--self-test")) {
         (leak.length ? ` — ${leak.map((f) => `${f.rule}@${f.line}`).join(", ")}` : ""),
     );
 
+  /* Printed paths are relative to the target's project root, whatever the
+     cwd: the fixtures sit in a repo with a package.json, so a finding prints
+     as `visant-motion/scripts/fixtures/bad.tsx`, never `Users/...` or `../..`. */
+  {
+    const base = displayBase(fx, true);
+    const shown = relToBase(base, join(fx, "bad.tsx")).split(sep).join("/");
+    if (!existsSync(join(base, "package.json")) && !existsSync(join(base, ".git")))
+      problems.push(`display base is not a project root: ${base}`);
+    if (!/^[\w.-]+(\/[\w.-]+)*\/bad\.tsx$/.test(shown) || shown.startsWith(".."))
+      problems.push(`path display: expected a project-relative path, got ${shown}`);
+    if (relToBase(join(fx, "good"), join(fx, "bad.tsx")) !== join(fx, "bad.tsx"))
+      problems.push("path display: a file outside the base must print absolute");
+  }
+
   if (problems.length) {
     console.error("motion-lint --self-test FAILED");
     for (const p of problems) console.error(`  - ${p}`);
@@ -485,7 +516,7 @@ for (const t of targets) {
     console.error(`  (resolved to ${abs})`);
     process.exit(2);
   }
-  const base = displayBase(abs, cwd);
+  const base = displayBase(abs, s.isDirectory());
   if (s.isDirectory()) {
     for await (const f of walk(abs, ignores)) findings.push(...(await lintFile(f, base)));
   } else {

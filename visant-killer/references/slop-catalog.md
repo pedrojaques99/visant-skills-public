@@ -136,6 +136,9 @@ Space always reserved; hover reveals, hover never relayouts.
 **Cause.** The Tailwind palette is the default of whoever did not read the token.
 **Fix.** Design system token. Worth checking: a raw color has already slipped
 past two detectors at once in this repo.
+**Scope.** Only a finding when the repo HAS a token layer to bypass. A repo that
+uses Tailwind's palette as its design system (no semantic color layer) is judged
+on palette chaos instead: more than 3 accent hue families.
 
 ## 16. Token in the wrong format
 
@@ -177,7 +180,7 @@ photo, the animated background of the home page. A `bg-card` (opaque) with
 **Verification.** Open the screen and look at what is behind; no grep solves it.
 Found in the boxy-app audit (2026-08-06): 49 occurrences, ~20 with nothing
 behind.
-**Detector.** `ruido-scan`, rule `blur-em-card` (2026-10-05): flags blur on an
+**Detector.** `ruido-scan`, rule `blur-on-card` (2026-10-05): flags blur on an
 element in the flow and lets through what overlaps (`fixed`/`sticky`/`absolute`,
 Dialog, Sheet, Popover and the like by name).
 
@@ -283,7 +286,7 @@ as a bonus, was the only tab with no way to add a record.
 **Test.** Count the doors of the same kind per screen. Two, ask out loud which is
 which. If the answer needs the code, the screen does not answer.
 
-**Detector.** `ruido-scan`, rule `porta-repetida`, the only rule in the skill
+**Detector.** `ruido-scan`, rule `repeated-door`, the only rule in the skill
 that runs ACROSS files, because this defect does not fit in one. Since
 2026-10-05 it only flags the two doors **on the same screen** (common ancestor in
 the import graph, with no early `return` or ternary separating them): from 25
@@ -318,7 +321,7 @@ highlight per region.
 **Test.** Count the pieces lit at the same time. More than one per region, the
 highlight means nothing, and "meaning" is its only job.
 
-**Detector.** `ruido-scan`, rule `realce-que-nao-decide`.
+**Detector.** `ruido-scan`, rule `highlight-at-rest`.
 
 ## 23. The word cut in half
 
@@ -363,7 +366,7 @@ design system's `MediaTile` exists for this; a media card rewritten by hand is
 what lets the synthetic cover come back.
 **Test.** Two synthetic covers side by side in different colors: the user will
 look for what the color means.
-**Detector.** `ruido-scan`, rule `capa-sintetica` (hue from a hash of the name,
+**Detector.** `ruido-scan`, rule `synthetic-cover` (hue from a hash of the name,
 or data colors turned into a gradient near a missing image). A gradient that
 SHOWS the brand palette (a guideline swatch) is brand data and passes.
 
@@ -379,7 +382,7 @@ machine, dead on any other).
 and reserves the box; whoever needs to react to the failure (drop the item from
 the list) uses the tile's `onImageError`, not a `div` around it. And the filter
 lives on the server: an item without a servable image does not enter the grid.
-**Detector.** `ruido-scan`, rule `img-de-tile-sem-onerror` (`<img>` with
+**Detector.** `ruido-scan`, rule `tile-img-no-onerror` (`<img>` with
 `object-cover`/`aspect-*` and no `onError`; upload preview, blob and build asset
 stay out).
 
@@ -438,7 +441,7 @@ to the page.
 `delay: index * 0.05`.
 **Fix.** The list comes in whole, at once (or only the container animates). A
 work screen does not stage a show.
-**Detector.** `ruido-scan`, rule `cascata-por-indice`.
+**Detector.** `ruido-scan`, rule `stagger-by-index`.
 
 ## 31. The card that jumps
 
@@ -449,7 +452,7 @@ AdminPage with the same `-translate-y-1`.
 **Fix.** Hover changes color, border or shadow. It does not exist on touch and
 says nothing the border would not. A scale below 1 on `active:` (sinking) is
 something else and stays.
-**Detector.** `ruido-scan`, rule `hover-que-levanta`.
+**Detector.** `ruido-scan`, rule `hover-lift`.
 
 ## 32. Dot grid background
 
@@ -459,7 +462,7 @@ circles or `<GridDots>` behind a page, panel or empty cover.
 noise. In the 2026-10 round it lived in `PageShell` and came out on every route.
 **Fix.** Flat token background. A large radial glow (an ellipse without
 `background-size`) is something else and passes.
-**Detector.** `ruido-scan`, rule `grade-de-pontos`.
+**Detector.** `ruido-scan`, rule `dot-grid`.
 
 ## 33. Primitive rewritten by hand
 
@@ -736,7 +739,7 @@ caption: the code font becomes the page's second font.
 **Fix.** Mono only on what is really code: serial, hash, ID, command, a snippet
 someone copies. The rest uses the text font, with `tabular-nums` where numbers
 need to align. Generalizes 2 (money) and 55 (code breadcrumb); uppercase mono on
-a label is already the `rotulo-gritado` rule of `ruido-scan`.
+a label is already the `shouting-label` rule of `ruido-scan`.
 **Test.** Swap all mono for the text font. Whatever got worse (ID, hash,
 command) comes back; the rest stays.
 **Detector.** `ruido-scan`, rule `mono-everywhere` (10+ in one file, outside

@@ -21,7 +21,7 @@ Portuguese: "audit this screen", "tá com cara de IA", "make this smoother",
 
 ## What the killer catches
 
-A typical AI pricing card, in a repo with no design lint of its own:
+A typical AI pricing card, in a shadcn project with no design lint of its own:
 
 ```tsx
 <section className="border rounded-2xl p-8">
@@ -40,8 +40,8 @@ $ node visant-killer/scripts/killer-scan.mjs demo/src
 
 [OK]      impeccable   (AI tell)     zero
 [FAIL]    audit:design (token)       1 finding(s)
-            src/Pricing.tsx:7  paleta-tailwind  <div className="border rounded-xl p-4 text-purple-500">
-            via killer-scan built-in FALLBACK (raw hex/rgb/hsl, Tailwind palette)
+            src/Pricing.tsx:7  tailwind-palette  <div className="border rounded-xl p-4 text-purple-500">
+            via killer-scan built-in FALLBACK; token layer found (shadcn components.json): palette classes bypass it
 [FAIL]    copy         (tic)         2 finding(s)
             src/Pricing.tsx:6  em-dash
             src/Pricing.tsx:6  en-hype
@@ -57,6 +57,22 @@ GATE CLOSED: 3 detector(s) with findings. A gate finding becomes a fix, not a pr
 That is only the script half. The skill then judges what no detector sees
 (does each element move a business variable?), opens the screen in a browser,
 argues against its own verdict and scores the result.
+
+## Tested on repos we don't own
+
+Every detector was run, from outside, on three public Next.js projects with no
+Visant code, then calibrated until what remained was defensible:
+
+| Repo | Token gate | Noise gate | Distribution |
+|---|---|---|---|
+| [vercel/commerce](https://github.com/vercel/commerce) | passes: no token layer, Tailwind palette used as the design system (3 neutral, 3 accent hues) | 2: `hover-lift` on a product image and gallery buttons | 1 LOW: checkout hands off to Shopify, no `begin_checkout` event |
+| [shadcn-ui/taxonomy](https://github.com/shadcn-ui/taxonomy) | 9: palette classes that bypass its CSS-variable tokens (`text-red-600`, `bg-slate-50`) | 2: a hand-drawn lucide `Shield` while lucide-react is installed; "Enter your email below…" | 1 HIGH (public routes without description), a route without title, no sitemap |
+| [steven-tey/precedent](https://github.com/steven-tey/precedent) | 4 raw hex (Twitter blue as a one-off class, a gauge circle) + 1 palette-chaos finding (4 accent hues) | 2: the Vercel triangle, a CTA that grows on hover | clean |
+
+What the calibration fixed, so it holds on any repo: palette classes only count
+as a bypass when there is a token layer to bypass; SVGs in an `icons/` folder
+and brand logos are not "hand-drawn icons"; components are never routes; a
+hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 
 ## Interface
 

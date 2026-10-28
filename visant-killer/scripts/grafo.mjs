@@ -7,7 +7,7 @@
  *      screens is worth 40 findings. Without the fan-out, the gate list says to
  *      fix the page the person opened first, and the defect comes back on the
  *      next screen that uses the same piece.
- *   2. `ruido-scan` / `porta-repetida`: "two doors on the same screen" is only a
+ *   2. `ruido-scan` / `repeated-door`: "two doors on the same screen" is only a
  *      defect if both appear TOGETHER. Round 1 of the slop killer (2026-10-05)
  *      gave 25 findings for this rule and almost all were different screens or
  *      exclusive branches. The same screen is, statically, a close common

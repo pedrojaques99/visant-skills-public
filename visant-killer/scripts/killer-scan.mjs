@@ -229,26 +229,55 @@ function runDesignScannerFile() {
  * repo's gate always wins).
  *
  * Conservative on purpose, because a noisy gate teaches people to ignore it:
- *   hex-cru         `#abc` in .css (outside custom-property definitions and
- *                   theme blocks) and, in .tsx/.jsx, only inside an arbitrary
- *                   class (`bg-[#123456]`) or a color string in a style context
- *   rgb-hsl-cru     `rgb(10,...)` / `hsl(210 ...)` with a literal number;
- *                   `hsl(var(--x))` is the right way and is not flagged
- *   paleta-tailwind `text-purple-500`, `bg-slate-900`: fixed palette color
- *                   instead of a semantic token (in .css only via `@apply`)
+ *   raw-hex          `#abc` in .css (outside custom-property definitions and
+ *                    theme blocks) and, in .tsx/.jsx, only inside an arbitrary
+ *                    class (`bg-[#123456]`) or a color string in a style context
+ *   raw-rgb-hsl      `rgb(10,...)` / `hsl(210 ...)` with a literal number;
+ *                    `hsl(var(--x))` is the right way and is not flagged
+ *   tailwind-palette `text-purple-500`, `bg-slate-900`: fixed palette color
+ *                    (in .css only via `@apply`). What it means depends on the
+ *                    repo, see "token layer" below.
+ *
+ * Token layer. A palette class is only a bypass when there is something to
+ * bypass. vercel/commerce has no semantic color layer and uses Tailwind's
+ * default palette AS its design system (`border-neutral-200`, `bg-neutral-50`):
+ * the old rule gave it 40 FAILs, one per class, all noise. So:
+ *   - token layer present (shadcn `components.json`, semantic color custom
+ *     properties such as `--primary` / `--background` / `--color-*` in any
+ *     .css, Tailwind v4 `@theme` colors, or semantic keys under `colors` in
+ *     tailwind.config): every palette class is a finding, as before;
+ *   - no token layer: no per-class finding. ONE aggregated finding only when
+ *     the palette is chaotic, more than 3 non-neutral hue families across the
+ *     target; otherwise the gate passes and says why in its `via` line.
+ *
+ * Brand marks need literal colors: raw hex/rgb/hsl is not flagged in files
+ * under an `icons/` or `logos/` folder, nor on a `fill` / `stroke` /
+ * `stop-color` attribute of a `<path>` or `<polygon>` (glyph geometry). A
+ * `<circle>` in a gauge is a chart, not a glyph, and still fires.
  *
  * Left out: token/theme files (`tokens.css`, `theme.css`, `globals.css`,
  * `*-theme.*`, `tailwind.config.*`, a `tokens/` or `theme/` folder), `:root`,
  * `.dark`, `[data-theme]` and `@theme` blocks, comment lines, and any line with
  * a written exception: `EXCEPTION to token-fallback/<rule>: reason` (or the
  * Portuguese `EXCEÇÃO ao token-fallback/<rule>: reason`) on the same line or up
- * to 8 lines above (same contract as the other scanners).
+ * to 8 lines above (same contract as the other scanners). The rule ids were
+ * Portuguese until 2026-10; exceptions written with the old ids still count.
  */
+export const TF_LEGACY_IDS = {
+  'hex-cru': 'raw-hex',
+  'rgb-hsl-cru': 'raw-rgb-hsl',
+  'paleta-tailwind': 'tailwind-palette',
+};
 const TF_EXT = /\.(tsx|jsx|css)$/;
 const TF_DIR_TEMA = /\/(tokens?|themes?)\//i;
 const TF_ARQ_TEMA = /(^|[-_.])(tokens?|themes?|globals?|palette|variables)$/i;
 const TF_TW_CONFIG = /^tailwind\.config\./i;
-const TF_PALETA = /\b(?:bg|text|border|ring|fill|stroke|from|via|to|outline|decoration|divide|placeholder|caret|accent|shadow)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|[1-9]00|950)\b/;
+const TF_NEUTRAS = ['slate', 'gray', 'zinc', 'neutral', 'stone', 'black', 'white'];
+const TF_FAMILIAS = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';
+const TF_PREFIXO = '(?:bg|text|border|ring|fill|stroke|from|via|to|outline|decoration|divide|placeholder|caret|accent|shadow)';
+const TF_PALETA = new RegExp(`\\b${TF_PREFIXO}-(?:${TF_FAMILIAS})-(?:50|[1-9]00|950)\\b`);
+const TF_PALETA_G = new RegExp(`\\b${TF_PREFIXO}-(${TF_FAMILIAS})-(?:50|[1-9]00|950)\\b`, 'g');
+const TF_PRETO_BRANCO_G = new RegExp(`\\b${TF_PREFIXO}-(black|white)\\b`, 'g');
 const TF_ARBITRARIO = /\b(?:bg|text|border|ring|fill|stroke|from|via|to|outline|decoration|divide|shadow|caret|accent)-\[(?:#[0-9a-fA-F]{3,8}|rgba?\(\s*\d|hsla?\(\s*\d)/;
 const TF_COR_STRING = /(['"`])(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\(\s*\d[^)'"`]*\)|hsla?\(\s*\d[^)'"`]*\))\1/;
 const TF_CONTEXTO_ESTILO = /\b(?:color|colou?r|background|bg|fill|stroke|border|shadow|outline|style)\w*\s*[:=]/i;
@@ -256,6 +285,8 @@ const TF_HEX_CSS = /(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4}
 const TF_FUNC_CSS = /\b(?:rgba?|hsla?)\(\s*\d/;
 const TF_BLOCO_TEMA = /(:root|\.dark\b|\[data-theme|@theme)/;
 const TF_COMENTARIO = /^\s*(\{\s*)?(\/\/|\/\*|\*)/;
+const TF_DIR_ICONE = /\/(icons?|logos?)\//i;
+const TF_ATTR_GLIFO = /\b(?:fill|stroke|stopColor|stop-color)\s*=\s*["'{]/;
 
 function arquivoDeTema(f) {
   const n = norm(f);
@@ -265,21 +296,91 @@ function arquivoDeTema(f) {
 }
 
 function excecaoTF(lines, i, regra) {
-  const re = new RegExp(`(?:EXCE[ÇC][ÃA]O ao|EXCEPTION to) token-fallback/${regra}(?![\\w-])`);
+  const ids = [regra, ...Object.keys(TF_LEGACY_IDS).filter((k) => TF_LEGACY_IDS[k] === regra)];
+  const re = new RegExp(`(?:EXCE[ÇC][ÃA]O ao|EXCEPTION to) token-fallback/(?:${ids.join('|')})(?![\\w-])`);
   for (let k = Math.max(0, i - 8); k <= i; k++) if (re.test(lines[k])) return true;
   return false;
 }
 
-/** Scans the files and returns findings `{ file, linha, regra, amostra }`. */
-export function scanTokenFallback(lista) {
+/* `fill="#0D0C22"` on a `<path>`: the nearest opening tag before the
+   attribute, looking back at most 12 lines (JSX puts one attribute per line). */
+function corDeGlifo(lines, i) {
+  const m = lines[i].match(TF_ATTR_GLIFO);
+  if (!m) return false;
+  for (let k = i; k >= Math.max(0, i - 12); k--) {
+    const seg = k === i ? lines[k].slice(0, m.index) : lines[k];
+    const tags = [...seg.matchAll(/<([A-Za-z][\w.]*)/g)];
+    if (tags.length) return /^(?:motion\.)?(?:path|polygon)$/i.test(tags[tags.length - 1][1]);
+  }
+  return false;
+}
+
+/* ---- token layer detection (on the audited repo, not only on the target) ---- */
+const TL_VAR_COR = /(?:^|[{;\s])--(?:color-[\w-]+|background|foreground|primary|secondary|accent|muted|destructive|border|input|ring|card|popover|brand|surface)(?:-[\w-]+)?\s*:/m;
+const TL_TW_CORES = /\bcolors\s*:\s*\{[\s\S]{0,3000}?['"]?\b(?:primary|secondary|background|foreground|accent|muted|brand|destructive|surface|border)\b['"]?\s*:/;
+
+function cssDoRepo(dir, out = [], prof = 0) {
+  if (prof > 6 || out.length >= 300) return out;
+  let nomes;
+  try { nomes = readdirSync(dir); } catch { return out; }
+  for (const name of nomes) {
+    if (SKIP_DIR.test(name) || name.startsWith('.')) continue;
+    const p = join(dir, name);
+    let st;
+    try { st = statSync(p); } catch { continue; }
+    if (st.isDirectory()) cssDoRepo(p, out, prof + 1);
+    else if (/\.(css|scss|pcss)$/.test(name)) out.push(p);
+  }
+  return out;
+}
+
+/** Does the repo at `root` have a semantic color layer? `{ present, via }`. */
+export function detectTokenLayer(root) {
+  if (existsSync(join(root, 'components.json'))) return { present: true, via: 'shadcn components.json' };
+  for (const f of cssDoRepo(root)) {
+    const m = readFileSync(f, 'utf8').match(TL_VAR_COR);
+    if (m) {
+      const r = relative(root, f);
+      return { present: true, via: `color custom properties in ${norm(r && !r.startsWith('..') ? r : f)} (${m[0].replace(/^[{;\s]+/, '')})` };
+    }
+  }
+  for (const ext of ['js', 'ts', 'cjs', 'mjs']) {
+    const f = join(root, `tailwind.config.${ext}`);
+    if (existsSync(f) && TL_TW_CORES.test(readFileSync(f, 'utf8'))) {
+      return { present: true, via: `semantic colors in tailwind.config.${ext}` };
+    }
+  }
+  return { present: false, via: 'no token layer' };
+}
+
+/**
+ * Scans the files. Returns `{ achados, hues }`: findings
+ * `{ file, linha, regra, amostra }` and the palette families seen
+ * (`hues.neutral` / `hues.accent`, family -> count).
+ * With `tokenLayer: false`, palette classes are only counted; one aggregated
+ * finding (`file: null, linha: 0`) is added when more than 3 accent families
+ * show up.
+ */
+export function scanTokenFallbackFull(lista, { tokenLayer = true } = {}) {
   const achados = [];
+  const hues = { neutral: new Map(), accent: new Map() };
+  const conta = (fam) => {
+    const m = TF_NEUTRAS.includes(fam) ? hues.neutral : hues.accent;
+    m.set(fam, (m.get(fam) || 0) + 1);
+  };
   for (const f of lista) {
     if (!TF_EXT.test(f) || arquivoDeTema(f)) continue;
     const lines = readFileSync(f, 'utf8').split(/\r?\n/);
     const css = f.endsWith('.css');
+    const icone = TF_DIR_ICONE.test(norm(f));
     const pilha = []; // .css only: true when the open block is a theme block
     const acusa = (i, regra) => {
       if (excecaoTF(lines, i, regra)) return;
+      if (regra === 'tailwind-palette') {
+        for (const m of lines[i].matchAll(TF_PALETA_G)) conta(m[1]);
+        for (const m of lines[i].matchAll(TF_PRETO_BRANCO_G)) conta(m[1]);
+        if (!tokenLayer || !TF_PALETA.test(lines[i])) return;
+      }
       achados.push({ file: f, linha: i + 1, regra, amostra: lines[i].trim().slice(0, 80) });
     };
     lines.forEach((line, i) => {
@@ -295,33 +396,57 @@ export function scanTokenFallback(lista) {
         if (!pilha.includes(true)) {
           for (const decl of resto.split(/[;}]/)) {
             if (!/^\s*[a-z-]+\s*:/i.test(decl) || /^\s*--/.test(decl)) continue;
-            if (TF_HEX_CSS.test(decl)) { acusa(i, 'hex-cru'); break; }
-            if (TF_FUNC_CSS.test(decl)) { acusa(i, 'rgb-hsl-cru'); break; }
+            if (TF_HEX_CSS.test(decl)) { acusa(i, 'raw-hex'); break; }
+            if (TF_FUNC_CSS.test(decl)) { acusa(i, 'raw-rgb-hsl'); break; }
           }
-          if (/@apply/.test(resto) && TF_PALETA.test(resto)) acusa(i, 'paleta-tailwind');
+          if (/@apply/.test(resto) && TF_PALETA.test(resto)) acusa(i, 'tailwind-palette');
         }
         for (const ch of resto) if (ch === '}') pilha.pop();
         return;
       }
       if (TF_COMENTARIO.test(line)) return;
-      if (TF_ARBITRARIO.test(line)) acusa(i, /\[#/.test(line) ? 'hex-cru' : 'rgb-hsl-cru');
-      else if (TF_CONTEXTO_ESTILO.test(line) && TF_COR_STRING.test(line)) {
-        acusa(i, /(['"`])#/.test(line.match(TF_COR_STRING)[0]) ? 'hex-cru' : 'rgb-hsl-cru');
+      const marca = icone || corDeGlifo(lines, i);
+      if (TF_ARBITRARIO.test(line)) {
+        if (!marca) acusa(i, /\[#/.test(line) ? 'raw-hex' : 'raw-rgb-hsl');
+      } else if (TF_CONTEXTO_ESTILO.test(line) && TF_COR_STRING.test(line)) {
+        if (!marca) acusa(i, /(['"`])#/.test(line.match(TF_COR_STRING)[0]) ? 'raw-hex' : 'raw-rgb-hsl');
       }
-      if (TF_PALETA.test(line)) acusa(i, 'paleta-tailwind');
+      /* black/white never fire on their own; they are only counted, so the
+         "N neutral" in the summary is honest. */
+      if (TF_PALETA.test(line) || line.search(TF_PRETO_BRANCO_G) !== -1) acusa(i, 'tailwind-palette');
     });
   }
-  return achados;
+  if (!tokenLayer && hues.accent.size > 3) {
+    const lista2 = (m) => [...m].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} x${n}`).join(', ');
+    achados.push({
+      file: null,
+      linha: 0,
+      regra: 'tailwind-palette',
+      amostra: `no token layer and ${hues.accent.size} accent hue families (more than 3): ${lista2(hues.accent)}; neutral: ${lista2(hues.neutral) || 'none'}`,
+    });
+  }
+  return { achados, hues };
+}
+
+/** Findings only. `tokenLayer` defaults to true: every palette class fires. */
+export function scanTokenFallback(lista, opts) {
+  return scanTokenFallbackFull(lista, opts).achados;
 }
 
 const TF_ROTULO = 'killer-scan built-in FALLBACK (raw hex/rgb/hsl, Tailwind palette)';
 
 function runTokenFallback(motivo) {
-  const achados = scanTokenFallback(files);
+  const camada = detectTokenLayer(ROOT);
+  const { achados, hues } = scanTokenFallbackFull(files, { tokenLayer: camada.present });
+  const nota = camada.present
+    ? `token layer found (${camada.via}): palette classes bypass it`
+    : `no token layer; Tailwind palette used as the design system (${hues.neutral.size} neutral, ${hues.accent.size} accent hues)`;
   return {
     skipped: null,
-    via: `${TF_ROTULO}; ${motivo}`,
-    findings: achados.map((a) => `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`),
+    via: `${TF_ROTULO}; ${motivo}; ${nota}`,
+    findings: achados.map((a) => (a.file
+      ? `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`
+      : `(target)  ${a.regra}  ${a.amostra}`)),
   };
 }
 
@@ -1185,7 +1310,13 @@ function runSelfTest() {
   const tokenFalhas = [];
   {
     const fx = (n) => norm(join(here, 'fixtures', n));
-    const sujos = ['token-fallback-sujo.tsx', 'token-fallback-sujo.css'].map(fx);
+    /* `token-fallback-ids.tsx` proves old ids (`paleta-tailwind`, `hex-cru`)
+       and new ids both waive, and that an exception for one rule does not
+       waive another. The `brand-marks` pair proves the brand-mark exemption. */
+    const sujos = [
+      'token-fallback-sujo.tsx', 'token-fallback-sujo.css', 'token-fallback-ids.tsx',
+      'token-layer/brand-marks/components/icons/brand.tsx', 'token-layer/brand-marks/components/home/gauge.tsx',
+    ].map(fx);
     const limpos = ['token-fallback-limpo.tsx', 'token-fallback-limpo.css', 'token-fallback-theme.css'].map(fx);
     for (const f of [...sujos, ...limpos]) if (!existsSync(f)) tokenFalhas.push(`fixture missing: ${f}`);
     if (!tokenFalhas.length) {
@@ -1204,13 +1335,52 @@ function runSelfTest() {
         tokenFalhas.push(`${a.file.split('/').pop()} line ${a.linha}: clean fixture flagged (${a.regra})`);
       }
       if (!got.length) tokenFalhas.push('fallback flagged nothing on the dirty fixtures');
+      if (got.some((a) => !Object.values(TF_LEGACY_IDS).includes(a.regra))) {
+        tokenFalhas.push(`a finding carries a non-current rule id: ${[...new Set(got.map((a) => a.regra))].join(', ')}`);
+      }
+    }
+
+    /* Token layer, both ways (fixtures/token-layer/<case>/). Detection must
+       say present for shadcn, CSS color vars, v4 @theme and a semantic
+       tailwind.config; absent for a commerce-like repo that only READS a
+       palette var. Without a layer: a calm palette gives zero findings, a
+       chaotic one (more than 3 accent families) gives exactly one. */
+    const caso = (n) => join(here, 'fixtures', 'token-layer', n);
+    const arquivos = (d, out = []) => {
+      for (const n of readdirSync(d)) {
+        const p = join(d, n);
+        if (statSync(p).isDirectory()) arquivos(p, out); else out.push(norm(p));
+      }
+      return out;
+    };
+    for (const [n, want] of [['shadcn', true], ['css-vars', true], ['v4-theme', true], ['tw-config', true], ['none', false], ['chaotic', false]]) {
+      if (!existsSync(caso(n))) { tokenFalhas.push(`fixture missing: token-layer/${n}`); continue; }
+      const tl = detectTokenLayer(caso(n));
+      if (tl.present !== want) tokenFalhas.push(`token layer ${n}: expected ${want ? 'present' : 'absent'}, got ${tl.via}`);
+    }
+    if (existsSync(caso('shadcn'))) {
+      const r = scanTokenFallbackFull(arquivos(caso('shadcn')), { tokenLayer: true }).achados;
+      if (r.length !== 1 || r[0].regra !== 'tailwind-palette') tokenFalhas.push(`shadcn: expected 1 tailwind-palette per class, got ${r.length}`);
+    }
+    if (existsSync(caso('none'))) {
+      const { achados, hues } = scanTokenFallbackFull(arquivos(caso('none')), { tokenLayer: false });
+      if (achados.length) tokenFalhas.push(`no layer, calm palette: expected zero, got ${achados.map((a) => a.amostra).join(' | ')}`);
+      if (hues.accent.size !== 2 || hues.neutral.size !== 4) tokenFalhas.push(`no layer, calm palette: expected 4 neutral and 2 accent families, got ${hues.neutral.size} and ${hues.accent.size}`);
+      const comCamada = scanTokenFallbackFull(arquivos(caso('none')), { tokenLayer: true }).achados;
+      if (comCamada.length !== 4) tokenFalhas.push(`same files WITH a layer: expected 4 per-line findings, got ${comCamada.length}`);
+    }
+    if (existsSync(caso('chaotic'))) {
+      const { achados } = scanTokenFallbackFull(arquivos(caso('chaotic')), { tokenLayer: false });
+      if (achados.length !== 1 || achados[0].file !== null || !/5 accent hue families/.test(achados[0].amostra)) {
+        tokenFalhas.push(`no layer, chaotic palette: expected one aggregated finding with 5 accent families, got ${achados.map((a) => a.amostra).join(' | ') || 'none'}`);
+      }
     }
   }
   if (tokenFalhas.length) {
     console.log(`[FAIL]  token fallback: ${tokenFalhas.length}`);
     for (const f of tokenFalhas) console.log(`          ${f}`);
   } else {
-    console.log('[OK]    token fallback (fires on the dirty fixtures, silent on clean and theme files)');
+    console.log('[OK]    token fallback (fires on the dirty fixtures, silent on clean and theme files, token layer both ways, legacy ids waive)');
   }
 
   /* Legacy rule ids: an old `.killer-voice.json` ("bolinha") must still

@@ -6,9 +6,9 @@ description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visa
 # Visant Copy
 
 Two things live here: **how Visant copy sounds** (valid in any repo) and **how it
-is operated**, which depends on where the text lives. The voice guidance below
-is about Brazilian Portuguese copy. **The linter is bilingual**: it runs a PT and
-an English rule set on every input, so it audits English UI copy too.
+is operated**, which depends on where the text lives. The voice below is for
+Brazilian Portuguese; **for English copy read [english.md](references/english.md)**.
+The linter runs a PT and an English rule set on every input.
 
 - **The repo uses Visant's pipeline** (`copy*.json` at the root and
   `copy:build`/`copy:check` scripts in `package.json`): the JSON is the SSoT and

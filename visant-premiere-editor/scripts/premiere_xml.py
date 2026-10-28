@@ -4,7 +4,10 @@
     python premiere_xml.py --motion <plan.json>          Scale/Position table to apply through the MCP
     python premiere_xml.py --check <plan.json> <readback.json>
                                                          checks a saved get_full_sequence_info against the plan
-    python premiere_xml.py --self-test                   old-key plan and new-key plan give the same XML
+    python premiere_xml.py --names <readback.json>       maps the effect/property names in a saved MCP
+                                                         readback (get_effect_properties) to the ones to use
+    python premiere_xml.py --self-test                   old-key plan and new-key plan give the same XML;
+                                                         EN and PT-BR readbacks resolve to the same names
 
 Plan format:
   sequence: {name, w, h[, fps]}   fps: here or at the root
@@ -21,6 +24,12 @@ Why XML and not cut by cut through the MCP: Premiere rounds in/out in seconds
 down (9.2083 x 24 = 220.999 -> frame 220) and a PNG subclip ignores the
 duration. In XML everything is a whole frame. Motion does NOT go in the XML
 (untested): it is applied afterwards through the MCP with the --motion table.
+
+Locale: the XML carries no effect or property names (only clips, files, format
+and markers), so it imports the same into any Premiere UI language. The MCP
+calls (set_effect_property, add_keyframe) take the UI display names, which
+change with the language: PREMIERE_NAMES below maps them. Another UI language
+= one more column there.
 """
 
 from __future__ import annotations
@@ -31,6 +40,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import urllib.parse
 
 import opentimelineio as otio
@@ -42,6 +52,66 @@ OLD_KEYS = {"sequencia": "sequence", "nome": "name", "cortes": "cuts", "tipo": "
             "duracao_s": "duration_s", "marcadores": "markers", "texto": "text"}
 OLD_MARKER_TYPES = {"plano": "shot", "fala": "speech"}
 OLD_FLAGS = {"--saida": "--out", "--conferir": "--check"}
+
+# Premiere display names per UI language, keyed by a canonical name. "fcp7" is the
+# FCP7 XML effectid/parameterid (locale-independent; None when not used here).
+# The Opacity effect and its property share the name in both languages.
+# To support another UI language: add its column and run --self-test.
+# Measured on a live PT-BR Premiere: Movimento, Posição, Escala, Ponto de
+# ancoragem. Not yet checked on a live install: the PT names for rotation,
+# opacity, level and both transitions. Before trusting a row, save a
+# get_effect_properties readback and run `--names <readback.json>`: it prints
+# the names that Premiere actually uses.
+PREMIERE_NAMES = {
+    "motion":         {"fcp7": "basic",          "en": "Motion",         "pt": "Movimento"},
+    "position":       {"fcp7": "center",         "en": "Position",       "pt": "Posição"},
+    "scale":          {"fcp7": "scale",          "en": "Scale",          "pt": "Escala"},
+    "rotation":       {"fcp7": "rotation",       "en": "Rotation",       "pt": "Rotação"},
+    "anchor_point":   {"fcp7": "centerOffset",   "en": "Anchor Point",   "pt": "Ponto de ancoragem"},
+    "opacity":        {"fcp7": "opacity",        "en": "Opacity",        "pt": "Opacidade"},
+    "volume":         {"fcp7": "audiolevels",    "en": "Volume",         "pt": "Volume"},
+    "level":          {"fcp7": "level",          "en": "Level",          "pt": "Nível"},
+    "cross_dissolve": {"fcp7": "Cross Dissolve", "en": "Cross Dissolve", "pt": "Dissolução cruzada"},
+    "dip_to_black":   {"fcp7": None,             "en": "Dip to Black",   "pt": "Mergulhar no preto"},
+}
+UI_LANGS = ("en", "pt")
+
+
+def _norm(name) -> str:
+    return unicodedata.normalize("NFC", str(name)).strip().casefold()
+
+
+def resolve(name: str) -> str | None:
+    """Display name in any mapped UI language (or FCP7 id) -> canonical name."""
+    for key, row in PREMIERE_NAMES.items():
+        if _norm(name) in {_norm(v) for v in row.values() if v}:
+            return key
+    return None
+
+
+def names_in(readback) -> dict:
+    """Walks the string VALUES of a saved MCP readback (any shape; JSON keys like
+    "scale" are ignored) and returns {canonical: name as this Premiere wrote it}
+    plus "locale" (a UI_LANGS entry, or "?" when nothing language-specific showed up)."""
+    found, langs = {}, set()
+
+    def walk(o):
+        if isinstance(o, dict):
+            o = list(o.values())
+        if isinstance(o, list):
+            for v in o:
+                walk(v)
+        elif isinstance(o, str) and (key := resolve(o)):
+            found.setdefault(key, o.strip())
+            row = PREMIERE_NAMES[key]
+            # a name counts for a language only when the other languages spell it differently
+            hits = [lang for lang in UI_LANGS if _norm(row[lang]) == _norm(o)]
+            if len(hits) == 1:
+                langs.add(hits[0])
+
+    walk(readback)
+    found["locale"] = langs.pop() if len(langs) == 1 else "?"
+    return found
 
 
 def _rename(o: dict) -> dict:
@@ -159,8 +229,9 @@ def build(plan: str, out: str | None = None) -> str:
 
 def motion_table(plan: str, quiet: bool = False) -> list:
     """One row per cut with a punch-in: cut name, Scale, normalized Position.
-    In PT-BR Premiere: effect "Movimento", properties "Escala" and "Posição";
-    Position is [x/w, y/h], not pixels."""
+    Apply with set_effect_property on Motion > Scale / Position (names per UI
+    language: PREMIERE_NAMES, or --names on a readback); Position is [x/w, y/h],
+    not pixels."""
     d = load(plan)
     w, h = d["sequence"]["w"], d["sequence"]["h"]
     pre = prefix(plan)
@@ -248,11 +319,35 @@ def self_test() -> bool:
                 mot.append(motion_table(p, quiet=True))
     finally:
         file_frames = real
+    # the same get_effect_properties readback from an English and a PT-BR Premiere
+    def readback(lang):
+        n = {k: row[lang] for k, row in PREMIERE_NAMES.items()}
+        return {"data": {"effects": [
+            {"displayName": n["opacity"], "properties": [{"displayName": n["opacity"], "value": 100}]},
+            {"displayName": n["motion"], "properties": [
+                {"displayName": n["position"], "value": [0.5, 0.5]}, {"displayName": n["scale"], "value": 100},
+                {"displayName": n["anchor_point"], "value": [0.5, 0.5]}, {"displayName": n["rotation"], "value": 0}]},
+            {"displayName": n["volume"], "properties": [{"displayName": n["level"], "value": 0}]}],
+            "transitions": [n["cross_dissolve"], n["dip_to_black"]]}}
+    en, pt = names_in(readback("en")), names_in(readback("pt"))
     cases = [("old-key plan and new-key plan give the same XML", xml[0] == xml[1]),
              ("old-key plan and new-key plan give the same motion table", mot[0] == mot[1]),
              ("speech marker is named 'speech' in the XML", ">speech<" in xml[0] and ">fala<" not in xml[0]),
              ("motion table uses cut/scale/position",
-              bool(mot[0]) and set(mot[0][0]) == {"cut", "scale", "position"})]
+              bool(mot[0]) and set(mot[0][0]) == {"cut", "scale", "position"}),
+             ("EN and PT-BR readbacks resolve to the same effect/property names",
+              set(en) == set(pt) == set(PREMIERE_NAMES) | {"locale"}
+              and (en["locale"], pt["locale"]) == ("en", "pt")
+              and (en["scale"], pt["scale"], en["position"], pt["position"])
+              == ("Scale", "Escala", "Position", "Posição")),
+             ("EN name, PT-BR name and FCP7 id map to one canonical name",
+              resolve("Motion") == resolve("movimento") == resolve("basic") == "motion"
+              and resolve("Nível") == resolve("Level") == "level"
+              and resolve("Dissolução cruzada") == resolve("Cross Dissolve") == "cross_dissolve"
+              and resolve("Mergulhar no preto") == resolve("Dip to Black") == "dip_to_black"
+              and resolve("Lumetri Color") is None),
+             ("the XML carries no effect or property name (locale-independent)",
+              "<effect>" not in xml[0] and "<filter>" not in xml[0])]
     for name, ok in cases:
         print(("  OK    " if ok else "  FAIL  ") + name)
     return all(ok for _, ok in cases)
@@ -266,6 +361,10 @@ if __name__ == "__main__":
         sys.exit(0 if self_test() else 1)
     if a[0] == "--check":
         sys.exit(0 if check(a[1], a[2]) else 1)
+    if a[0] == "--names":
+        sys.stdout.reconfigure(encoding="utf-8")
+        print(json.dumps(names_in(json.load(io.open(a[1], encoding="utf-8"))), ensure_ascii=False))
+        sys.exit(0)
     if a[0] == "--motion":
         motion_table(a[1])
         sys.exit(0)

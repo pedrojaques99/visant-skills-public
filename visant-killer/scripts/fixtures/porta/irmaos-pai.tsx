@@ -11,7 +11,7 @@ import { CampoCaixa } from './irmaos-caixa';
  *   - ImportarJson × CampoPreset: the JSON placeholder is a code EXAMPLE,
  *     not a field label (round 1: AdminPresetsPage). EXPECTED: zero.
  *   - CampoSala × CampoCaixa: two doors with the same name side by side, the
- *     jukebox case between siblings. EXPECTED porta-repetida: 2. */
+ *     jukebox case between siblings. EXPECTED repeated-door: 2. */
 export function Painel() {
   return (
     <section>

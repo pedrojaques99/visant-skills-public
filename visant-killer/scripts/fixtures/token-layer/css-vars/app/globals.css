@@ -1,0 +1,8 @@
+@tailwind base;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --primary: 222 47% 11%;
+  }
+}

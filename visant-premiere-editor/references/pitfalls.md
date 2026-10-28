@@ -1,7 +1,8 @@
-# Measured pitfalls (Premiere 2026 PT-BR + premiere-pro-mcp 1.17, CEP backend)
+# Measured pitfalls (Premiere 2026 + premiere-pro-mcp 1.17, CEP backend)
 
-Effect and property names below are the Portuguese UI names (`Movimento`, `Escala`, `Posição`);
-on another locale read them with `get_effect_properties`. Where each was found: `cases.md`.
+Measured on a PT-BR UI. Effect and property names below are the English UI names; the PT-BR
+ones (Motion = Movimento, Scale = Escala, Position = Posição, Opacity = Opacidade) and any other
+language live in `PREMIERE_NAMES` (`scripts/premiere_xml.py`). Where each was found: `cases.md`.
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -13,7 +14,7 @@ on another locale read them with `get_effect_properties`. Where each was found: 
 | `import_fcp_xml` creates a new project | it uses `app.openFCPXML` | `import_media` with the `.xml` |
 | marker missing | two markers on the same frame: Premiere sometimes drops one | one frame per marker (the script pushes speech +1 frame) |
 | marker without color | FCP7 XML does not carry color into Premiere | `update_marker(time, color)`: 0 green, 1 red, 2 purple, 3 orange, 4 yellow, 5 white, 6 blue, 7 cyan |
-| `set_clip_properties_batch`: "Motion Scale is unavailable" | Premiere in PT-BR: "Movimento/Escala/Posição" | `set_effect_property` with the local names |
+| `set_clip_properties_batch`: "Motion Scale is unavailable" | the tool looks for the English names; a PT-BR UI calls them Movimento/Escala/Posição | `set_effect_property` with the names this UI uses (`premiere_xml.py --names`) |
 | clip at Position (960,540) ended in a corner | Motion Position is normalized | `[x/w, y/h]` |
 | `create_sequence_from_clips` named "1" | the tool cuts the name at the first dot ("1.1 A primeira...") | name comes from the XML |
 | `Could not verify the Windows ACL ... spawnSync powershell.exe ETIMEDOUT` (Windows) | permission check before sending; nothing ran | repeat the call; more common with many in parallel |
@@ -29,8 +30,8 @@ on another locale read them with `get_effect_properties`. Where each was found: 
 | `import_media` of an XML times out at 120 s and nothing lands | XML with an empty `<file id>` on the 1st occurrence (the clip carrying the definition was cut) and no `<!DOCTYPE xmeml>` | the 1st occurrence of each id carries the full `<file>`; check `list_sequences` before repeating |
 | "duplicated": each XML import brings a copy of all media | Premiere does not reuse master clips on XML import, and deleting the copy removes the clip from the timeline | `import_media` with `target_bin`, then `move_items_to_bin` of the media into `<bin>/_mídia`; only the sequence stays visible |
 | XML import with a clip copied from another export hangs at 120 s | the other XML's `masterclipid` points to other media (or none) | remap to the masterclip the target XML already uses for that file |
-| XML import times out and "Resultados da conversão de FCP" (FCP conversion results) appears | Premiere opened the conversion report (modal) for an effect that does not convert, e.g. an unnamed `Efeito <>` on a clip copied from another export | strip `<filter>` with an empty `effect/name` before importing; the report lands in Documents and in the bin |
-| `export_as_fcp_xml` times out and the XML is truncated | "Relatórios de tradução" (translation report): Premiere opens a modal on XML EXPORT when something does not translate | the user clicks OK; check the file ends in `</xmeml>` before reading, and export again |
+| XML import times out and the FCP conversion results report appears (PT-BR: "Resultados da conversão de FCP") | Premiere opened the conversion report (modal) for an effect that does not convert, e.g. an unnamed effect (PT-BR: `Efeito <>`) on a clip copied from another export | strip `<filter>` with an empty `effect/name` before importing; the report lands in Documents and in the bin |
+| `export_as_fcp_xml` times out and the XML is truncated | translation report (PT-BR: "Relatórios de tradução"): Premiere opens a modal on XML EXPORT when something does not translate | the user clicks OK; check the file ends in `</xmeml>` before reading, and export again |
 | `import_media` says ok and the sequence does not appear | Premiere ignores re-importing an XML from the SAME path as one already imported | each version in its own file (`aula-N-apertada-vK.xml`) |
 | rendered clip comes in at 59.59 fps and longer | concat of sped-up pieces (setpts) leaves time holes at the splice | `fps=60,setpts=N/(60*TB)` after the concat; check `avg_frame_rate` = 60/1 with ffprobe |
 | overlay (slide, logo) pushed the whole lesson | `add_to_timeline` is an INSERT with ripple on sync-locked tracks | `overwrite_clip` on an empty track + `set_clip_duration` (a still comes in at 5 s); a PNG without audio does not touch A1 |
@@ -65,7 +66,7 @@ House fade for cards (same rhythm as the engine's label, `ROTULO.fade = 0.28`): 
 scale 96%→base in 0.28 s, opacity 100→0 over the last 0.28 s, bezier on the first keyframe of each
 stretch. Full-screen opaque slide: opacity only (scaling shows the edge). Cards back to back
 (screenshots 1→2→3): fade only on the first one's entry and the last one's exit, or the screen
-blinks. Read the scale first (`get_effect_properties Movimento`): the keyframe overwrites the
+blinks. Read the scale first (`get_effect_properties` on Motion): the keyframe overwrites the
 scale the user set. Effects/keyframes only touch the ACTIVE sequence: tell the user before
 switching.
 

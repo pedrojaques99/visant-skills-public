@@ -3,7 +3,7 @@
 Where the rules in `SKILL.md` and `pitfalls.md` came from. Context, not instructions.
 
 - **Course "IA para Designers" (Sep–Oct 2026).** Every row of the pitfalls table was seen while
-  assembling this course in Premiere 2026 PT-BR with premiere-pro-mcp 1.17 (CEP), first on
+  assembling this course in Premiere 2026 (PT-BR UI) with premiere-pro-mcp 1.17 (CEP), first on
   23/09/2026. The course project held the lesson engine and the project-side scripts this skill
   names: `aulas.py` (common encode, `aulas.COMUM(N)`), `aula_tela.py` and `premiere_plano.py`
   (plan generators), `aperta_final.py` (tighten; `silencios()`, `completo()`), `aprende.py`,

@@ -4,8 +4,8 @@
  * killer round 1 in visantlabs-os.
  *
  * Each block says how many findings it promises (EXPECTED). The NEGATIVES come
- * first and far from the positives on purpose: two rules (capa-sintetica and
- * blur-em-card) look at a window of lines around, and a neighboring positive
+ * first and far from the positives on purpose: two rules (synthetic-cover and
+ * blur-on-card) look at a window of lines around, and a neighboring positive
  * would contaminate the negative. Comments do not count for the window (the
  * detector blanks comments before looking), so this spacing is made of code.
  *
@@ -17,18 +17,18 @@
 /* ============================================================== */
 
 /* A gradient that SHOWS the palette (guideline swatch) is not a cover: there is
- * no missing image nearby. EXPECTED capa-sintetica: zero. */
+ * no missing image nearby. EXPECTED synthetic-cover: zero. */
 export function AmostraDeGradiente({ g }: { g: { angle: number; stops: string[] } }) {
   return <div className="h-8 rounded" style={{ background: `linear-gradient(${g.angle}deg, ${g.stops.join(', ')})` }} />;
 }
 
 /* Background glow: a large radial-gradient, no background-size. Not a grid.
- * EXPECTED grade-de-pontos: zero. */
+ * EXPECTED dot-grid: zero. */
 export function BrilhoDeFundo() {
   return <div className="pointer-events-none inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(82,221,235,0.07),transparent)]" />;
 }
 
-/* A fixed delay is not a cascade. EXPECTED cascata-por-indice: zero. */
+/* A fixed delay is not a cascade. EXPECTED stagger-by-index: zero. */
 export function EntradaUnica({ Motion }: { Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -38,20 +38,23 @@ export function EntradaUnica({ Motion }: { Motion: React.ComponentType<Record<st
   );
 }
 
-/* Sinking on hover/press is not lifting, and shifting sideways is not rising.
- * EXPECTED hover-que-levanta: zero. */
-export function AfundaNoClique({ Motion }: { Motion: React.ComponentType<Record<string, unknown>> }) {
+/* Sinking on hover/press is not lifting, shifting sideways is not rising, and an
+ * icon scaling inside its button is not a card jumping.
+ * EXPECTED hover-lift: zero. */
+export function AfundaNoClique({ Motion, XMarkIcon }: { Motion: React.ComponentType<Record<string, unknown>>; XMarkIcon: React.ComponentType<{ className?: string }> }) {
   return (
     <>
       <button className="transition-transform hover:scale-95 active:scale-[0.98]">ok</button>
       <span className="transition-transform group-hover:translate-x-1">seguir</span>
       <Motion whileHover={{ opacity: 1 }} />
+      {/* a glyph growing inside a fixed button box (vercel/commerce, cart/modal.tsx): no card rises */}
+      <XMarkIcon className="h-6 transition-all ease-in-out hover:scale-110" />
     </>
   );
 }
 
 /* Images that do not break, or that already handle the break.
- * EXPECTED img-de-tile-sem-onerror: zero. */
+ * EXPECTED tile-img-no-onerror: zero. */
 export function ImagensQueNaoQuebram({ url, preview, props }: { url: string; preview: string; props: Record<string, unknown> }) {
   return (
     <>
@@ -65,7 +68,7 @@ export function ImagensQueNaoQuebram({ url, preview, props }: { url: string; pre
 }
 
 /* Blur where there is something to blur: a sticky bar, a chip over an image, and a dialog.
- * EXPECTED blur-em-card: zero. */
+ * EXPECTED blur-on-card: zero. */
 export function BarraGrudada() {
   return <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">topo</header>;
 }
@@ -89,7 +92,7 @@ export function SettingsPopover({ n }: { n: number }) {
 /* A CODE BLOCK repeats the auth header in every section on purpose:
  * whoever arrives by anchor reads only one. False positive confirmed on DocsPage
  * (visantlabs-os, 2026-10-05): 14 findings, all in examples.
- * EXPECTED mesma-info-dois-tamanhos: zero. */
+ * EXPECTED same-info-twice: zero. */
 export function DocDeApi() {
   return (
     <>
@@ -105,7 +108,7 @@ export function DocDeApi() {
 
 /* METADATA does not reach the eye: SEO and JSON-LD repeat the description by duty.
  * False positive confirmed at BrandingMachinePage:1022 in the same round.
- * EXPECTED mesma-info-dois-tamanhos: zero. */
+ * EXPECTED same-info-twice: zero. */
 export function Metadados({ SEO, AppSchema }: { SEO: React.ComponentType<Record<string, string>>; AppSchema: React.ComponentType<Record<string, string>> }) {
   return (
     <>
@@ -120,14 +123,14 @@ export function Metadados({ SEO, AppSchema }: { SEO: React.ComponentType<Record<
 /* ============================================================== */
 
 /* R10 a: the name hash becomes a hue. Real case: CoverFallback of the brand grid.
- * EXPECTED capa-sintetica: 1 (the hsl line). */
+ * EXPECTED synthetic-cover: 1 (the hsl line). */
 export function CapaPorHash({ name }: { name: string }) {
   const hue = [...name].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
   return <div style={{ background: `linear-gradient(135deg, hsl(${hue} 32% 26%), #111)` }} />;
 }
 
 /* R10 b: with no cover, the brand colors become a gradient. Real case: cockpit hero.
- * EXPECTED capa-sintetica: 1. (The <img> has onError: it does not count for R11.) */
+ * EXPECTED synthetic-cover: 1. (The <img> has onError: it does not count for R11.) */
 export function CapaComCoresDaMarca({ cover, colors }: { cover?: string; colors: string[] }) {
   if (cover) return <img src={cover} alt="" onError={() => undefined} className="h-full w-full object-cover" />;
   return <div style={{ background: `linear-gradient(115deg, ${colors.join(', ')})` }} />;
@@ -135,7 +138,7 @@ export function CapaComCoresDaMarca({ cover, colors }: { cover?: string; colors:
 
 /* R11: a hand-drawn media tile, without onError. Real case: MasonryCard on
  * /references (128 refs pointing to a local disk).
- * EXPECTED img-de-tile-sem-onerror: 2. */
+ * EXPECTED tile-img-no-onerror: 2. */
 export function TileSemOnError({ item, Motion }: { item: { url: string }; Motion: { img: React.ComponentType<Record<string, unknown>> } }) {
   return (
     <>
@@ -146,7 +149,7 @@ export function TileSemOnError({ item, Motion }: { item: { url: string }; Motion
   );
 }
 
-/* R12: staircase list. EXPECTED cascata-por-indice: 2. */
+/* R12: staircase list. EXPECTED stagger-by-index: 2. */
 export function ListaEmEscada({ itens, Motion }: { itens: string[]; Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -162,7 +165,7 @@ export function ListaEmEscada({ itens, Motion }: { itens: string[]; Motion: Reac
 
 /* R13: a card that jumps, an image that grows, a motion that rises. Real case: 26 cards
  * on AdminPage with hover:-translate-y-1.
- * EXPECTED hover-que-levanta: 3. */
+ * EXPECTED hover-lift: 3. */
 export function CardQuePula({ Motion }: { Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -174,7 +177,7 @@ export function CardQuePula({ Motion }: { Motion: React.ComponentType<Record<str
 }
 
 /* R14: template graph paper, in its three forms.
- * EXPECTED grade-de-pontos: 3. */
+ * EXPECTED dot-grid: 3. */
 const DOT_TEXTURE =
   "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23fff'/%3E%3C/svg%3E\")";
 export function FundoDePontos({ GridDotsBackground }: { GridDotsBackground: React.ComponentType }) {
@@ -188,7 +191,7 @@ export function FundoDePontos({ GridDotsBackground }: { GridDotsBackground: Reac
 }
 
 /* R15: blur on an in-flow card, over a flat background: it blurs nothing.
- * EXPECTED blur-em-card: 1. */
+ * EXPECTED blur-on-card: 1. */
 export function CardDeResumo() {
   return <div className="rounded-xl border bg-card/60 backdrop-blur-md p-4">resumo</div>;
 }
@@ -205,11 +208,11 @@ export function CardDeResumo() {
  * Each case sits more than eight lines from the next, otherwise one's exception
  * would release the neighbor's finding and the test would lie.
  *
- * EXPECTED hover-que-levanta: 4 of these (silent, short reason, half the name,
+ * EXPECTED hover-lift: 4 of these (silent, short reason, half the name,
  * exception below the finding). The two with a reason do not count.
  */
 export function ExcecaoMuda() {
-  {/* EXCEÇÃO ao ruido-scan/hover-que-levanta */}
+  {/* EXCEÇÃO ao ruido-scan/hover-lift */}
   return <div className="rounded-xl border hover:-translate-y-1">mudo</div>;
 }
 const espaco1 = 1;
@@ -219,7 +222,7 @@ const espaco4 = espaco3 + 1;
 const espaco5 = espaco4 + 1;
 const espaco6 = espaco5 + 1;
 export function ExcecaoComMotivoCurto() {
-  {/* EXCEÇÃO ao ruido-scan/hover-que-levanta: ok. */}
+  {/* EXCEÇÃO ao ruido-scan/hover-lift: ok. */}
   return <div className="rounded-xl border hover:-translate-y-1">curto</div>;
 }
 const espaco7 = espaco6 + 1;
@@ -240,7 +243,7 @@ const espaco17 = espaco16 + 1;
 const espaco18 = espaco17 + 1;
 export function ExcecaoAbaixoDoAchado() {
   return <div className="rounded-xl border hover:-translate-y-1">abaixo</div>;
-  {/* EXCEÇÃO ao ruido-scan/hover-que-levanta: o card de demonstração sobe de propósito. */}
+  {/* EXCEÇÃO ao ruido-scan/hover-lift: o card de demonstração sobe de propósito. */}
 }
 const espaco19 = espaco18 + 1;
 const espaco20 = espaco19 + 1;
@@ -250,7 +253,7 @@ const espaco23 = espaco22 + 1;
 const espaco24 = espaco23 + 1;
 const espaco25 = espaco24 + 1;
 export function ExcecaoComMotivo() {
-  {/* EXCEÇÃO ao ruido-scan/hover-que-levanta: o card de demonstração sobe de propósito. */}
+  {/* EXCEÇÃO ao ruido-scan/hover-lift: o card de demonstração sobe de propósito. */}
   return <div className="rounded-xl border hover:-translate-y-1">com motivo</div>;
 }
 const espaco26 = espaco25 + 1;
@@ -261,7 +264,7 @@ const espaco30 = espaco29 + 1;
 const espaco31 = espaco30 + 1;
 const espaco32 = espaco31 + 1;
 export function ExcecaoComMotivoQuebrado() {
-  // EXCEÇÃO ao ruido-scan/hover-que-levanta: o card
+  // EXCEÇÃO ao ruido-scan/hover-lift: o card
   // de demonstração sobe de propósito.
   return <div className="rounded-xl border hover:-translate-y-1">quebrado</div>;
 }
@@ -274,7 +277,7 @@ const espaco38 = espaco37 + 1;
 const espaco39 = espaco38 + 1;
 /* The English marker is an alias of the Portuguese one and releases the same way. */
 export function ExcecaoEmIngles() {
-  {/* EXCEPTION to ruido-scan/hover-que-levanta: the demo card rises on purpose. */}
+  {/* EXCEPTION to ruido-scan/hover-lift: the demo card rises on purpose. */}
   return <div className="rounded-xl border hover:-translate-y-1">english</div>;
 }
 export const espacoFinal = espaco39;

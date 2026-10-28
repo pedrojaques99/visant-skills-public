@@ -56,7 +56,7 @@ D=~/.claude/skills/visant-killer/scripts/dist-scan.mjs
 C=~/.claude/skills/visant-copy/scripts/copy-lint.mjs
 T=~/.claude/skills/visant-killer/scripts/corta-scan.js       # runs IN THE BROWSER (Step 5)
 V=~/.claude/skills/visant-killer/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
-# grafo.mjs is a library (import graph for --roots and porta-repetida), not a CLI
+# grafo.mjs is a library (import graph for --roots and repeated-door), not a CLI
 ```
 
 ## Step 0: Root first (large target)
@@ -112,10 +112,10 @@ what happened. Read [environment.md](references/environment.md) first: the dev s
 `killer-scan` runs four detectors, prints one scoreboard and ends with a
 `gates: N/4 ran [...]` line naming anything skipped: **impeccable** (AI tells);
 **token** (the repo's `audit:design`-like gate, else a labeled built-in FALLBACK
-for raw hex/rgb/hsl and Tailwind palette classes); **copy** (voice, only on
+for raw hex/rgb/hsl and palette classes, aware of the repo's token layer); **copy** (voice, only on
 strings that reach the eye: JSX text, `label`, `title`, `placeholder`,
 `aria-label`, `alt`); **chrome noise** (`ruido-scan`: each line defensible, the
-sum unreadable). Details and the 15 noise rules: [gates.md](references/gates.md).
+sum unreadable). Details and the 24 noise rules: [gates.md](references/gates.md).
 
 **Discover the target repo's gates.** The four detectors are the floor. Look at
 `package.json` scripts named lint/audit/design/token/ui/theme/i18n/ratchet and

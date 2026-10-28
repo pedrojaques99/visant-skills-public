@@ -1,0 +1,6 @@
+{
+  "name": "ruido-fixture-com-lib",
+  "private": true,
+  "description": "Fixture for ruido-scan hand-drawn-icon: a repo WITH an icon library installed.",
+  "dependencies": { "lucide-react": "0.0.0" }
+}

@@ -1,5 +1,5 @@
 /**
- * The SECOND END of R9 (`porta-repetida`), which only exists outside the first
+ * The SECOND END of R9 (`repeated-door`), which only exists outside the first
  * file: that is the point of the rule. The defect does not fit in one file, and
  * that is why it got past seven detectors.
  *

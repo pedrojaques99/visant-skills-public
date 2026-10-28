@@ -28,6 +28,19 @@ A scoped rule needs a **reason written inside the rule**, with the case that
 created it. An exclusion with no justification is `audit-ignore` under another
 name, and whoever reads it later cannot tell a decision from giving up.
 
+Third-party repos are the cheapest calibration. On 2026-10-28 `ruido-scan` ran
+on vercel/commerce, shadcn-ui/taxonomy and steven-tey/precedent: 17 findings,
+11 of them `hand-drawn-icon` on tech logos (Simple Icons ships on the same 24
+grid as UI glyphs) and on a dedicated `icons/` folder, plus 2 `hover-lift` on an
+icon scaling inside a fixed button. Scoping both rules to their declared intent
+(a UI glyph in a regular component; a card or image that rises) left 6, and the
+`hand-drawn-icon` survivors are a shield and a triangle that `lucide-react`,
+already installed, ships. Kept on purpose: `caption-of-what-follows` on "Enter
+your email **below** to create your account". It is shadcn's default auth copy,
+and the same repo's login page says "Enter your email to sign in to your
+account" with no pointer, which is the fix. Exempting form or auth context would
+also exempt "fill in the form below", the canonical case of the rule.
+
 Three things this does **not** authorize: loosening a detector because the fix is
 work; scoping without checking the case on screen (the blur case required
 opening the page and seeing what was behind it); and treating high volume as

@@ -52,8 +52,8 @@ fx horiz.mp4     640x360 4  1 testsrc2   440
 fx horiz2.mp4    640x360 8  1 smptebars  330
 fx horiz3.mp4    640x360 3  1 rgbtestsrc 550
 fx vert.mp4      360x640 4  1 testsrc2   440
-fx semaudio.mp4  640x360 3  0 smptebars  0
-fx longo.mp4     640x360 30 1 testsrc    220
+fx noaudio.mp4  640x360 3  0 smptebars  0
+fx long.mp4     640x360 30 1 testsrc    220
 # Rotation by metadata: 640x360 in pixels, 360x640 on screen. This is the fixture
 # that DISCRIMINATES: whoever reads only width/height gets vert.mp4 right and this wrong.
 # `-metadata rotate=90` does NOT write a display matrix in this ffmpeg; `-display_rotation` does.
@@ -64,7 +64,7 @@ if [ -z "$(ffprobe -v error -select_streams v:0 -show_entries stream_side_data=r
   echo "   WARNING: fixture rot90 came out without a display matrix; the rotation case discriminates nothing"
 fi
 ffmpeg -nostdin -y -v error -f lavfi -i "color=c=red:size=640x360:duration=1" -frames:v 1 \
-  "$SANDBOX/src/foto.jpg"
+  "$SANDBOX/src/photo.jpg"
 # MODERATE dynamics (LRA ~9, below the target of 11): the only range where
 # loudnorm's linear mode actually applies. With LRA above the target ffmpeg
 # turns linear off by itself and both modes match; such a fixture tests nothing.
@@ -72,7 +72,7 @@ ffmpeg -nostdin -y -v error -f lavfi -i "testsrc2=size=640x360:rate=30:duration=
   -f lavfi -i "sine=frequency=440:duration=20:sample_rate=48000" \
   -filter_complex "[1:a]volume='0.35+0.3*sin(2*PI*t/6)':eval=frame[a]" \
   -map 0:v -map '[a]' -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac \
-  "$SANDBOX/src/dinamica.mp4"
+  "$SANDBOX/src/dynamic.mp4"
 echo "   $(ls "$SANDBOX/src" | wc -l) fixtures"
 
 export PROJ="$SANDBOX/proj"
@@ -93,7 +93,7 @@ aval "ingest reads every media file in the folder" "$n" "9"
 # the concat. Anything that stops the loop midway (`set -e` in a pipe subshell,
 # ffmpeg eating stdin, a parse error) exits 0 with an incomplete video.
 # It does not test a CAUSE, it tests the CONSEQUENCE: it catches causes we do not know yet.
-edl 'horiz.mp4\t0\t1\nhoriz2.mp4\t0\t1\nhoriz3.mp4\t0\t1\nvert.mp4\t0\t1\nsemaudio.mp4\t0\t1\n'
+edl 'horiz.mp4\t0\t1\nhoriz2.mp4\t0\t1\nhoriz3.mp4\t0\t1\nvert.mp4\t0\t1\nnoaudio.mp4\t0\t1\n'
 roda bash "$AQUI/build.sh"
 n="$(grep -c '^file ' "$PROJ/_build/clips/concat.last.txt" 2>/dev/null || echo 0)"
 aval "every cut in the cut list reaches the concat (5 of 5)" "$n" "5"
@@ -139,7 +139,7 @@ else falha "rotation by metadata treated as vertical" "read the pixels, not the 
 
 # ---------------------------------------------------------------- 5. NO AUDIO
 # A clip with no audio track must not break the concat or desync the rest.
-edl 'semaudio.mp4\t0\t2\nhoriz.mp4\t0\t2\n'
+edl 'noaudio.mp4\t0\t2\nhoriz.mp4\t0\t2\n'
 roda bash "$AQUI/build.sh"
 na="$(ffprobe -v error -select_streams a -show_entries stream=codec_type -of csv=p=0 "$PROJ/_out/vlog.mp4" 2>/dev/null | wc -l | tr -d ' ')"
 aval "clip without audio does not break: master comes out with 1 track" "$na" "1"
@@ -152,7 +152,7 @@ aval "clip without audio does not break: master comes out with 1 track" "$na" "1
 # The mix only shows up when cuts take DIFFERENT audio paths: that is why the
 # cut list here mixes a clip with audio and a clip without.
 rm -rf "$PROJ/_build/clips"
-edl 'horiz.mp4\t0\t2\nsemaudio.mp4\t0\t2\ndinamica.mp4\t0\t3\nfoto.jpg\t0\t2\n'
+edl 'horiz.mp4\t0\t2\nnoaudio.mp4\t0\t2\ndynamic.mp4\t0\t3\nphoto.jpg\t0\t2\n'
 roda bash "$AQUI/build.sh"
 taxas="$(for c in "$PROJ"/_build/clips/*.mp4; do
            ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate \
@@ -170,7 +170,7 @@ aval "master decodes with no audio error" "$erros" "0"
 # hard: the video is a clip WITHOUT an audio track. If the narration does not go in,
 # the cut comes out silent, and silent is exactly how the failure would show in the vlog.
 rm -rf "$PROJ/_build/clips"
-printf 'semaudio.mp4\t0\t3\tdinamica.mp4\t2\n' > "$PROJ/_build/edl.txt"
+printf 'noaudio.mp4\t0\t3\tdynamic.mp4\t2\n' > "$PROJ/_build/edl.txt"
 roda bash "$AQUI/build.sh"
 vol="$(ffmpeg -nostdin -hide_banner -nostats -i "$PROJ/_out/vlog.mp4" -af volumedetect -f null - 2>&1 \
         | awk -F': ' '/mean_volume/{gsub(/ dB/,"",$2); print $2; exit}')"
@@ -189,7 +189,7 @@ aval "3-column EDL still works (backward compatible)" "$n" "1"
 # The \r sticks to the last field and ffmpeg rejects the argument. Unhandled, the
 # narration failed on EVERY cut and the message did not say why.
 rm -rf "$PROJ/_build/clips"
-printf 'semaudio.mp4\t0\t3\tdinamica.mp4\t2\r\nhoriz.mp4\t0\t2\r\n' > "$PROJ/_build/edl.txt"
+printf 'noaudio.mp4\t0\t3\tdynamic.mp4\t2\r\nhoriz.mp4\t0\t2\r\n' > "$PROJ/_build/edl.txt"
 roda bash "$AQUI/build.sh"
 n="$(grep -c '^file ' "$PROJ/_build/clips/concat.last.txt" 2>/dev/null || echo 0)"
 aval "EDL with CRLF assembles both cuts" "$n" "2"
@@ -221,10 +221,10 @@ aval "loudness at -16 LUFS +-2.5 (got ${i:-?})" "$ok" "sim"
 # The test measures the consequence: two passes preserve the source dynamics.
 lra_de() { ffmpeg -hide_banner -nostats -i "$1" -af ebur128 -f null - 2>&1 \
             | tail -14 | awk '/^ *LRA:/{l=$2} END{print l+0}'; }
-lra_src="$(lra_de "$SRC/dinamica.mp4")"
+lra_src="$(lra_de "$SRC/dynamic.mp4")"
 for modo in 1 2; do
   rm -rf "$PROJ/_build/clips"
-  edl 'dinamica.mp4\t0\t20\n'
+  edl 'dynamic.mp4\t0\t20\n'
   LOUD=$modo OUT="loud$modo" roda bash "$AQUI/build.sh"
 done
 lra1="$(lra_de "$PROJ/_out/loud1.mp4")"
@@ -246,7 +246,7 @@ aval "master opens from black (YAVG frame 0 = ${y:-?})" "$ok" "sim"
 # Duration ceiling respected, and a long take (narrative) never dropped.
 roda bash "$AQUI/ingest.sh"
 MAX_MIN=1 roda bash "$AQUI/cutlist.sh"
-if grep -q 'longo.mp4' "$PROJ/_build/edl.txt"; then passou "cut list keeps the long take under a tight ceiling"
+if grep -q 'long.mp4' "$PROJ/_build/edl.txt"; then passou "cut list keeps the long take under a tight ceiling"
 else falha "cut list keeps the long take under a tight ceiling" "the narrative take was dropped"; fi
 
 # A CEILING IS A CEILING. Two regressions already made it ignored: (a) the tightening
@@ -267,12 +267,12 @@ aval "without a ceiling the cut list does not drop all b-roll (got $n cuts)" "$o
 # The interface went from Portuguese to English. Projects from before the rename
 # still have old env vars in their notes, old manifests and old folders in _build/.
 # Each old name must keep working, or an old project silently changes behavior.
-k="$(awk -F'\t' '$1=="foto.jpg"{print $2}' "$PROJ/_build/manifest.tsv")"
+k="$(awk -F'\t' '$1=="photo.jpg"{print $2}' "$PROJ/_build/manifest.tsv")"
 aval "manifest writes kind photo" "$k" "photo"
 cp "$PROJ/_build/manifest.tsv" "$PROJ/_build/manifest.new"
 awk -F'\t' 'BEGIN{OFS="\t"} $2=="photo"{$2="foto"} {print}' "$PROJ/_build/manifest.new" > "$PROJ/_build/manifest.tsv"
 MAX_MIN=0 PHOTO_DUR= DUR_FOTO= roda bash "$AQUI/cutlist.sh"
-l="$(awk -F'\t' '$1=="foto.jpg"{print $3; exit}' "$PROJ/_build/edl.txt")"
+l="$(awk -F'\t' '$1=="photo.jpg"{print $3; exit}' "$PROJ/_build/edl.txt")"
 aval "old manifest kind foto still read as a photo (photo duration 2.5)" "$l" "2.5"
 mv "$PROJ/_build/manifest.new" "$PROJ/_build/manifest.tsv"
 
@@ -282,16 +282,16 @@ if grep -q '^# PROPOSED cut list: cutlist.sh (MAX_MIN=1 ' "$PROJ/_build/edl.txt"
 else falha "old env var TETO_MIN and old script name roteiro.sh still honored" "$(head -1 "$PROJ/_build/edl.txt")"; fi
 
 rm -rf "$PROJ/_build/transcripts" "$PROJ/_build/transcricao"
-mkdir -p "$PROJ/_build/transcricao"; printf '0.0\t1.0\thello\n' > "$PROJ/_build/transcricao/longo.txt"
+mkdir -p "$PROJ/_build/transcricao"; printf '0.0\t1.0\thello\n' > "$PROJ/_build/transcricao/long.txt"
 PYTHON=/nonexistent roda bash "$AQUI/transcribe.sh"
-if [ -s "$PROJ/_build/transcripts/longo.txt" ]; then passou "old _build/transcricao/ cache is reused"
+if [ -s "$PROJ/_build/transcripts/long.txt" ]; then passou "old _build/transcricao/ cache is reused"
 else falha "old _build/transcricao/ cache is reused" "transcripts/ did not pick up the old cache"; fi
 rm -rf "$PROJ/_build/transcripts" "$PROJ/_build/transcricao"
 
 # ---------------------------------------------------------------- 10. BREAKDOWN
 # tile= needs uniform thumb size and numbering with no gaps; this Windows ffmpeg
 # also has no glob. A photo with -ss fails and leaves a gap.
-edl 'horiz.mp4\t0\t1\nvert.mp4\t0\t1\nfoto.jpg\t0\t2\n'
+edl 'horiz.mp4\t0\t1\nvert.mp4\t0\t1\nphoto.jpg\t0\t2\n'
 roda bash "$AQUI/breakdown.sh"
 THUMBS=1 roda bash "$AQUI/breakdown.sh"
 n="$(ls "$PROJ/_build/contact"/[0-9]*.jpg 2>/dev/null | wc -l | tr -d ' ')"
