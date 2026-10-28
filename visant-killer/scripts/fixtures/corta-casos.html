@@ -1,32 +1,33 @@
 <!doctype html>
 <!--
-  FIXTURE do corta-scan: as três geometrias que ele existe pra achar, mais os
-  três negativos que travam a regra contra ficar barulhenta.
+  corta-scan FIXTURE: the three geometries it exists to find, plus the
+  three negatives that lock the rule against becoming noisy.
 
-  ESPERADO (rode `node scripts/corta-self-test.mjs` de um repo com playwright):
-    texto-cortado      1   (só a pílula nowrap)
-    overlay-empilhado  2   (o botão de canto sobre o disco de ação; e o selo
-                            sobre o fundo inset-0 que TEM botão: esconde ação)
-  NEGATIVO de 2026-10-05: selo pequeno ("Pública") sobre o fallback inset-0 da
-  capa SEM nada interativo. Selo sobre fundo, não peça escondida: o de cima
-  ocupa < 25% da área do de baixo e o de baixo não tem interativo.
-    fora-do-pai        1   (o selo que sai do card recortado)
+  EXPECTED (run `node scripts/corta-self-test.mjs` from a repo with playwright):
+    texto-cortado      1   (only the nowrap pill)
+    overlay-empilhado  2   (the corner button over the action disc; and the badge
+                            over the inset-0 background that HAS a button: hides the action)
+  NEGATIVE from 2026-10-05: a small badge ("Pública") over the cover's inset-0
+  fallback with NOTHING interactive. A badge over a background, not a hidden
+  piece: the top one takes < 25% of the bottom one's area and the bottom one
+  has nothing interactive.
+    fora-do-pai        1   (the badge that leaves the clipped card)
 -->
 <style>
   body { margin: 0; font: 10px monospace; background: #0a0b0d; color: #ddd; }
   .card { position: relative; width: 96px; height: 96px; overflow: hidden;
           border: 1px solid #333; margin: 12px; }
-  /* 1 · POSITIVO: nowrap maior que a caixa, sem reticências e sem scroll */
+  /* 1 · POSITIVE: nowrap larger than the box, no ellipsis and no scroll */
   .pilula { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
             white-space: nowrap; padding: 5px 10px; background: #111; }
-  /* 2 · POSITIVO: dois overlays no mesmo canto, o de z maior cobrindo a ação */
+  /* 2 · POSITIVE: two overlays in the same corner, the higher z covering the action */
   .acao { position: absolute; right: 5px; bottom: 5px; width: 22px; height: 22px;
           background: #111; z-index: 1; }
   .pasta { position: absolute; right: 4px; bottom: 4px; width: 18px; height: 18px;
            background: #222; z-index: 2; }
-  /* 3 · POSITIVO: selo que sai do card que recorta */
+  /* 3 · POSITIVE: badge that leaves the clipping card */
   .selo-fora { position: absolute; left: -40px; bottom: 4px; width: 36px; height: 12px; background: #111; }
-  /* NEGATIVOS */
+  /* NEGATIVES */
   .com-reticencias { position: absolute; left: 4px; top: 4px; width: 60px;
                      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .com-clamp { position: absolute; left: 4px; bottom: 24px; width: 60px;
@@ -55,13 +56,13 @@
   <span class="com-clamp">duas linhas e o resto cortado com clamp, de proposito</span>
 </div>
 
-<!-- NEGATIVO: selo sobre a capa-fallback sem nada interativo (card de marca) -->
+<!-- NEGATIVE: badge over the fallback cover with nothing interactive (brand card) -->
 <div class="card">
   <div class="fallback"><i></i></div>
   <span class="selo">Pública</span>
 </div>
 
-<!-- POSITIVO: mesmo desenho, mas o fundo tem ação embaixo do selo -->
+<!-- POSITIVE: same drawing, but the background has an action under the badge -->
 <div class="card">
   <div class="fallback"><button style="margin:2px;font:inherit">abrir</button></div>
   <span class="selo">Pública</span>

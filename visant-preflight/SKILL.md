@@ -108,7 +108,7 @@ The script is plain node, no dependencies, and needs nothing Visant-specific:
 | `--self-test` | validates the script's own parsers and thresholds |
 
 At least one of `--assets` or `--fonts` is required; with neither it prints
-usage and exits 2. Output is in Portuguese.
+usage and exits 2. Output is in English (a markdown report: photography table, skipped list, fonts table).
 
 ### 1. Brand source of truth: do the copies agree?
 

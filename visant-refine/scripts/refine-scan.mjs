@@ -1,20 +1,21 @@
 #!/usr/bin/env node
-/* refine-scan — o portão grepável da camada de acabamento.
+/* refine-scan: the greppable gate of the finishing layer.
  *
  *   node refine-scan.mjs components/admin/finance
- *   node refine-scan.mjs --self-test        (prova o detector nos dois sentidos)
+ *   node refine-scan.mjs --self-test        (proves the detector both ways)
  *
- * Seis regras, todas de coisa que compila, passa no lint e mesmo assim quebra:
+ * Six rules, all for things that compile, pass lint and still break:
  *
- *   CHART_RAW_COLOR      cor crua em prop de gráfico (hex, rgb, palette Tailwind)
- *   CHART_WITHOUT_STATE  gráfico sem ChartState: eixo vazio no lugar de "sem dado"
- *   DEFS_ID_NOT_SCOPED   id literal em defs/clipPath: dois gráficos colidem
- *   HARDCODED_MOTION     cubic-bezier ou duração fora do SSoT
- *   BAD_EASE             ease-in em UI, transition-all, animate-bounce, scale(0)
- *   LAYOUT_ANIMATION     animação de width/height/margin/padding
+ *   CHART_RAW_COLOR      raw color in a chart prop (hex, rgb, Tailwind palette)
+ *   CHART_WITHOUT_STATE  chart without ChartState: an empty axis instead of "no data"
+ *   DEFS_ID_NOT_SCOPED   literal id in defs/clipPath: two charts collide
+ *   HARDCODED_MOTION     cubic-bezier or duration outside the SSoT
+ *   BAD_EASE             ease-in on UI, transition-all, animate-bounce, scale(0)
+ *   LAYOUT_ANIMATION     width/height/margin/padding animation
  *
- * Complementa, não substitui: `impeccable detect` e `npm run audit:design` pegam
- * o tell visual, e o killer-scan roda os três juntos. Exit 1 em qualquer achado.
+ * Complements, does not replace: `impeccable detect` and `npm run audit:design`
+ * catch the visual tell, and killer-scan runs all three together. Exit 1 on any
+ * finding.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
@@ -24,36 +25,37 @@ const selfTest = args.includes('--self-test');
 const targets = args.filter((a) => !a.startsWith('--'));
 
 if (!targets.length && !selfTest) {
-  console.error('uso: node refine-scan.mjs <arquivos-ou-pastas>');
-  console.error('     node refine-scan.mjs --self-test');
+  console.error('usage: node refine-scan.mjs <files-or-folders>');
+  console.error('       node refine-scan.mjs --self-test');
   process.exit(2);
 }
 
 const ROOT = process.cwd();
 const norm = (p) => p.split(sep).join('/');
 
-/* O caminho guardado é SEMPRE absoluto; encurtar é coisa da impressão.
-   `relative(cwd, alvo)` entre drives diferentes (cwd em C:, alvo em Z:) devolve
-   algo que não resolve de volta, e o scan morria com
-   `ENOENT: C:\Users\...\D:\dev\...`. Agente que chama o detector de fora
-   sempre passa caminho absoluto, então esse era o caminho quente, não a borda. */
+/* The stored path is ALWAYS absolute; shortening is a printing concern.
+   `relative(cwd, target)` across drives (cwd on C:, target on Z:) returns
+   something that does not resolve back, and the scan died with
+   `ENOENT: C:\Users\...\D:\dev\...`. An agent calling the detector from
+   outside always passes an absolute path, so that was the hot path, not the
+   edge case. */
 const abs = (p) => resolve(ROOT, p);
 const disp = (p, base) => {
   const r = relative(base, p);
   return norm(r && !r.startsWith('..') && !isAbsolute(r) ? r : p);
 };
-/* `__fixtures__` e `.next-*` entram por auditoria (2026-08-12).
+/* `__fixtures__` and `.next-*` were added after an audit (2026-08-12).
  *
- * `__fixtures__` é o corpus de teste de um linter: um arquivo cheio de defeitos
- * DE PROPÓSITO, que existe pra provar que as regras ainda disparam. Varrê-lo faz
- * um detector acusar o material de prova de outro — e o conserto "óbvio" seria
- * apagar os defeitos do fixture, que é exatamente como uma bateria de regressão
- * morre. O `motion-lint` já ignorava; este não, e a diferença só apareceu quando
- * os dois rodaram no mesmo repo.
+ * `__fixtures__` is a linter's test corpus: a file full of defects ON PURPOSE,
+ * which exists to prove the rules still fire. Scanning it makes one detector
+ * accuse another's evidence, and the "obvious" fix would be deleting the
+ * fixture's defects, which is exactly how a regression suite dies.
+ * `motion-lint` already ignored it; this one did not, and the difference only
+ * showed up when both ran on the same repo.
  *
- * `.next-*` é build com nome próprio (NEXT_DIST_DIR), usado por quem roda dois
- * dev servers lado a lado. Lá dentro todo token já está inline, então o detector
- * reporta o trabalho do compilador como se fosse do autor. */
+ * `.next-*` is a build with its own name (NEXT_DIST_DIR), used by whoever runs
+ * two dev servers side by side. Inside it every token is already inlined, so
+ * the detector reports the compiler's work as the author's. */
 const SKIP_DIR = /^(node_modules|\.next|\.next-.*|\.git|dist|build|coverage|__fixtures__)$/;
 
 function walk(p, out = []) {
@@ -71,27 +73,28 @@ function walk(p, out = []) {
 
 const CHART_MARK = /<(ResponsiveContainer|AreaChart|LineChart|BarChart|PieChart|RadialBarChart|ComposedChart)\b/;
 const CHART_COLOR_PROP = /\b(stroke|fill|stopColor|color|activeStroke)\s*=\s*(["'{])/;
-/* Cor CRUA é a que traz o número. `hsl(var(--muted-foreground))` é token e passa:
-   neste repo os tokens guardam canal HSL solto (`--primary: 0 0% 9%`), então o
-   envelope `hsl(...)` é obrigatório e `var(--primary)` sozinho não é cor nenhuma.
-   A regra anterior acusava o certo e absolvia o errado. */
+/* A RAW color is one that carries the number. `hsl(var(--muted-foreground))` is
+   a token and passes: in this repo the tokens store a bare HSL channel
+   (`--primary: 0 0% 9%`), so the `hsl(...)` wrapper is mandatory and
+   `var(--primary)` alone is no color at all. The previous rule accused the
+   right one and acquitted the wrong one. */
 const RAW_COLOR = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(\s*(?!var\()[\d.]/;
-/** `var(--x)` sem envelope numa prop de cor: silenciosamente sem cor. */
+/** `var(--x)` without a wrapper in a color prop: silently no color. */
 const NAKED_VAR = /=\s*["']\s*var\(--[^)]+\)\s*["']/;
 const TW_PALETTE = /\b(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(50|[1-9]00|950)\b/;
 
-/** Uma regra: id, se casa na linha, e o conserto que quase sempre serve. */
+/** One rule: id, whether it matches the line, and the fix that almost always works. */
 const RULES = [
   {
     id: 'CHART_RAW_COLOR',
-    /* Só em arquivo que importa recharts. Sem isso a regra acusava material de
-       three.js e ícone de SVG, onde `color="#fff"` não é token nenhum: é a API
-       da lib. Detector que grita fora do escopo é detector que a pessoa desliga. */
+    /* Only in files that import recharts. Without this the rule accused three.js
+       materials and SVG icons, where `color="#fff"` is no token at all: it is
+       the lib's API. A detector that shouts out of scope gets switched off. */
     requires: /from ['"]recharts['"]/,
     test: (line) =>
       CHART_COLOR_PROP.test(line) &&
       (RAW_COLOR.test(line) || TW_PALETTE.test(line) || NAKED_VAR.test(line)),
-    hint: 'Cor de série sai de token COM envelope: stroke="hsl(var(--primary))". Os tokens guardam canal HSL solto, então var(--x) pelado não é cor e o traço some sem erro nenhum.',
+    hint: 'Series color comes from a token WITH its wrapper: stroke="hsl(var(--primary))". The tokens store a bare HSL channel, so a naked var(--x) is not a color and the stroke vanishes with no error.',
   },
   {
     id: 'DEFS_ID_NOT_SCOPED',
@@ -99,70 +102,71 @@ const RULES = [
       /<(linearGradient|radialGradient|clipPath|filter|pattern)\b/.test(line) &&
       /\sid\s*=\s*["'][^"'{]+["']/.test(line) &&
       !/useId/.test(src),
-    hint: 'id de defs precisa de escopo por instância (useId). Dois gráficos com o mesmo id se sobrescrevem, e o bug aparece em só um dos dois.',
+    hint: 'A defs id needs per-instance scope (useId). Two charts with the same id overwrite each other, and the bug shows up in only one of them.',
   },
   {
     id: 'HARDCODED_MOTION',
     test: (line) => /cubic-bezier\(/.test(line) || /duration-\[\d+ms\]/.test(line),
-    hint: 'Easing e duração vêm do SSoT: [transition-timing-function:var(--ease-out)] e [transition-duration:var(--dur-base)].',
+    hint: 'Easing and duration come from the SSoT: [transition-timing-function:var(--ease-out)] and [transition-duration:var(--dur-base)].',
   },
   {
     id: 'BAD_EASE',
-    // O primitivo compartilhado é upstream (shadcn) e tem caso legítimo: a
-    // sidebar anima largura porque é isso que uma sidebar faz. Mesma exceção do
-    // codemod de transition-all no visant-motion. Suprimido é CONTADO no fim,
-    // nunca calado: corte silencioso se lê como "está tudo limpo".
+    // The shared primitive is upstream (shadcn) and has a legitimate case: the
+    // sidebar animates width because that is what a sidebar does. Same
+    // exception as the transition-all codemod in visant-motion. Suppressed is
+    // COUNTED at the end, never silenced: a silent cut reads as "all clean".
     skipUi: true,
     test: (line) =>
       /\btransition-all\b/.test(line) ||
       /\bease-in\b(?!-out)/.test(line) ||
       /\banimate-bounce\b/.test(line) ||
       /scale\(0\)|scale-0\b/.test(line),
-    hint: 'transition-all anima o que você não pediu; ease-in em UI parece travado; bounce e scale(0) são tell de template.',
+    hint: 'transition-all animates what you did not ask for; ease-in on UI feels stuck; bounce and scale(0) are template tells.',
   },
   {
     id: 'LAYOUT_ANIMATION',
     skipUi: true,
     test: (line) => /transition-\[(?:[^\]]*\b(?:width|height|margin|padding|top|left)\b)/.test(line),
-    hint: 'Anime só transform e opacity. Width e height passam pelo layout a cada quadro e jankam.',
+    hint: 'Animate only transform and opacity. Width and height go through layout every frame and jank.',
   },
 ];
 
 /**
- * Regra de arquivo, não de linha: gráfico sem estado.
+ * A file rule, not a line rule: chart without state.
  *
- * A prova de "tem estado" era `ChartState|isEmpty`: anglófona, num código em
- * português. `HoursPanorama.tsx` separa erro, vazio e carregando em três ramos
- * de um ternário (`error && !data`, `vazio`, `isLoading`) e era acusado mesmo
- * assim, só porque a variável se chama `vazio` e não `isEmpty`.
+ * The proof of "has state" used to be `ChartState|isEmpty`: English-only, in
+ * Portuguese code. `HoursPanorama.tsx` splits error, empty and loading into
+ * three ternary branches (`error && !data`, `vazio`, `isLoading`) and was
+ * accused anyway, only because the variable is called `vazio` ("empty") and
+ * not `isEmpty`.
  *
- * E a regra pedia de menos: `isEmpty` sozinho absolvia o gráfico que trata erro
- * de rede COMO vazio, que é o defeito exato que ela existe pra pegar ("eixo
- * vazio com moldura é o 0 itens que na verdade era erro").
+ * And the rule asked too little: `isEmpty` alone acquitted the chart that
+ * treats a network error AS empty, which is the exact defect it exists to
+ * catch ("an empty framed axis is the 0 items that was really an error").
  *
- * Mas o ramo de erro só é cobrável de quem BUSCA o dado. Exigi-lo de todo mundo
- * acusou `HoursTeamChart` e `LeaderboardRace`, que recebem `isLoading` por prop
- * e já entram em `ChartState`: num componente de desenho não existe erro pra
- * tratar, ele mora no pai que faz o fetch. Regra que acusa dois e acerta zero é
- * regra, não código.
+ * But the error branch can only be demanded from whoever FETCHES the data.
+ * Demanding it from everyone accused `HoursTeamChart` and `LeaderboardRace`,
+ * which receive `isLoading` as a prop and already sit in `ChartState`: a
+ * drawing component has no error to handle, it lives in the parent that does
+ * the fetch. A rule that accuses two and hits zero is a bug, not a rule.
  */
 const CHART_EMPTY_MARK = /ChartState|isEmpty|\bvazio\b|\bsemDado\b|\bnoData\b/;
 const CHART_ERROR_MARK = /\berror\b/;
-/** Quem busca o próprio dado responde também pelo erro. */
+/** Whoever fetches its own data also answers for the error. */
 const CHART_FETCHES = /\buseSWR\b|\buseQuery\b|\bfetch\(/;
 
 function fileRules(file, src) {
   const out = [];
-  const temVazio = CHART_EMPTY_MARK.test(src);
-  const deveTratarErro = CHART_FETCHES.test(src);
-  const temEstado = temVazio && (!deveTratarErro || CHART_ERROR_MARK.test(src));
-  if (CHART_MARK.test(src) && !temEstado) {
+  const hasEmpty = CHART_EMPTY_MARK.test(src);
+  const mustHandleError = CHART_FETCHES.test(src);
+  const hasState = hasEmpty && (!mustHandleError || CHART_ERROR_MARK.test(src));
+  if (CHART_MARK.test(src) && !hasState) {
     const i = src.split(/\r?\n/).findIndex((l) => CHART_MARK.test(l));
     out.push({
       id: 'CHART_WITHOUT_STATE',
       line: i + 1,
-      hint: 'Todo gráfico entra em ChartState: eixo vazio com moldura é o "0 itens" que na verdade era erro de rede.',
-      excerpt: 'gráfico sem estado de vazio nem de carregando',
+      hint: 'Every chart sits in ChartState: an empty framed axis is the "0 items" that was really a network error.',
+      excerpt: 'chart with no empty or loading state',
     });
   }
   return out;
@@ -171,8 +175,8 @@ function fileRules(file, src) {
 let suppressedUi = 0;
 
 function scan(file, srcOverride) {
-  /* `file` já chega absoluto (ver `abs()` acima). O `join(ROOT, file)` que
-     estava aqui era exatamente o crash cross-drive: virava
+  /* `file` already arrives absolute (see `abs()` above). The `join(ROOT, file)`
+     that used to be here was exactly the cross-drive crash: it became
      `C:\Users\...\D:\dev\...`. */
   const src = srcOverride ?? readFileSync(file, 'utf8');
   const lines = src.split(/\r?\n/);
@@ -180,7 +184,7 @@ function scan(file, srcOverride) {
   const findings = [];
 
   lines.forEach((raw, i) => {
-    // Comentário não é código: não vale acusar o exemplo escrito na explicação.
+    // A comment is not code: the example written in an explanation is not a finding.
     if (/^\s*(\{\s*)?(\/\/|\*|\/\*)/.test(raw)) return;
     for (const rule of RULES) {
       if (rule.requires && !rule.requires.test(src)) continue;
@@ -201,7 +205,7 @@ function scan(file, srcOverride) {
 
 const BAD_FIXTURE = `
 import { AreaChart, ResponsiveContainer, Area } from 'recharts';
-export function Ruim() {
+export function Bad() {
   return (
     <ResponsiveContainer>
       <AreaChart data={[]}>
@@ -222,9 +226,9 @@ const GOOD_FIXTURE = `
 import { useId } from 'react';
 import { AreaChart, ResponsiveContainer, Area } from 'recharts';
 import { ChartState } from './ChartState';
-export function Bom({ isLoading, isEmpty, error }) {
+export function Good({ isLoading, isEmpty, error }) {
   const gid = useId();
-  if (error) return <p>Não foi possível carregar.</p>;
+  if (error) return <p>Could not load.</p>;
   return (
     <ChartState isLoading={isLoading} isEmpty={isEmpty}>
       <ResponsiveContainer>
@@ -241,9 +245,9 @@ export function Bom({ isLoading, isEmpty, error }) {
 `;
 
 /**
- * O caso que a regra anglófona acusava por engano: estados existem, separados em
- * três ramos, mas nomeados em PORTUGUÊS. Veio de `HoursPanorama.tsx` no
- * visant-board. Fica no fixture pra que o conserto da regra não se perca.
+ * The case the English-only rule accused by mistake: states exist, split into
+ * three branches, but named in PORTUGUESE. It came from `HoursPanorama.tsx` in
+ * visant-board. It stays Portuguese in the fixture so the rule's fix is not lost.
  */
 const GOOD_FIXTURE_PT = `
 import { LineChart, ResponsiveContainer, Line } from 'recharts';
@@ -262,15 +266,15 @@ export function Panorama({ data, error, isLoading, mutate }) {
 `;
 
 /**
- * Gráfico APRESENTACIONAL: recebe `isLoading` por prop e entra em `ChartState`.
- * Não busca nada, então não tem erro pra tratar. Veio de `HoursTeamChart.tsx` e
- * `LeaderboardRace.tsx`, que uma versão intermediária desta regra acusou por
- * exigir `error` de todo gráfico.
+ * A PRESENTATIONAL chart: receives `isLoading` as a prop and sits in
+ * `ChartState`. It fetches nothing, so it has no error to handle. It came from
+ * `HoursTeamChart.tsx` and `LeaderboardRace.tsx`, which an intermediate version
+ * of this rule accused for demanding `error` from every chart.
  */
-const GOOD_FIXTURE_BURRO = `
+const GOOD_FIXTURE_DUMB = `
 import { BarChart, ResponsiveContainer, Bar } from 'recharts';
 import { ChartState } from './ChartState';
-export function Desenho({ points, isLoading }) {
+export function Drawing({ points, isLoading }) {
   return (
     <ChartState isLoading={isLoading} isEmpty={points.length === 0}>
       <ResponsiveContainer>
@@ -282,16 +286,17 @@ export function Desenho({ points, isLoading }) {
 `;
 
 /**
- * O caso que a regra ANTIGA absolvia: BUSCA o dado, tem `isEmpty`, e não separa
- * o erro. É o "0 itens que na verdade era erro de rede" da hint, passando batido.
+ * The case the OLD rule acquitted: it FETCHES the data, has `isEmpty`, and does
+ * not separate the error. It is the hint's "0 items that was really a network
+ * error", slipping through.
  */
-const BAD_FIXTURE_SEM_ERRO = `
+const BAD_FIXTURE_NO_ERROR = `
 import useSWR from 'swr';
 import { BarChart, ResponsiveContainer, Bar } from 'recharts';
-export function SoVazio() {
-  const { data } = useSWR('/api/horas');
+export function EmptyOnly() {
+  const { data } = useSWR('/api/hours');
   const isEmpty = !data?.length;
-  if (isEmpty) return <p>Sem dados.</p>;
+  if (isEmpty) return <p>No data.</p>;
   return (
     <ResponsiveContainer>
       <BarChart data={data}><Bar dataKey="v" stroke="hsl(var(--primary))" /></BarChart>
@@ -301,44 +306,44 @@ export function SoVazio() {
 `;
 
 if (selfTest) {
-  const bad = scan('fixture-ruim.tsx', BAD_FIXTURE);
+  const bad = scan('fixture-bad.tsx', BAD_FIXTURE);
   const good = [
-    ...scan('fixture-bom.tsx', GOOD_FIXTURE),
-    ...scan('fixture-bom-pt.tsx', GOOD_FIXTURE_PT),
-    ...scan('fixture-bom-burro.tsx', GOOD_FIXTURE_BURRO),
+    ...scan('fixture-good.tsx', GOOD_FIXTURE),
+    ...scan('fixture-good-pt.tsx', GOOD_FIXTURE_PT),
+    ...scan('fixture-good-dumb.tsx', GOOD_FIXTURE_DUMB),
   ];
-  const semErro = scan('fixture-so-vazio.tsx', BAD_FIXTURE_SEM_ERRO);
-  const esperadas = ['CHART_RAW_COLOR', 'DEFS_ID_NOT_SCOPED', 'HARDCODED_MOTION', 'BAD_EASE', 'LAYOUT_ANIMATION', 'CHART_WITHOUT_STATE'];
-  const achadas = new Set(bad.map((f) => f.id));
-  const faltando = esperadas.filter((id) => !achadas.has(id));
+  const noError = scan('fixture-empty-only.tsx', BAD_FIXTURE_NO_ERROR);
+  const expected = ['CHART_RAW_COLOR', 'DEFS_ID_NOT_SCOPED', 'HARDCODED_MOTION', 'BAD_EASE', 'LAYOUT_ANIMATION', 'CHART_WITHOUT_STATE'];
+  const found = new Set(bad.map((f) => f.id));
+  const missing = expected.filter((id) => !found.has(id));
 
-  console.log(`\nself-test do refine-scan\n`);
-  console.log(faltando.length
-    ? `[FALHA] regra que não disparou no fixture ruim: ${faltando.join(', ')}`
-    : `[OK]    as ${esperadas.length} regras disparam no fixture ruim`);
+  console.log(`\nrefine-scan self-test\n`);
+  console.log(missing.length
+    ? `[FAIL]  rule that did not fire on the bad fixture: ${missing.join(', ')}`
+    : `[OK]    all ${expected.length} rules fire on the bad fixture`);
   console.log(good.length
-    ? `[FALHA] falso positivo no fixture bom: ${good.map((f) => `${f.id}:${f.line}`).join(', ')}`
-    : '[OK]    nenhum falso positivo nos 3 fixtures bons (estado em pt, gráfico apresentacional)');
-  // Teste de POSITIVO da regra consertada: quem BUSCA e só trata vazio TEM que cair.
-  const pegouSemErro = semErro.some((f) => f.id === 'CHART_WITHOUT_STATE');
-  console.log(pegouSemErro
-    ? '[OK]    gráfico que busca e trata erro de rede como vazio é acusado'
-    : '[FALHA] gráfico que trata erro de rede como vazio passou batido');
+    ? `[FAIL]  false positive on the good fixture: ${good.map((f) => `${f.id}:${f.line}`).join(', ')}`
+    : '[OK]    no false positive on the 3 good fixtures (state named in Portuguese, presentational chart)');
+  // POSITIVE test of the fixed rule: whoever FETCHES and only handles empty MUST be caught.
+  const caughtNoError = noError.some((f) => f.id === 'CHART_WITHOUT_STATE');
+  console.log(caughtNoError
+    ? '[OK]    a chart that fetches and treats a network error as empty is flagged'
+    : '[FAIL]  a chart that treats a network error as empty slipped through');
   console.log('-'.repeat(64));
-  const failed = faltando.length + good.length + (pegouSemErro ? 0 : 1);
-  console.log(failed ? 'DETECTOR QUEBRADO.' : 'DETECTOR OK. Caso novo: acrescente no fixture, nunca substitua.');
+  const failed = missing.length + good.length + (caughtNoError ? 0 : 1);
+  console.log(failed ? 'DETECTOR BROKEN.' : 'DETECTOR OK. New case: add it to the fixture, never replace one.');
   process.exit(failed ? 1 : 0);
 }
 
-/* ---------- execução ---------- */
+/* ---------- run ---------- */
 
 const files = [];
 let base = ROOT;
 for (const t of targets) {
   const a = abs(t);
   if (!existsSync(a)) {
-    console.error(`alvo não existe: ${t}`);
-    console.error(`  (resolvido para ${a})`);
+    console.error(`target does not exist: ${t}`);
+    console.error(`  (resolved to ${a})`);
     process.exit(2);
   }
   if (targets.length === 1) base = statSync(a).isDirectory() ? a : ROOT;
@@ -352,7 +357,7 @@ for (const file of files) {
   total += findings.length;
   console.log(`\n${disp(file, base)}`);
   for (const f of findings.sort((a, b) => a.line - b.line)) {
-    console.log(`  ${f.id}  linha ${f.line}`);
+    console.log(`  ${f.id}  line ${f.line}`);
     console.log(`      ${f.excerpt}`);
     console.log(`      ${f.hint}`);
   }
@@ -360,19 +365,19 @@ for (const file of files) {
 
 console.log('\n' + '-'.repeat(64));
 if (suppressedUi) {
-  console.log(`${suppressedUi} achado(s) suprimido(s) em components/ui (primitivo upstream, caso legítimo de animar largura). Reveja à mão se mexer num primitivo.`);
+  console.log(`${suppressedUi} finding(s) suppressed in components/ui (upstream primitive, legitimate case of animating width). Review by hand if you touch a primitive.`);
 }
 console.log(total
-  ? `REFINO FECHADO: ${total} achado(s) em ${files.length} arquivo(s).`
-  : `REFINO ABERTO: zero achado em ${files.length} arquivo(s).`);
-/* Este rodapé existe porque um zero daqui já foi lido como auditoria completa.
-   Script termina em exit code, e exit code parece acabamento — foi assim que
-   uma rodada pulou o visant-frontend inteiro e não percebeu. O detector é uma
-   fatia; quem fecha o portão é o killer-scan, que exige a tabela de superfícies
-   e o registro de ter aberto a tela. */
+  ? `REFINE BLOCKED: ${total} finding(s) in ${files.length} file(s).`
+  : `REFINE CLEAR: zero findings in ${files.length} file(s).`);
+/* This footer exists because a zero from here was once read as a complete
+   audit. A script ends in an exit code, and an exit code feels like being
+   done: that is how a round skipped visant-frontend entirely without noticing.
+   The detector is one slice; the gate is closed by killer-scan, which demands
+   the surface table and the record of having opened the screen. */
 console.log('');
-console.log('Isto é UM detector, não a auditoria. Ele não vê forma escolhida,');
-console.log('estouro a 390px, nem tela que ninguém abriu. Para fechar o portão:');
-console.log('  node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --report AUDIT.md <alvo>');
+console.log('This is ONE detector, not the audit. It does not see the chosen form,');
+console.log('overflow at 390px, or a screen nobody opened. To close the gate:');
+console.log('  node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --report AUDIT.md <target>');
 console.log('-'.repeat(64));
 process.exit(total ? 1 : 0);

@@ -1,4 +1,4 @@
-/* Ver irmaos-pai.tsx. ESPERADO: zero. */
+/* See irmaos-pai.tsx. EXPECTED: zero. */
 export function ImportarJson() {
   return <textarea placeholder='[{"nome": "preset"}]' />;
 }

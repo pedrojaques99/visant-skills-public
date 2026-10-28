@@ -1,9 +1,9 @@
 import { PassoUm } from './passo-um';
 import { PassoDois } from './passo-dois';
 
-/* NEGATIVO: dois passos de um assistente em lados opostos de um ternário.
- * Caso real da rodada 1: SidebarSetupSection × SidebarGenerationConfig.
- * ESPERADO: zero. */
+/* NEGATIVE: two steps of a wizard on opposite sides of a ternary.
+ * Real case from round 1: SidebarSetupSection × SidebarGenerationConfig.
+ * EXPECTED: zero. */
 export function Assistente({ analisado }: { analisado: boolean }) {
   return <aside>{analisado ? <PassoDois /> : <PassoUm />}</aside>;
 }

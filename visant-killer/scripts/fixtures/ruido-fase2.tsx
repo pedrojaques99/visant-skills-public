@@ -1,34 +1,34 @@
 /*
- * Fixture da FASE 2 do `ruido-scan` (2026-10-05) — as seis regras que o olho
- * pegava e o detector não, e os dois falsos positivos de `mesma-info` da
- * rodada 1 do slop killer no visantlabs-os.
+ * `ruido-scan` PHASE 2 fixture (2026-10-05): the six rules the eye caught and
+ * the detector did not, and the two `mesma-info` false positives from slop
+ * killer round 1 in visantlabs-os.
  *
- * Cada bloco diz quantos achados promete (ESPERADO). Os NEGATIVOS vêm primeiro
- * e longe dos positivos de propósito: duas regras (capa-sintetica e
- * blur-em-card) olham uma janela de linhas em volta, e um positivo vizinho
- * contaminaria o negativo. Comentário não conta pra janela (o detector apaga
- * comentário antes de olhar), então este espaçamento é feito de código.
+ * Each block says how many findings it promises (EXPECTED). The NEGATIVES come
+ * first and far from the positives on purpose: two rules (capa-sintetica and
+ * blur-em-card) look at a window of lines around, and a neighboring positive
+ * would contaminate the negative. Comments do not count for the window (the
+ * detector blanks comments before looking), so this spacing is made of code.
  *
- * Rode: node ruido-scan.mjs --self-test
+ * Run: node ruido-scan.mjs --self-test
  */
 
 /* ============================================================== */
-/* NEGATIVOS                                                      */
+/* NEGATIVES                                                      */
 /* ============================================================== */
 
-/* Gradiente que MOSTRA a paleta (swatch de guideline) não é capa: não há imagem
- * ausente por perto. ESPERADO capa-sintetica: zero. */
+/* A gradient that SHOWS the palette (guideline swatch) is not a cover: there is
+ * no missing image nearby. EXPECTED capa-sintetica: zero. */
 export function AmostraDeGradiente({ g }: { g: { angle: number; stops: string[] } }) {
   return <div className="h-8 rounded" style={{ background: `linear-gradient(${g.angle}deg, ${g.stops.join(', ')})` }} />;
 }
 
-/* Brilho de fundo: radial-gradient grande, sem background-size. Não é grade.
- * ESPERADO grade-de-pontos: zero. */
+/* Background glow: a large radial-gradient, no background-size. Not a grid.
+ * EXPECTED grade-de-pontos: zero. */
 export function BrilhoDeFundo() {
   return <div className="pointer-events-none inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_120%,rgba(82,221,235,0.07),transparent)]" />;
 }
 
-/* Delay fixo não é cascata. ESPERADO cascata-por-indice: zero. */
+/* A fixed delay is not a cascade. EXPECTED cascata-por-indice: zero. */
 export function EntradaUnica({ Motion }: { Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -38,8 +38,8 @@ export function EntradaUnica({ Motion }: { Motion: React.ComponentType<Record<st
   );
 }
 
-/* Afundar no hover/press não é levantar, e deslocar pro lado não é subir.
- * ESPERADO hover-que-levanta: zero. */
+/* Sinking on hover/press is not lifting, and shifting sideways is not rising.
+ * EXPECTED hover-que-levanta: zero. */
 export function AfundaNoClique({ Motion }: { Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -50,8 +50,8 @@ export function AfundaNoClique({ Motion }: { Motion: React.ComponentType<Record<
   );
 }
 
-/* Imagens que não quebram, ou que já tratam a quebra.
- * ESPERADO img-de-tile-sem-onerror: zero. */
+/* Images that do not break, or that already handle the break.
+ * EXPECTED img-de-tile-sem-onerror: zero. */
 export function ImagensQueNaoQuebram({ url, preview, props }: { url: string; preview: string; props: Record<string, unknown> }) {
   return (
     <>
@@ -64,17 +64,17 @@ export function ImagensQueNaoQuebram({ url, preview, props }: { url: string; pre
   );
 }
 
-/* Blur onde há o que borrar: barra grudada, chip sobre imagem, e um diálogo.
- * ESPERADO blur-em-card: zero. */
+/* Blur where there is something to blur: a sticky bar, a chip over an image, and a dialog.
+ * EXPECTED blur-em-card: zero. */
 export function BarraGrudada() {
   return <header className="sticky top-0 z-20 border-b bg-background/80 backdrop-blur-md">topo</header>;
 }
 export function ConfirmDialog() {
   return <div className="rounded-xl border bg-popover/90 backdrop-blur-xl p-6">certeza?</div>;
 }
-/* O nome do componente é o único sinal de overlay: fica a mais de 6 linhas do
- * blur (primeira versão da regra só olhava a vizinhança e acusava o próprio
- * Modal.tsx e o SelectContent do DS). ESPERADO: zero. */
+/* The component name is the only overlay signal: it sits more than 6 lines from
+ * the blur (the rule's first version only looked at the neighborhood and flagged
+ * Modal.tsx itself and the DS's SelectContent). EXPECTED: zero. */
 export function SettingsPopover({ n }: { n: number }) {
   const a = n + 1;
   const b = a + 1;
@@ -86,10 +86,10 @@ export function SettingsPopover({ n }: { n: number }) {
   return <div className="rounded-xl border bg-card/80 backdrop-blur-xl p-4">{g}</div>;
 }
 
-/* BLOCO DE CÓDIGO repete o header de autenticação em cada seção de propósito:
- * quem chega por âncora lê uma só. Falso positivo confirmado na DocsPage
- * (visantlabs-os, 2026-10-05) — 14 achados, todos em exemplo.
- * ESPERADO mesma-info-dois-tamanhos: zero. */
+/* A CODE BLOCK repeats the auth header in every section on purpose:
+ * whoever arrives by anchor reads only one. False positive confirmed on DocsPage
+ * (visantlabs-os, 2026-10-05): 14 findings, all in examples.
+ * EXPECTED mesma-info-dois-tamanhos: zero. */
 export function DocDeApi() {
   return (
     <>
@@ -103,9 +103,9 @@ export function DocDeApi() {
   );
 }
 
-/* METADADO não chega no olho: SEO e JSON-LD repetem a descrição por dever.
- * Falso positivo confirmado em BrandingMachinePage:1022 na mesma rodada.
- * ESPERADO mesma-info-dois-tamanhos: zero. */
+/* METADATA does not reach the eye: SEO and JSON-LD repeat the description by duty.
+ * False positive confirmed at BrandingMachinePage:1022 in the same round.
+ * EXPECTED mesma-info-dois-tamanhos: zero. */
 export function Metadados({ SEO, AppSchema }: { SEO: React.ComponentType<Record<string, string>>; AppSchema: React.ComponentType<Record<string, string>> }) {
   return (
     <>
@@ -116,26 +116,26 @@ export function Metadados({ SEO, AppSchema }: { SEO: React.ComponentType<Record<
 }
 
 /* ============================================================== */
-/* POSITIVOS                                                      */
+/* POSITIVES                                                      */
 /* ============================================================== */
 
-/* R10 a: o hash do nome vira matiz. Caso real: CoverFallback do grid de marcas.
- * ESPERADO capa-sintetica: 1 (a linha do hsl). */
+/* R10 a: the name hash becomes a hue. Real case: CoverFallback of the brand grid.
+ * EXPECTED capa-sintetica: 1 (the hsl line). */
 export function CapaPorHash({ name }: { name: string }) {
   const hue = [...name].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 360, 7);
   return <div style={{ background: `linear-gradient(135deg, hsl(${hue} 32% 26%), #111)` }} />;
 }
 
-/* R10 b: sem capa, as cores da marca viram degradê. Caso real: hero do cockpit.
- * ESPERADO capa-sintetica: 1. (A <img> tem onError: não conta pra R11.) */
+/* R10 b: with no cover, the brand colors become a gradient. Real case: cockpit hero.
+ * EXPECTED capa-sintetica: 1. (The <img> has onError: it does not count for R11.) */
 export function CapaComCoresDaMarca({ cover, colors }: { cover?: string; colors: string[] }) {
   if (cover) return <img src={cover} alt="" onError={() => undefined} className="h-full w-full object-cover" />;
   return <div style={{ background: `linear-gradient(115deg, ${colors.join(', ')})` }} />;
 }
 
-/* R11: tile de mídia desenhado à mão, sem onError. Caso real: MasonryCard da
- * /references (128 refs apontando pra disco local).
- * ESPERADO img-de-tile-sem-onerror: 2. */
+/* R11: a hand-drawn media tile, without onError. Real case: MasonryCard on
+ * /references (128 refs pointing to a local disk).
+ * EXPECTED img-de-tile-sem-onerror: 2. */
 export function TileSemOnError({ item, Motion }: { item: { url: string }; Motion: { img: React.ComponentType<Record<string, unknown>> } }) {
   return (
     <>
@@ -146,7 +146,7 @@ export function TileSemOnError({ item, Motion }: { item: { url: string }; Motion
   );
 }
 
-/* R12: lista em escadinha. ESPERADO cascata-por-indice: 2. */
+/* R12: staircase list. EXPECTED cascata-por-indice: 2. */
 export function ListaEmEscada({ itens, Motion }: { itens: string[]; Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -160,9 +160,9 @@ export function ListaEmEscada({ itens, Motion }: { itens: string[]; Motion: Reac
   );
 }
 
-/* R13: card que pula, imagem que cresce, motion que sobe. Caso real: 26 cards
- * do AdminPage com hover:-translate-y-1.
- * ESPERADO hover-que-levanta: 3. */
+/* R13: a card that jumps, an image that grows, a motion that rises. Real case: 26 cards
+ * on AdminPage with hover:-translate-y-1.
+ * EXPECTED hover-que-levanta: 3. */
 export function CardQuePula({ Motion }: { Motion: React.ComponentType<Record<string, unknown>> }) {
   return (
     <>
@@ -173,8 +173,8 @@ export function CardQuePula({ Motion }: { Motion: React.ComponentType<Record<str
   );
 }
 
-/* R14: papel quadriculado de template, nas três formas.
- * ESPERADO grade-de-pontos: 3. */
+/* R14: template graph paper, in its three forms.
+ * EXPECTED grade-de-pontos: 3. */
 const DOT_TEXTURE =
   "url(\"data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23fff'/%3E%3C/svg%3E\")";
 export function FundoDePontos({ GridDotsBackground }: { GridDotsBackground: React.ComponentType }) {
@@ -187,26 +187,26 @@ export function FundoDePontos({ GridDotsBackground }: { GridDotsBackground: Reac
   );
 }
 
-/* R15: blur num card no fluxo, em cima de fundo chapado — não borra nada.
- * ESPERADO blur-em-card: 1. */
+/* R15: blur on an in-flow card, over a flat background: it blurs nothing.
+ * EXPECTED blur-em-card: 1. */
 export function CardDeResumo() {
   return <div className="rounded-xl border bg-card/60 backdrop-blur-md p-4">resumo</div>;
 }
 
 /* ============================================================== */
-/* A EXCEÇÃO ESCRITA PRECISA DE MOTIVO                            */
+/* THE WRITTEN EXCEPTION NEEDS A REASON                           */
 /* ============================================================== */
 
 /*
- * O mesmo contrato dos outros quatro portões: `EXCEÇÃO ao ruido-scan/<regra>:
- * <motivo>`, na linha do achado ou nas oito acima, com 8+ letras de motivo e
- * uma palavra de 3+ na própria linha. Antes, "EXCEÇÃO" e o nome da regra em
- * qualquer lugar da janela liberavam o achado, inclusive o marcador mudo.
- * Cada caso fica a mais de oito linhas do próximo, senão a exceção de um
- * liberaria o achado do vizinho e o teste mentiria.
+ * The same contract as the other four gates: `EXCEÇÃO ao ruido-scan/<regra>:
+ * <motivo>`, on the finding's line or the eight above, with 8+ letters of reason
+ * and a 3+ letter word on the marker line itself. Before, "EXCEÇÃO" and the rule
+ * name anywhere in the window released the finding, the silent marker included.
+ * Each case sits more than eight lines from the next, otherwise one's exception
+ * would release the neighbor's finding and the test would lie.
  *
- * ESPERADO hover-que-levanta: 4 destes (mudo, motivo curto, nome pela metade,
- * exceção abaixo do achado). Os dois com motivo não contam.
+ * EXPECTED hover-que-levanta: 4 of these (silent, short reason, half the name,
+ * exception below the finding). The two with a reason do not count.
  */
 export function ExcecaoMuda() {
   {/* EXCEÇÃO ao ruido-scan/hover-que-levanta */}
@@ -265,4 +265,16 @@ export function ExcecaoComMotivoQuebrado() {
   // de demonstração sobe de propósito.
   return <div className="rounded-xl border hover:-translate-y-1">quebrado</div>;
 }
-export const espacoFinal = espaco32;
+const espaco33 = espaco32 + 1;
+const espaco34 = espaco33 + 1;
+const espaco35 = espaco34 + 1;
+const espaco36 = espaco35 + 1;
+const espaco37 = espaco36 + 1;
+const espaco38 = espaco37 + 1;
+const espaco39 = espaco38 + 1;
+/* The English marker is an alias of the Portuguese one and releases the same way. */
+export function ExcecaoEmIngles() {
+  {/* EXCEPTION to ruido-scan/hover-que-levanta: the demo card rises on purpose. */}
+  return <div className="rounded-xl border hover:-translate-y-1">english</div>;
+}
+export const espacoFinal = espaco39;

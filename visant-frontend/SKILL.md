@@ -215,7 +215,7 @@ the equivalent for the repo you're in.
 ### Verified in production
 
 Real cases that confirm the spine, each with the variable it protects:
-**[19 cases in references/producao-verificada.md](references/producao-verificada.md)**.
+**[19 cases in references/verified-production.md](references/verified-production.md)**.
 
 The four that repeat most: a price written in copy is a claim about the
 database; role says *can see*, ownership says *whose action it is*; silent-empty
@@ -230,7 +230,7 @@ in different units side by side with no label corrupt the reading.
 | Forms and dialogs: decluttering fields, what to do when the screen refuses | [work-surface.md](references/work-surface.md), sections "Forms: an empty field is not a field" and "What the screen says when it refuses" |
 | Client sites, landing, onboarding, pricing, upgrade paths | [acquisition-surface.md](references/acquisition-surface.md) |
 | Billing, destructive actions, data writes, confirmations | [trust-surface.md](references/trust-surface.md) |
-| Component library / registry showcase / demo of a piece / kits (the piece IS the product) | [vitrine-de-componentes.md](references/vitrine-de-componentes.md) |
+| Component library / registry showcase / demo of a piece / kits (the piece IS the product) | [component-showcase.md](references/component-showcase.md) |
 | Implementation in Tailwind v4 + React + Radix | [stack-tailwind-react.md](references/stack-tailwind-react.md) |
 | An example DS contract (pieces, chrome tokens, always-dark editor) | [ds-visantlabs-os.md](references/ds-visantlabs-os.md) |
 | Charts, limit meters, simulation sliders, crafted elements, motion on a data change | load the **`visant-refine`** skill |

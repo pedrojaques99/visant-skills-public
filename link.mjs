@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 /**
- * link — aponta `~/.claude/skills/<skill>` para este repo com junction, para
- * existir UMA cópia só.
+ * link: points `~/.claude/skills/<skill>` at this repo with a junction, so
+ * there is ONLY ONE copy.
  *
- * `sync.mjs` administra a divergência; isto elimina. Depois de linkar, editar a
- * skill enquanto trabalha já é editar o repo — some a chance de a pasta que roda
- * e a pasta versionada contarem histórias diferentes (que é o que aconteceu com
- * a visant-copy).
+ * `sync.mjs` manages the drift; this removes it. Once linked, editing the skill
+ * while you work is editing the repo, so the folder that runs and the versioned
+ * folder can no longer tell different stories (which is what happened with
+ * visant-copy).
  *
- *   node link.mjs           # dry-run: o que viraria junction
- *   node link.mjs --apply   # substitui as pastas por junctions
- *   node link.mjs --undo    # desfaz: volta a ser pasta real, com o conteúdo do repo
- *   node link.mjs --root=../visant-skills --apply   # linka outro repo de skills
+ *   node link.mjs           # dry run: what would become a junction
+ *   node link.mjs --apply   # replaces the folders with junctions
+ *   node link.mjs --undo    # undo: back to a real folder, with the repo's content
+ *   node link.mjs --root=../visant-skills --apply   # links another skills repo
  *
- * Link que aponta pra OUTRO lugar (skill que mudou de repo) é reapontado.
+ * A link pointing somewhere ELSE (a skill that moved repos) is repointed.
  *
- * Só roda com o repo limpo no git: a pasta em ~/.claude é APAGADA e recriada
- * como link, então o conteúdo precisa estar commitado antes. Junction, não
- * symlink: não exige privilégio de administrador no Windows.
+ * Only runs with a clean git repo: the folder in ~/.claude is DELETED and
+ * recreated as a link, so the content must be committed first. Junction, not
+ * symlink: it needs no administrator privilege on Windows.
  */
 
 import { execFile } from "node:child_process";
@@ -37,15 +37,15 @@ const apply = process.argv.includes("--apply");
 const undo = process.argv.includes("--undo");
 
 if (platform() !== "win32") {
-  console.error("link: escrito para Windows (junction). No macOS/Linux use `ln -s`.");
+  console.error("link: written for Windows (junction). On macOS/Linux use `ln -s`.");
   process.exit(2);
 }
 
-// Guarda-corpo: nada é apagado enquanto houver trabalho não commitado.
+// Guardrail: nothing is deleted while there is uncommitted work.
 if (apply || undo) {
   const { stdout } = await run("git", ["-C", REPO, "status", "--porcelain"]);
   if (stdout.trim()) {
-    console.error("link: há mudança não commitada no repo. Commite antes — este comando apaga pastas.");
+    console.error("link: the repo has uncommitted changes. Commit first; this command deletes folders.");
     console.error(stdout.trim().split("\n").slice(0, 10).join("\n"));
     process.exit(1);
   }
@@ -64,12 +64,12 @@ for (const name of skills) {
   const target = join(REPO, name);
   const info = await lstat(live).catch(() => null);
   const isLink = info?.isSymbolicLink() === true;
-  // readlink de junction volta como `\\?\Z:\...`; tira o prefixo antes de comparar.
+  // readlink on a junction returns `\\?\Z:\...`; strip the prefix before comparing.
   const norm = (p) => resolve(p.replace(/^\\\\\?\\/, "")).toLowerCase();
   const stale = isLink && norm(await readlink(live)) !== norm(target);
 
   if (!apply && !undo) {
-    const state = !info ? "ausente" : stale ? "link velho" : isLink ? "já é link" : "pasta real";
+    const state = !info ? "missing" : stale ? "stale link" : isLink ? "linked" : "real folder";
     console.log(`  ${state.padEnd(11)} ${name}`);
     if (stale) old++; else if (isLink) linked++; else if (info) real++; else missing++;
     continue;
@@ -77,24 +77,24 @@ for (const name of skills) {
 
   if (undo) {
     if (!isLink) continue;
-    await rm(live, { recursive: true, force: true }); // remove só o link
+    await rm(live, { recursive: true, force: true }); // removes only the link
     await cp(target, live, { recursive: true });
-    console.log(`  desfeito   ${name}`);
+    console.log(`  undone     ${name}`);
     linked++;
     continue;
   }
 
   if (isLink && !stale) continue;
-  if (isLink) await rm(live, { force: true }); // só o link; o alvo antigo fica intacto
+  if (isLink) await rm(live, { force: true }); // only the link; the old target stays intact
   else if (info) await rm(live, { recursive: true, force: true });
   await run("cmd", ["/c", "mklink", "/J", live, target]);
-  console.log(`  linkado    ${name}`);
+  console.log(`  linked     ${name}`);
   linked++;
 }
 
 if (!apply && !undo) {
-  console.log(`\n${real} pasta(s) real(is), ${old} link(s) velho(s), ${linked} já linkada(s), ${missing} ausente(s).`);
-  if (real || old) console.log("Rode --apply para virar junction (o conteúdo do repo passa a ser o único).");
+  console.log(`\n${real} real folder(s), ${old} stale link(s), ${linked} already linked, ${missing} missing.`);
+  if (real || old) console.log("Run --apply to turn them into junctions (the repo content becomes the only copy).");
 } else {
-  console.log(`\nlink: ${linked} skill(s) ${undo ? "desfeitas" : "linkadas"}.`);
+  console.log(`\nlink: ${linked} skill(s) ${undo ? "undone" : "linked"}.`);
 }

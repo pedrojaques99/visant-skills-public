@@ -38,8 +38,9 @@ node ~/.claude/skills/visant-refine/scripts/refine-scan.mjs <target>   # finishi
 node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --report AUDIT.md <target>
 ```
 
-`--report` is not optional: `killer-scan` refuses to print "gate open" without
-the surface table and the `## Tela vista` section (generate the skeleton with
+`--report` is not optional: `killer-scan` refuses to print GATE OPEN without
+the surface table and the `## Screen seen` section (`## Tela vista` also works;
+generate the skeleton with
 `--init-report AUDIT.md`). And a zero from `refine-scan` alone is **not** a
 complete pass: a clean detector feels like finishing because it ends in an exit
 code, and that is exactly how `visant-frontend` gets skipped entirely.
@@ -51,8 +52,7 @@ SSoT, `transition-all` and `ease-in` in UI, and width or height animation.
 The state wrapper counts if the file mentions `ChartState`, `isEmpty`, `noData`,
 `semDado` or `vazio`, so it works in any repo. Findings in `components/ui` are
 suppressed (upstream primitive) and **counted at the end**, never hidden.
-`--self-test` proves the six rules both ways before you trust a zero. Its output
-is in Portuguese.
+`--self-test` proves the six rules both ways before you trust a zero.
 
 ## Before drawing: discover what the repo already has
 

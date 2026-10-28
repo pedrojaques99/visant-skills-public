@@ -5,13 +5,13 @@ import { CampoPreset } from './irmaos-preset';
 import { CampoSala } from './irmaos-sala';
 import { CampoCaixa } from './irmaos-caixa';
 
-/* Um pai, cinco filhos na mesma tela.
- *   - BuscaA × BuscaB: `t('common.search')` é vocabulário comum, reuso
- *     deliberado (rodada 1: quatro buscas em quatro telas). ESPERADO: zero.
- *   - ImportarJson × CampoPreset: o placeholder do JSON é EXEMPLO de código,
- *     não rótulo de campo (rodada 1: AdminPresetsPage). ESPERADO: zero.
- *   - CampoSala × CampoCaixa: duas portas com o mesmo nome lado a lado — o
- *     caso do jukebox entre irmãos. ESPERADO porta-repetida: 2. */
+/* One parent, five children on the same screen.
+ *   - BuscaA × BuscaB: `t('common.search')` is common vocabulary, deliberate
+ *     reuse (round 1: four searches on four screens). EXPECTED: zero.
+ *   - ImportarJson × CampoPreset: the JSON placeholder is a code EXAMPLE,
+ *     not a field label (round 1: AdminPresetsPage). EXPECTED: zero.
+ *   - CampoSala × CampoCaixa: two doors with the same name side by side, the
+ *     jukebox case between siblings. EXPECTED porta-repetida: 2. */
 export function Painel() {
   return (
     <section>

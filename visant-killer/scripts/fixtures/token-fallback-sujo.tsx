@@ -12,6 +12,8 @@ export function Sujo({ go }: { go: () => void }) {
       <p className="text-muted-foreground bg-primary" data-k="CALA">semantic</p>
       {/* EXCEÇÃO ao token-fallback/rgb-hsl-cru: scrim over a customer photo */}
       <div style={{ background: 'rgba(0,0,0,0.6)' }} data-k="CALA" />
+      {/* EXCEPTION to token-fallback/hex-cru: brand swatch shown as data */}
+      <span style={{ color: '#00ff00' }} data-k="CALA">swatch</span>
       <button onClick={go} data-k="CALA">&#9662; open</button>
     </div>
   );

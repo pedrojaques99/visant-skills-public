@@ -1,18 +1,18 @@
-"""Gera o JS (use_figma, Figma Slides) que cria um lote de cards de aviso e de logos no deck da aula, no estilo já aprovado.
+"""Generates the JS (use_figma, Figma Slides) that creates a batch of notice and logo cards in the lesson deck, in the approved style.
 
-  python figma_cards.py <lote.json> <saida.js>
+  python figma_cards.py <batch.json> <output.js>
 
-lote.json:
+batch.json (keys stay as they are):
   {"deck": {"fundo": "55:12", "card": "55:15", "aviso": "71:2", "cinza": "55:25",
-            "slides": {"1.4": "67:3"}},          # linha já existente -> id do slide; linha nova é criada
-   "avisos": [["2.8", "aviso 2.8 0:45 · privado", "Repositório sempre privado"]],
-   "logos":  [["2.7", "logo 2.7 · só Claude", [["svg", "claude", "D97757"], ["txt", "→", true], ["txt", "CLAUDE.md", false]]]]}
+            "slides": {"1.4": "67:3"}},          # existing row -> slide id; a new row is created
+   "avisos": [["2.8", "notice 2.8 0:45 · private", "Repository always private"]],
+   "logos":  [["2.7", "logo 2.7 · Claude only", [["svg", "claude", "D97757"], ["txt", "→", true], ["txt", "CLAUDE.md", false]]]]}
 
-Item de logo: ["svg", <arquivo em icones/ sem .svg>, <hex>] | ["clone", <nodeId>] | ["txt", <texto>, <cinza?>].
-Ícones: Simple Icons (CC0), cor oficial da marca. Marca que não está lá entra como texto, nunca logo inventado.
-Depois de rodar o JS: exportar cada card com get_screenshot(contentsOnly) -> PNG -> Premiere (ver SKILL.md, "Cards").
-Linha nova sai como 'Edição N (não apresentar)', slide pulado. O card precisa ficar DENTRO do slide, senão o
-screenshot sai 1x1.
+Logo item: ["svg", <file in icones/ without .svg>, <hex>] | ["clone", <nodeId>] | ["txt", <text>, <gray?>].
+Icons: Simple Icons (CC0), official brand color. A brand not there goes in as text, never an invented logo.
+After running the JS: export each card with get_screenshot(contentsOnly) -> PNG -> Premiere (see SKILL.md, "Cards").
+A new row comes out as 'Edição N (não apresentar)' (name kept as-is, SKILL.md quotes it), skipped slide. The card
+must sit INSIDE the slide, otherwise the screenshot comes out 1x1.
 """
 import json, re, sys
 from pathlib import Path
@@ -63,7 +63,7 @@ for (const [l, nome, itens] of LOGOS) {
 }
 return out;""" % tuple(json.dumps(x, ensure_ascii=False) for x in (P, d, L.get("avisos", []), L.get("logos", [])))
     Path(saida).write_text(js, encoding="utf-8")
-    print(f"{saida}: {len(L.get('avisos', []))} avisos, {len(L.get('logos', []))} logos, {len(js)} chars")
+    print(f"{saida}: {len(L.get('avisos', []))} notices, {len(L.get('logos', []))} logos, {len(js)} chars")
 
 
 if __name__ == "__main__":

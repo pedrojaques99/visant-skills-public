@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# Transcreve os takes de fala e devolve texto COM TIMECODE, que e o que permite
-# montar por argumento em vez de por data.
+# Transcribes the speech takes and returns text WITH TIMECODE, which is what lets
+# you assemble by argument instead of by date.
 #
-# Gera:
-#   _build/transcricao/<arquivo>.txt   uma linha por frase: inicio<TAB>fim<TAB>texto
-#   _build/transcricao.tsv             tudo junto: arquivo<TAB>inicio<TAB>fim<TAB>texto
+# Writes:
+#   _build/transcricao/<file>.txt   one line per sentence: start<TAB>end<TAB>text
+#   _build/transcricao.tsv          all together: file<TAB>start<TAB>end<TAB>text
 #
-# Uso:  SRC=/midia PROJ=/projeto bash transcreve.sh
-#       MIN_FALA=25 bash transcreve.sh     # so os takes longos
-#       MODELO=medium bash transcreve.sh   # mais preciso, bem mais lento
+# Usage: SRC=/media PROJ=/project bash transcreve.sh
+#        MIN_FALA=25 bash transcreve.sh     # only the long takes
+#        MODELO=medium bash transcreve.sh   # more accurate, much slower
 #
-# Usa faster_whisper como modulo Python (pip install faster-whisper); o CLI `whisper`
-# ja quebrou na invocacao. PYTHON=<interpretador> escolhe o python (default: python, senao python3).
+# Uses faster_whisper as a Python module (pip install faster-whisper); the `whisper`
+# CLI already broke on invocation. PYTHON=<interpreter> picks the python (default: python, else python3).
 set -uo pipefail
 
 BASE="${PROJ:-$PWD}"
@@ -19,45 +19,45 @@ ROOT="${SRC:-$BASE}"
 MAN="$BASE/_build/manifest.tsv"
 OUTDIR="$BASE/_build/transcricao"
 TSV="$BASE/_build/transcricao.tsv"
-MIN_FALA="${MIN_FALA:-6}"      # abaixo disso quase nunca tem frase inteira
+MIN_FALA="${MIN_FALA:-6}"      # below this there is almost never a whole sentence
 MODELO="${MODELO:-small}"
 IDIOMA="${IDIOMA:-pt}"
 
-[ -f "$MAN" ] || { echo "Sem manifest. Roda antes: ingest.sh"; exit 1; }
+[ -f "$MAN" ] || { echo "No manifest. Run first: ingest.sh"; exit 1; }
 mkdir -p "$OUTDIR"
 if [ -z "${PYTHON:-}" ]; then
   for p in python python3; do
     "$p" -c "import sys; sys.exit(sys.version_info[0] < 3)" 2>/dev/null && { PYTHON="$p"; break; }
   done
 fi
-[ -n "${PYTHON:-}" ] || { echo "Sem Python 3 no PATH (ou defina PYTHON=)"; exit 1; }
-"$PYTHON" -c "import faster_whisper" 2>/dev/null || { echo "Falta faster-whisper: $PYTHON -m pip install faster-whisper"; exit 1; }
+[ -n "${PYTHON:-}" ] || { echo "No Python 3 on PATH (or set PYTHON=)"; exit 1; }
+"$PYTHON" -c "import faster_whisper" 2>/dev/null || { echo "Missing faster-whisper: $PYTHON -m pip install faster-whisper"; exit 1; }
 
-# candidatos: video, com faixa de audio, acima do minimo. Ordem: mais longo primeiro,
-# porque take longo e onde mora a tese - se voce interromper, ja tem o que importa.
-# while-read em vez de mapfile: roda tambem no bash 3.2 do macOS
+# candidates: video, with an audio track, above the minimum. Order: longest first,
+# because the long take is where the thesis lives; if you interrupt, you already have what matters.
+# while-read instead of mapfile: also runs on macOS bash 3.2
 ALVOS=()
 while IFS= read -r l; do ALVOS+=("$l"); done < <(awk -F'\t' -v m="$MIN_FALA" 'NR>1 && $2=="video" && $8>0 && $3+0>=m {print $3"\t"$1}' "$MAN" \
                      | sort -rn | cut -f2)
 
-echo "== ${#ALVOS[@]} takes de fala (>= ${MIN_FALA}s), modelo=$MODELO"
-[ "${#ALVOS[@]}" -gt 0 ] || { echo "nada a transcrever"; exit 0; }
+echo "== ${#ALVOS[@]} speech takes (>= ${MIN_FALA}s), model=$MODELO"
+[ "${#ALVOS[@]}" -gt 0 ] || { echo "nothing to transcribe"; exit 0; }
 
 i=0
 for f in "${ALVOS[@]}"; do
   i=$((i+1))
   dst="$OUTDIR/${f%.*}.txt"
   src="$ROOT/$f"
-  [ -f "$src" ] || { echo "  ! nao achei $f"; continue; }
+  [ -f "$src" ] || { echo "  ! not found: $f"; continue; }
   if [ -s "$dst" ] && [ "$dst" -nt "$src" ]; then
     echo "  = [$i/${#ALVOS[@]}] $f (cache)"; continue
   fi
   echo "  + [$i/${#ALVOS[@]}] $f"
 
   wav="$(mktemp -u).wav"
-  ffmpeg -nostdin -y -v error -i "$src" -vn -ac 1 -ar 16000 "$wav" 2>/dev/null || { echo "    (sem audio)"; continue; }
+  ffmpeg -nostdin -y -v error -i "$src" -vn -ac 1 -ar 16000 "$wav" 2>/dev/null || { echo "    (no audio)"; continue; }
 
-  MODELO="$MODELO" IDIOMA="$IDIOMA" WAV="$wav" DST="$dst" "$PYTHON" - <<'PY' || echo "    (falhou)"
+  MODELO="$MODELO" IDIOMA="$IDIOMA" WAV="$wav" DST="$dst" "$PYTHON" - <<'PY' || echo "    (failed)"
 import os, sys
 from faster_whisper import WhisperModel
 mdl = os.environ["MODELO"]; wav = os.environ["WAV"]; dst = os.environ["DST"]
@@ -71,12 +71,12 @@ for s in segs:
         linhas.append(f"{s.start:.1f}\t{s.end:.1f}\t{t}")
 with open(dst, "w", encoding="utf-8") as fh:
     fh.write("\n".join(linhas) + ("\n" if linhas else ""))
-print(f"    {len(linhas)} frases")
+print(f"    {len(linhas)} sentences")
 PY
   rm -f "$wav"
 done
 
-# consolida
+# consolidate
 : > "$TSV"
 for t in "$OUTDIR"/*.txt; do
   [ -e "$t" ] || continue
@@ -85,5 +85,5 @@ for t in "$OUTDIR"/*.txt; do
 done
 
 echo
-echo "== $(wc -l < "$TSV") frases de $(ls "$OUTDIR"/*.txt 2>/dev/null | wc -l) takes"
+echo "== $(wc -l < "$TSV") sentences from $(ls "$OUTDIR"/*.txt 2>/dev/null | wc -l) takes"
 echo "-> $TSV"

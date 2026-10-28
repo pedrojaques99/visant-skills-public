@@ -1,40 +1,40 @@
 #!/usr/bin/env node
-// verify-screens — abre as telas do app LOGADO, mede e fotografa. É o Passo 5 do killer em script.
+// verify-screens: opens the screens of the LOGGED-IN app, measures and screenshots them. It is killer Step 5 as a script.
 //
-// Irmão do corta-url.mjs: aquele mede URL publicada sem login; este mede o app local atrás do login,
-// em várias larguras e nos dois temas, e trava rota que gasta crédito ao carregar.
+// Sibling of corta-url.mjs: that one measures a published URL without login; this one measures the local app
+// behind login, at several widths and in both themes, and blocks routes that spend credits on load.
 //
-//   node verify-screens.mjs                                   # rotas do navConfig, 1366+390, dark, dev-login
+//   node verify-screens.mjs                                   # navConfig routes, 1366+390, dark, dev-login
 //   node verify-screens.mjs --routes /,/apps,/references --theme both
 //   node verify-screens.mjs --routes-from navConfig --widths 390 --out ./shots
-//   node verify-screens.mjs --scan-paid                       # lista useEffect que chama IA paga (heurística)
-//   node verify-screens.mjs --self-check                      # testa o parsing sem abrir navegador
+//   node verify-screens.mjs --scan-paid                       # lists useEffects that call paid AI (heuristic)
+//   node verify-screens.mjs --self-check                      # tests the parsing without opening a browser
 //
 // Flags
 //   --base URL          app (vite). Default http://localhost:5199
-//   --api URL           backend pro dev-login. Default = --base (o vite proxia /api)
-//   --routes a,b        rotas explícitas. Sem barra também vale ('apps' = '/apps')
-//   --routes-from X     'navConfig' (src/config/navConfig.ts) ou caminho de arquivo: pega todo `to: '/...'`
-//   --widths 1366,390   larguras do viewport
-//   --theme dark|light|both   grava localStorage[--theme-key] antes do app subir e confere a classe .dark
-//   --theme-key theme   chave do useTheme (src/hooks/useTheme.ts)
-//   --login dev|none    dev = POST /api/auth/dev-login, token em localStorage.auth_token
-//   --email x           usuário do dev-login (default: DEV_EMAIL, senão o 1º admin)
-//   --wait 7000         ms depois do networkidle (hidratação + fetch atrasado)
-//   --out DIR           prints + report.json. Default: <tmp>/verify-screens
-//   --skip-paid a,b     rotas que disparam IA ao montar. Default: /naming (confirmado no código)
-//   --allow-paid        abre as rotas pagas E deixa passar POST pra endpoint pago
+//   --api URL           backend for dev-login. Default = --base (vite proxies /api)
+//   --routes a,b        explicit routes. Without a slash also works ('apps' = '/apps')
+//   --routes-from X     'navConfig' (src/config/navConfig.ts) or a file path: takes every `to: '/...'`
+//   --widths 1366,390   viewport widths
+//   --theme dark|light|both   writes localStorage[--theme-key] before the app boots and checks the .dark class
+//   --theme-key theme   useTheme key (src/hooks/useTheme.ts)
+//   --login dev|none    dev = POST /api/auth/dev-login, token in localStorage.auth_token
+//   --email x           dev-login user (default: DEV_EMAIL, otherwise the first admin)
+//   --wait 7000         ms after networkidle (hydration + late fetch)
+//   --out DIR           screenshots + report.json. Default: <tmp>/verify-screens
+//   --skip-paid a,b     routes that fire AI on mount. Default: /naming (confirmed in code)
+//   --allow-paid        opens the paid routes AND lets POSTs to paid endpoints through
 //
-// TRAVA DE ROTA PAGA. Abrir /naming na base real cobrou e estornou crédito (NamingMachinePage: sessão
-// salva em phase 'deck' + deck vazio => useEffect chama fetchBatch => POST /api/ai/generate-naming).
-// Duas camadas: (1) a rota da lista --skip-paid nem abre; (2) em TODA rota, POST que casa PAID_API é
-// abortado no navegador e aparece em `paidBlocked` no relatório. A camada 2 pega a rota paga que
-// ninguém pôs na lista. Achou rota nova que gasta ao carregar? Some na lista DEFAULT_SKIP_PAID.
+// PAID ROUTE LOCK. Opening /naming on the real database charged and refunded credits (NamingMachinePage:
+// session saved in phase 'deck' + empty deck => useEffect calls fetchBatch => POST /api/ai/generate-naming).
+// Two layers: (1) a route in the --skip-paid list is never opened; (2) on EVERY route, a POST matching PAID_API
+// is aborted in the browser and shows up in `paidBlocked` in the report. Layer 2 catches the paid route
+// nobody put on the list. Found a new route that spends on load? Add it to DEFAULT_SKIP_PAID.
 //
-// Playwright é resolvido a partir do repo-alvo (createRequire no cwd), com fallback pro cache do npx:
-// o script roda de dentro da skill sem node_modules ao lado.
+// Playwright is resolved from the target repo (createRequire in the cwd), with a fallback to the npx cache:
+// the script runs from inside the skill with no node_modules next to it.
 //
-// Rode de Git Bash com MSYS_NO_PATHCONV=1 ou passe rota sem barra: '/apps' vira 'C:/Program Files/Git/apps'.
+// Run from Git Bash with MSYS_NO_PATHCONV=1 or pass routes without a slash: '/apps' becomes 'C:/Program Files/Git/apps'.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -44,7 +44,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 export const DEFAULT_SKIP_PAID = ['/naming'];
-// POST que custa provedor. GET nunca é bloqueado (lista, cache-only, leitura).
+// POSTs that cost provider money. GET is never blocked (list, cache-only, read).
 export const PAID_API =
   /\/api\/(ai\/|mockups\/generate|video\/generate|chat\/|playground\/(generate|iterate)|creative\/(generate|render|full)|branding\/generate|campaigns?\/generate|moodboard\/(suggest|upscale)|brand-guidelines\/[^/]+\/(suggest-mockups|assets\/analyze|ingest))/;
 
@@ -68,7 +68,7 @@ export function parseArgs(argv) {
     scanPaid: false,
   };
   const val = (i) => {
-    if (argv[i + 1] === undefined) throw new Error(`falta valor pra ${argv[i]}`);
+    if (argv[i + 1] === undefined) throw new Error(`missing value for ${argv[i]}`);
     return argv[i + 1];
   };
   for (let i = 0; i < argv.length; i++) {
@@ -88,16 +88,16 @@ export function parseArgs(argv) {
     else if (a === '--allow-paid') o.allowPaid = true;
     else if (a === '--self-check') o.selfCheck = true;
     else if (a === '--scan-paid') o.scanPaid = true;
-    else throw new Error(`flag desconhecida: ${a}`);
+    else throw new Error(`unknown flag: ${a}`);
   }
-  if (!['dark', 'light', 'both'].includes(o.theme)) throw new Error('--theme é dark|light|both');
-  if (!['dev', 'none'].includes(o.login)) throw new Error('--login é dev|none');
+  if (!['dark', 'light', 'both'].includes(o.theme)) throw new Error('--theme is dark|light|both');
+  if (!['dev', 'none'].includes(o.login)) throw new Error('--login is dev|none');
   o.api = o.api || o.base;
   return o;
 }
 
 export function normRoute(r) {
-  // desfaz a conversão de caminho do MSYS (Git Bash): '/apps' chega como 'C:/Program Files/Git/apps'
+  // undoes MSYS (Git Bash) path conversion: '/apps' arrives as 'C:/Program Files/Git/apps'
   const s = r.trim().replace(/^[A-Za-z]:[\\/].*?Git[\\/]/, '/').replace(/\\/g, '/');
   if (!s || s === 'home') return '/';
   return s.startsWith('/') ? s : '/' + s;
@@ -115,7 +115,7 @@ export function isPaidRoute(route, skip) {
   return skip.some((s) => p === s || p.startsWith(s.replace(/\/$/, '') + '/'));
 }
 
-/* ── chave i18n crua ──────────────────────────────────────────────────── */
+/* ── raw i18n key ─────────────────────────────────────────────────────── */
 export function loadNamespaces(cwd) {
   for (const f of ['src/locales/pt-BR.json', 'src/locales/en-US.json', 'locales/pt-BR.json']) {
     const p = path.join(cwd, f);
@@ -123,8 +123,8 @@ export function loadNamespaces(cwd) {
   }
   return [];
 }
-// Texto de folha com cara de chave. Com namespaces do locale, só conta se o 1º segmento for um
-// namespace real: sem isso 'api.visantlabs.com' vira "chave crua".
+// Leaf text that looks like a key. With locale namespaces, it only counts if the first segment is a
+// real namespace: without that, 'api.visantlabs.com' becomes a "raw key".
 const RAW_KEY = /^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9_-]+){2,}$/;
 export function isRawKey(text, namespaces) {
   if (!RAW_KEY.test(text)) return false;
@@ -132,7 +132,7 @@ export function isRawKey(text, namespaces) {
   return namespaces.includes(text.split('.')[0]);
 }
 
-/* ── heurística de rota paga ──────────────────────────────────────────── */
+/* ── paid route heuristic ─────────────────────────────────────────────── */
 const PAID_CALL =
   /\b(generateNaming|namingPatternInsight|namingBriefing|analyzeSetup|generateSmartPrompt|suggestPromptVariations|describeImage|improvePrompt|suggestCategories|changeObject|applyTheme|refineSuggestions|suggestMockups|analyzeAssets|fetchBatch)\s*\(|\/(mockups|video|playground)\/generate|force:\s*true/;
 export function scanPaid(cwd) {
@@ -149,7 +149,7 @@ export function scanPaid(cwd) {
     const L = fs.readFileSync(f, 'utf8').split('\n');
     L.forEach((l, i) => {
       if (!/useEffect\(/.test(l)) return;
-      // corpo do efeito até o fechamento `}, [` mais próximo, no máximo 30 linhas
+      // effect body up to the nearest closing `}, [`, at most 30 lines
       let end = i + 1;
       while (end < L.length && end < i + 30 && !/^\s*\}\s*,\s*\[/.test(L[end])) end++;
       const m = L.slice(i, end + 1).join('\n').match(PAID_CALL);
@@ -159,7 +159,7 @@ export function scanPaid(cwd) {
   return hits;
 }
 
-/* ── playwright do repo-alvo ──────────────────────────────────────────── */
+/* ── playwright from the target repo ──────────────────────────────────── */
 async function loadPlaywright() {
   try {
     const req = createRequire(path.join(process.cwd(), 'package.json'));
@@ -173,27 +173,27 @@ async function loadPlaywright() {
       return m.default ?? m;
     }
   }
-  throw new Error('playwright não achado no repo-alvo nem no cache do npx. Rode do repo, ou: npx playwright --version');
+  throw new Error('playwright not found in the target repo or the npx cache. Run from the repo, or: npx playwright --version');
 }
 
-/* ── self-check (sem navegador) ───────────────────────────────────────── */
+/* ── self-check (no browser) ──────────────────────────────────────────── */
 function selfCheck() {
   const t = [];
   const eq = (name, got, want) => t.push([name, JSON.stringify(got) === JSON.stringify(want), got]);
   eq('msys route', normRoute('C:/Program Files/Git/apps'), '/apps');
-  eq('route sem barra', normRoute('apps'), '/apps');
+  eq('route without slash', normRoute('apps'), '/apps');
   eq('home', normRoute('home'), '/');
   eq('navConfig', routesFromFile(`{ to: '/apps' }, { to: "/profile?tab=x" }, { to: \`/x/\${id}\` }`), ['/apps', '/profile?tab=x']);
-  eq('paga exata', isPaidRoute('/naming', DEFAULT_SKIP_PAID), true);
-  eq('paga filha', isPaidRoute('/naming/abc?x=1', DEFAULT_SKIP_PAID), true);
-  eq('não paga', isPaidRoute('/naming-x', DEFAULT_SKIP_PAID), false);
-  eq('api paga', PAID_API.test('http://localhost:5199/api/ai/generate-naming'), true);
-  eq('api grátis', PAID_API.test('http://localhost:5199/api/brand-guidelines/1/suggestions?cacheOnly=true'), false);
+  eq('paid exact', isPaidRoute('/naming', DEFAULT_SKIP_PAID), true);
+  eq('paid child', isPaidRoute('/naming/abc?x=1', DEFAULT_SKIP_PAID), true);
+  eq('not paid', isPaidRoute('/naming-x', DEFAULT_SKIP_PAID), false);
+  eq('paid api', PAID_API.test('http://localhost:5199/api/ai/generate-naming'), true);
+  eq('free api', PAID_API.test('http://localhost:5199/api/brand-guidelines/1/suggestions?cacheOnly=true'), false);
   const ns = ['nav', 'apps'];
-  eq('chave crua', isRawKey('nav.apps.label', ns), true);
-  eq('domínio não é chave', isRawKey('api.visantlabs.com', ns), false);
-  eq('frase não é chave', isRawKey('Meus mockups', ns), false);
-  eq('sem locale, domínio', isRawKey('api.visantlabs.com', []), false);
+  eq('raw key', isRawKey('nav.apps.label', ns), true);
+  eq('domain is not a key', isRawKey('api.visantlabs.com', ns), false);
+  eq('phrase is not a key', isRawKey('Meus mockups', ns), false);
+  eq('no locale, domain', isRawKey('api.visantlabs.com', []), false);
   const o = parseArgs(['--routes', 'apps,/naming', '--theme', 'both', '--widths', '390']);
   eq('args', [o.routes, o.theme, o.widths], [['/apps', '/naming'], 'both', [390]]);
   let fail = 0;
@@ -201,7 +201,7 @@ function selfCheck() {
     if (!ok) fail++;
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${n}${ok ? '' : '  -> ' + JSON.stringify(got)}`);
   }
-  console.log(fail ? `\n${fail} falha(s)` : `\n${t.length}/${t.length} ok`);
+  console.log(fail ? `\n${fail} failure(s)` : `\n${t.length}/${t.length} ok`);
   return fail ? 1 : 0;
 }
 
@@ -211,8 +211,8 @@ async function main() {
   if (o.selfCheck) process.exit(selfCheck());
   if (o.scanPaid) {
     const hits = scanPaid(process.cwd());
-    console.log(hits.length ? hits.join('\n') : 'nenhum useEffect chamando IA paga (heurística)');
-    console.log('\nCandidato, não veredito: leia o efeito. Confirmado => some em DEFAULT_SKIP_PAID.');
+    console.log(hits.length ? hits.join('\n') : 'no useEffect calling paid AI (heuristic)');
+    console.log('\nCandidate, not verdict: read the effect. Confirmed => add it to DEFAULT_SKIP_PAID.');
     return;
   }
 
@@ -220,7 +220,7 @@ async function main() {
   let routes = o.routes;
   if (!routes) {
     const f = !o.routesFrom || o.routesFrom === 'navConfig' ? path.join(cwd, 'src/config/navConfig.ts') : path.resolve(o.routesFrom);
-    if (!fs.existsSync(f)) throw new Error(`sem --routes e sem ${f}`);
+    if (!fs.existsSync(f)) throw new Error(`no --routes and no ${f}`);
     routes = routesFromFile(fs.readFileSync(f, 'utf8'));
   }
   const skipped = o.allowPaid ? [] : routes.filter((r) => isPaidRoute(r, o.skipPaid));
@@ -237,10 +237,10 @@ async function main() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ email: o.email }),
     }).catch((e) => {
-      throw new Error(`dev-login inalcançável em ${o.api} (${e.message}). App no ar? (ver references/ambiente.md)`);
+      throw new Error(`dev-login unreachable at ${o.api} (${e.message}). Is the app running? (see references/environment.md)`);
     });
     token = (await res.json().catch(() => ({}))).token;
-    if (!token) throw new Error(`dev-login sem token (HTTP ${res.status})`);
+    if (!token) throw new Error(`dev-login returned no token (HTTP ${res.status})`);
   }
 
   const { chromium } = await loadPlaywright();
@@ -293,18 +293,18 @@ async function main() {
             const d = document.documentElement;
             let c = [];
             try {
-              // serializa sem o nó DOM (`.no`): ele não atravessa o evaluate
-              c = (typeof corta === 'function' ? corta('body', { verbose: false }) || [] : ['corta-scan não carregou']).map(
-                (a) => (typeof a === 'string' ? a : `[${a.regra}] ${a.el} — ${a.detalhe}`)
+              // serialize without the DOM node (`.no`): it does not cross evaluate
+              c = (typeof corta === 'function' ? corta('body', { verbose: false }) || [] : ['corta-scan did not load']).map(
+                (a) => (typeof a === 'string' ? a : `[${a.regra}] ${a.el}: ${a.detalhe}`)
               );
             } catch (e) {
-              c = ['corta erro ' + e];
+              c = ['corta error ' + e];
             }
             const re = new RegExp(rawRe);
             const raw = [...document.body.querySelectorAll('*')]
               .filter((n) => n.children.length === 0)
               .map((n) => (n.textContent || '').trim())
-              // mesma regra do isRawKey (não dá pra passar função pro evaluate)
+              // same rule as isRawKey (a function cannot be passed into evaluate)
               .filter(
                 (t) =>
                   re.test(t) &&
@@ -316,7 +316,7 @@ async function main() {
               corta: c.slice(0, 8),
               rawKeys: raw,
               darkClass: d.classList.contains('dark'),
-              // tela em branco (chunk lazy não chegou, crash engolido) passa em estouro/corte/chave: conta texto
+              // a blank screen (lazy chunk never arrived, swallowed crash) passes overflow/clip/key checks: count text
               textLen: (document.body.innerText || '').trim().length,
               title: document.title,
             };
@@ -325,8 +325,8 @@ async function main() {
         );
         };
         let m = await measure();
-        // Tela vazia quase sempre é o dev server recompilando (HMR de outro agente, chunk lazy frio):
-        // espera mais uma vez antes de reportar. Se continuar vazia, aí é achado.
+        // An empty screen is almost always the dev server recompiling (another agent's HMR, cold lazy chunk):
+        // wait once more before reporting. If it stays empty, then it is a finding.
         let retried = false;
         if (m.textLen < 20) {
           retried = true;
@@ -334,7 +334,7 @@ async function main() {
           m = await measure();
         }
         const blank = m.textLen < 20;
-        // a classe .dark é aplicada num efeito do app: em tela vazia ela não diz nada sobre o tema
+        // the .dark class is applied in an app effect: on an empty screen it says nothing about the theme
         const themeOk = blank || m.darkClass === (theme === 'dark');
         const file = `${theme}-${width}${route.replace(/[/?=&]/g, '_') || '_root'}.png`;
         await page.screenshot({ path: path.join(o.out, file) });
@@ -346,9 +346,9 @@ async function main() {
         report.push(row);
         const bad = blank || m.overflow > 0 || m.corta.length || m.rawKeys.length || errors.length || !themeOk || paidBlocked.length;
         console.log(
-          `${bad ? 'ACHOU' : 'OK   '} ${theme.padEnd(5)} ${String(width).padStart(4)} ${route.padEnd(30)} ` +
-            `estouro=${m.overflow} corta=${m.corta.length} chave=${m.rawKeys.length} erro=${errors.length} ` +
-            `api4xx5xx=${row.apiFail.length}${blank ? ' TELA-VAZIA' : ''}${themeOk ? '' : ' TEMA-NAO-APLICOU'}${paidBlocked.length ? ' PAGO-BLOQUEADO=' + paidBlocked.length : ''}`
+          `${bad ? 'FOUND' : 'OK   '} ${theme.padEnd(5)} ${String(width).padStart(4)} ${route.padEnd(30)} ` +
+            `overflow=${m.overflow} clipped=${m.corta.length} rawkey=${m.rawKeys.length} error=${errors.length} ` +
+            `api4xx5xx=${row.apiFail.length}${blank ? ' BLANK-SCREEN' : ''}${themeOk ? '' : ' THEME-NOT-APPLIED'}${paidBlocked.length ? ' PAID-BLOCKED=' + paidBlocked.length : ''}`
         );
       }
       await ctx.close();
@@ -356,9 +356,9 @@ async function main() {
   }
   await browser.close();
   fs.writeFileSync(path.join(o.out, 'report.json'), JSON.stringify({ base: o.base, skippedPaid: skipped, report }, null, 2));
-  if (skipped.length) console.log(`\nNÃO abertas (rota paga, use --allow-paid): ${skipped.join(', ')}`);
-  console.log(`\nprints + report.json em ${o.out}`);
-  console.log('Achado é candidato: abra o print e confirme antes de consertar. api4xx5xx não reprova sozinho (backend local).');
+  if (skipped.length) console.log(`\nNOT opened (paid route, use --allow-paid): ${skipped.join(', ')}`);
+  console.log(`\nscreenshots + report.json in ${o.out}`);
+  console.log('A finding is a candidate: open the screenshot and confirm before fixing. api4xx5xx alone does not fail (local backend).');
   const fails = report.filter((r) => r.blank || r.overflow > 0 || r.corta.length || r.rawKeys.length || r.errors.length || !r.themeOk).length;
   process.exit(fails ? 1 : 0);
 }

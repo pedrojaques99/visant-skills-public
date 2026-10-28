@@ -8,19 +8,19 @@
 import { describe, it, expect } from "vitest";
 
 describe("motion", () => {
-  it("sem transition-all", () => {
-    expect(fontes.filter((f) => f.txt.includes("transition-all"))).toEqual([]);
+  it("no transition-all", () => {
+    expect(sources.filter((f) => f.txt.includes("transition-all"))).toEqual([]);
   });
 
-  it("sem ease-in em UI (só ease-out / ease-in-out)", () => {
-    expect(fontes.filter((f) => /(^|[\s:])ease-in(?!-out)/.test(f.txt))).toEqual([]);
+  it("no ease-in on UI (only ease-out / ease-in-out)", () => {
+    expect(sources.filter((f) => /(^|[\s:])ease-in(?!-out)/.test(f.txt))).toEqual([]);
   });
 
-  it("sem curva crua", () => {
-    expect(fontes.filter((f) => f.txt.includes("cubic-bezier("))).toEqual([]);
+  it("no raw curve", () => {
+    expect(sources.filter((f) => f.txt.includes("cubic-bezier("))).toEqual([]);
   });
 
-  it("sem duração de UI acima de 300ms", () => {
-    expect(fontes.filter((f) => f.txt.includes("duration-[900ms]"))).toEqual([]);
+  it("no UI duration above 300ms", () => {
+    expect(sources.filter((f) => f.txt.includes("duration-[900ms]"))).toEqual([]);
   });
 });

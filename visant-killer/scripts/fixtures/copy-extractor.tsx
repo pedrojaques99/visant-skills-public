@@ -1,76 +1,77 @@
-/* Fixture do extrator de copy do killer-scan. NÃO é componente de verdade.
+/* Fixture of the killer-scan copy extractor. NOT a real component.
  *
- * Contrato, e ele é auto-verificável:
- *   toda linha cuja copy DEVE ser extraída contém a palavra EXTRAI;
- *   toda linha que NÃO deve ser extraída contém a palavra IGNORA.
+ * Contract, and it is self-checking:
+ *   every line whose copy MUST be extracted contains the word EXTRAI;
+ *   every line that must NOT be extracted contains the word IGNORA.
+ * (The markers stay in Portuguese: they are test data the self-test matches.)
  *
- * `node killer-scan.mjs --self-test` roda o extrator aqui e falha nos dois
- * sentidos: string extraída sem EXTRAI é falso positivo, linha com EXTRAI que
- * não saiu é falso negativo. Sem isso, cada falso positivo novo era descoberto
- * por tropeço, e o conserto de um reabria o outro.
+ * `node killer-scan.mjs --self-test` runs the extractor here and fails both
+ * ways: a string extracted without EXTRAI is a false positive, an EXTRAI line
+ * that did not come out is a false negative. Without this, each new false
+ * positive was found by stumbling on it, and fixing one reopened the other.
  *
- * Cada caso abaixo já mordeu de verdade. Não apague nenhum: acrescente.
+ * Every case below has bitten for real. Do not delete any: add.
  *
- * Este comentário de bloco tem travessão — IGNORA, comentário não é copy.
+ * This block comment has a dash — IGNORA, a comment is not copy.
  */
 
-// Comentário de linha com travessão — IGNORA.
+// Line comment with a dash — IGNORA.
 
-const LIMITE_ANUAL = 81_000; // IGNORA, constante em caixa alta
+const LIMITE_ANUAL = 81_000; // IGNORA, uppercase constant
 const rate = 0.32;
 
 export function Fixture({ receita, despesa, ano }: { receita: number; despesa: number; ano: number }) {
-  // IGNORA: subtração é menos de conta, não travessão de copy
+  // IGNORA: subtraction is an arithmetic minus, not a copy dash
   const lucro = receita - despesa;
 
-  // IGNORA: ternário cujo `>` o extrator de texto de JSX confundia com fim de tag
+  // IGNORA: ternary whose `>` the JSX text extractor mistook for a tag end
   const carga = receita > 0 ? lucro / receita : null;
 
-  // IGNORA: expressão de linha solta, com operador e identificador em camelCase
+  // IGNORA: loose-line expression, with an operator and a camelCase identifier
   const adicional = receita > LIMITE_ANUAL
     ? (receita - LIMITE_ANUAL) * rate
     : 0;
 
-  // IGNORA: arrow function e template de caminho
+  // IGNORA: arrow function and path template
   const url = (id: string) => `/api/admin/fiscal/${id}`;
 
   return (
     <div className="flex min-w-0 items-baseline justify-between gap-2 text-xs text-muted-foreground">
-      {/* IGNORA: className é string, e string de classe não é copy */}
+      {/* IGNORA: className is a string, and a class string is not copy */}
       <span className="truncate text-sm font-bold tracking-tight">EXTRAI Cenário fiscal</span>
 
-      {/* EXTRAI: texto de JSX partido por expressão, o caso mais comum do repo */}
+      {/* EXTRAI: JSX text split by an expression, the most common case in the repo */}
       <p className="text-xs">
         EXTRAI Acima de {LIMITE_ANUAL} no ano de {ano}, declaração obrigatória.
       </p>
 
-      {/* EXTRAI: prop de rótulo */}
+      {/* EXTRAI: label prop */}
       <button aria-label="EXTRAI Limpar cenário simulado" onClick={() => setSim(null)}>
         <span>EXTRAI Limpar</span>
       </button>
 
-      {/* EXTRAI: literal de template com copy dentro */}
+      {/* EXTRAI: template literal with copy inside */}
       <p>{`EXTRAI Lançado no ano de ${ano} até aqui`}</p>
 
-      {/* IGNORA: url, caminho de arquivo e chave de tradução */}
+      {/* IGNORA: url, file path and translation key */}
       <a href={url("resumo")}>ver</a>
       <img src="/img/fiscal-hero.png" alt="EXTRAI Gráfico do acumulado por mês" />
 
-      {/* IGNORA: identificador solto, sem espaço e sem acento */}
+      {/* IGNORA: loose identifier, no space and no accent */}
       <div data-testid="fiscal-simulator" id="fiscal-card" />
 
-      {/* IGNORA: valor numérico formatado sem texto */}
+      {/* IGNORA: formatted numeric value with no text */}
       <span className="tabular-nums">{carga}</span>
       <span className="tabular-nums">{adicional}</span>
 
-      {/* IGNORA: acesso a propriedade dentro de objeto, sem sinal de código óbvio */}
+      {/* IGNORA: property access inside an object, no obvious code smell */}
       <Consumidor ano={{ anterior: 2025, atual: 2026 }} />
 
-      {/* EXTRAI: entidade HTML no meio da copy, e o ponto-e-vírgula dela não é pontuação */}
+      {/* EXTRAI: HTML entity in the middle of copy, and its semicolon is not punctuation */}
       <p>EXTRAI Marque como &quot;Mensal&quot; para ela aparecer aqui.</p>
 
-      {/* EXTRAI: aspa curva. A lista fechada de entidade tinha &quot; e não
-          &ldquo;, então a copy certa acusava ponto-e-vírgula. */}
+      {/* EXTRAI: curly quote. The closed entity list had &quot; and not
+          &ldquo;, so correct copy flagged a semicolon. */}
       <p>&ldquo;EXTRAI A marca cresceu junto com a clareza&rdquo;</p>
     </div>
   );
@@ -78,20 +79,20 @@ export function Fixture({ receita, despesa, ano }: { receita: number; despesa: n
 
 declare function setSim(v: number | null): void;
 
-/* Casos do audit das rotas públicas (2026-08-03). Os três acusavam vício de
- * linguagem em cima de sintaxe, e o pior é que o achado parecia legítimo:
- * "ponto-e-vírgula" num arquivo de player de áudio.
+/* Cases from the public routes audit (2026-08-03). All three flagged language
+ * tics on syntax, and the worst part is the finding looked legitimate:
+ * "semicolon" in an audio player file.
  */
 export type UniaoDoFixture =
-  // IGNORA: membro de união de tipo, o `];` não é ponto-e-vírgula de copy
+  // IGNORA: type union member, the `];` is not a copy semicolon
   | { type: ToolUIPartDoFixture["type"]; state: ToolUIPartDoFixture["state"] };
 
 export function CodigoQueNaoEhCopy({ mediaType, base64, id }: { mediaType: string; base64: string; id: string }) {
-  // IGNORA: data URI, o `;` é do MIME
+  // IGNORA: data URI, the `;` belongs to the MIME type
   const src = `data:${mediaType};base64,${base64}`;
-  /* A quebra de linha importa: o extrator de texto de JSX come o que vem depois
-     do `>` do genérico, e só quando o `>` está colado num identificador. Numa
-     linha só, o `const` já derrubava pelo CODEY e o caso não reproduzia. */
+  /* The line break matters: the JSX text extractor eats what follows the
+     generic's `>`, and only when the `>` is glued to an identifier. On a
+     single line, `const` already knocked it out via CODEY and the case did not reproduce. */
   const {
     data,
   } = useSWRDoFixture<MemberDataDoFixture>(chaveDoFixture(id, "portfolio")); // IGNORA
@@ -103,32 +104,32 @@ declare function useSWRDoFixture<T>(k: string): { data: T | null };
 declare interface MemberDataDoFixture { nome: string }
 declare function chaveDoFixture(a: string, b: string): string;
 
-/* Casos extras, achados na rodada a frio na tab /finance (2026-08-03):
- *   - `year: prev.year - 1,` virava copy e acusava hífen como travessão;
- *   - `onSet: (s: X) => Promise<void> | void;` deixava "| void;" passar;
- *   - `&quot;` levava o `;` dela para dentro da regra de ponto-e-vírgula.
+/* Extra cases, found in the cold run on the /finance tab (2026-08-03):
+ *   - `year: prev.year - 1,` became copy and flagged hyphen-as-dash;
+ *   - `onSet: (s: X) => Promise<void> | void;` let "| void;" through;
+ *   - `&quot;` took its `;` into the semicolon rule.
  */
 export interface PropsDoFixture {
-  onSetStatus: (status: string) => Promise<void> | void; // IGNORA, assinatura de tipo
+  onSetStatus: (status: string) => Promise<void> | void; // IGNORA, type signature
 }
 
-/* Caso achado no audit das rotas públicas (2026-08-03): a linha de propriedade
- * de objeto saía DUAS vezes, uma com a chave e as aspas junto e outra limpa. As
- * duas versões escapavam do dedupe (string diferente), eram concatenadas, e a
- * frase contava dobrada: o selo de credibilidade (`max: 1`) acusava repetição
- * num arquivo com uma ocorrência só. A linha solta agora sai, e quem extrai o
- * texto é o laço de literal.
+/* Case found in the public routes audit (2026-08-03): the object property line
+ * came out TWICE, once with the key and quotes attached and once clean. Both
+ * versions escaped dedupe (different strings), were concatenated, and the
+ * sentence counted double: the credibility seal (`max: 1`) flagged a repetition
+ * in a file with a single occurrence. The loose line now goes, and the literal
+ * loop is what extracts the text.
  *
- * Contrato: a linha abaixo tem que sair UMA vez, e sem o `description:` junto.
+ * Contract: the line below must come out ONCE, and without the `description:`.
  */
 export const metadataDoFixture = {
   description: 'EXTRAI Faça sua pergunta ao palestrante em tempo real',
 };
 
-/* Título de documento nas DUAS formas do Next. O pipe ali é convenção de aba e
- * de SERP, não bolinha separadora: as duas linhas são extraídas (EXTRAI, porque
- * emoji e guru continuam valendo nelas) mas saem marcadas, e o portão não
- * cobra delimitador. A forma `generateMetadata` é a que escapava.
+/* Document title in BOTH Next forms. The pipe there is the tab and SERP
+ * convention, not a dot separator: both lines are extracted (EXTRAI, because
+ * emoji and guru still apply to them) but come out marked, and the gate does
+ * not check delimiters. The `generateMetadata` form is the one that escaped.
  */
 export async function generateMetadata() {
   return {
@@ -139,24 +140,24 @@ export async function generateMetadata() {
 
 export function ExtraFixture({ prev }: { prev: { year: number } }) {
   const anterior = {
-    year: prev.year - 1, // IGNORA, acesso a propriedade e menos de subtração
+    year: prev.year - 1, // IGNORA, property access and subtraction minus
   };
   return <span>{anterior.year}</span>;
 }
 
 declare function Consumidor(p: { ano: { anterior: number; atual: number } }): JSX.Element;
 
-/* Copy PARTIDA por interpolação. Achado no header da home do mockup-store, onde
- * `59 à vista · 4.480 no acervo` estava na tela e o portão dizia zero: o fragmento
- * que sobra depois da máscara é "à vista ·", uma palavra só, e a regra de "menos de
- * duas palavras não é frase" o descartava. Falso NEGATIVO, o grave — o detector
- * aprovava um separador visível. Agora fragmento com bolinha ou travessão conta
- * como copy mesmo com uma palavra.
+/* Copy SPLIT by interpolation. Found in the mockup-store home header, where
+ * `59 à vista · 4.480 no acervo` was on screen and the gate said zero: the
+ * fragment left after the mask is "à vista ·", a single word, and the "fewer
+ * than two words is not a sentence" rule discarded it. A false NEGATIVE, the
+ * serious one: the detector approved a visible separator. Now a fragment with
+ * a dot or dash counts as copy even with one word.
  *
- * O ponto-e-vírgula continua fora da exceção de propósito: `(k: string): ;` (linha
- * de assinatura de tipo, mais acima neste arquivo) termina em `;` e voltaria como
- * falso positivo. A primeira versão do conserto fez exatamente isso, e este fixture
- * pegou. */
+ * The semicolon stays out of the exception on purpose: `(k: string): ;` (a type
+ * signature line, further up in this file) ends in `;` and would come back as a
+ * false positive. The first version of the fix did exactly that, and this
+ * fixture caught it. */
 export function CopyPartida({ vista, total }: { vista: number; total: number }) {
   return (
     <div>
@@ -166,11 +167,11 @@ export function CopyPartida({ vista, total }: { vista: number; total: number }) 
   );
 }
 
-/* Genérico com argumento em template. O extrator de texto de JSX come o que vem
- * depois do `>` de `querySelector<T>(...)` e devolvia o seletor inteiro como
- * copy; o `;` do fim virava achado de ponto-e-vírgula. Falso POSITIVO, achado no
- * audit do Gravador (jaques-os, 2026-08-05). A crase entrou no CODEY: ela
- * delimita template literal e nunca aparece em texto que o usuário lê. */
+/* Generic with a template argument. The JSX text extractor eats what follows
+ * the `>` of `querySelector<T>(...)` and returned the whole selector as copy;
+ * the trailing `;` became a semicolon finding. A false POSITIVE, found in the
+ * Recorder audit (jaques-os, 2026-08-05). The backtick joined CODEY: it
+ * delimits a template literal and never appears in text the user reads. */
 export function SeletorDeDom({ id }: { id: string }) {
   const pular = () => {
     const el = document.querySelector<HTMLMediaElement>(`[src*="id=${id}"]`);   // IGNORA
@@ -179,10 +180,11 @@ export function SeletorDeDom({ id }: { id: string }) {
   return <button onClick={pular}>EXTRAI voltar pro começo</button>;
 }
 
-/* JSX de várias linhas com expressão ABERTA no fim da linha. O candidato saía
- * com o `{cond` colado, o CODEY via a chave e jogava a frase inteira fora — o
- * travessão ficava visível na tela e o portão dizia zero. Falso NEGATIVO,
- * achado abrindo a página no audit do Gravador (jaques-os, 2026-08-05). */
+/* Multi-line JSX with an expression left OPEN at the end of the line. The
+ * candidate came out with `{cond` glued on, CODEY saw the brace and threw the
+ * whole sentence away: the dash stayed visible on screen and the gate said
+ * zero. A false NEGATIVE, found by opening the page in the Recorder audit
+ * (jaques-os, 2026-08-05). */
 export function CopyAntesDeExpressao({ tem }: { tem: boolean }) {
   return (
     <div>
@@ -193,10 +195,10 @@ export function CopyAntesDeExpressao({ tem }: { tem: boolean }) {
   );
 }
 
-/* Cookie: par `chave=valor;`. Tem letra, tem espaço, não tem cheiro de código —
- * passava inteiro por `looksLikeCopy` e o portão acusava ponto-e-vírgula de copy
- * de venda em cima de um `Set-Cookie`. Falso POSITIVO, achado no audit do
- * boxy-app (login-form.tsx:120, 2026-08-06). Copy não escreve `chave=valor;`. */
+/* Cookie: a `key=value;` pair. It has letters, spaces and no code smell: it
+ * passed `looksLikeCopy` whole and the gate flagged a sales-copy semicolon on a
+ * `Set-Cookie`. A false POSITIVE, found in the boxy-app audit
+ * (login-form.tsx:120, 2026-08-06). Copy does not write `key=value;`. */
 export function LimpaCookieDeErro() {
   const limpar = () => {
     document.cookie = 'auth_error=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';   // IGNORA
@@ -205,16 +207,16 @@ export function LimpaCookieDeErro() {
   return <button onClick={limpar}>EXTRAI tentar de novo</button>;
 }
 
-/* Separador PURO entre duas interpolações, dentro de um `label` de combobox.
- * Depois da máscara de `${...}` o template vira " · ": zero letra, três
- * caracteres, então morria no comprimento mínimo e no `\p{L}` de
- * `looksLikeCopy`, e o laço de literais exigia 6 caracteres e 3 letras seguidas.
- * O portão dizia "copy zero" com uma bolinha indo pro olho do usuário. Falso
- * NEGATIVO, achado no audit da aba Propostas do CRM (visant-board, 2026-08-07).
+/* A PURE separator between two interpolations, inside a combobox `label`.
+ * After the `${...}` mask the template becomes " · ": zero letters, three
+ * characters, so it died on the minimum length and the `\p{L}` of
+ * `looksLikeCopy`, and the literal loop required 6 characters and 3 letters in
+ * a row. The gate said "copy zero" with a dot going to the user's eye. A false
+ * NEGATIVE, found in the CRM Proposals tab audit (visant-board, 2026-08-07).
  *
- * O contraexemplo na linha seguinte é obrigatório: parêntese e barra são
- * separadores LEGÍTIMOS, e a regra não pode passar a acusar qualquer pontuação
- * entre interpolações. */
+ * The counterexample on the next line is mandatory: parenthesis and slash are
+ * LEGITIMATE separators, and the rule must not start flagging any punctuation
+ * between interpolations. */
 export function OpcoesDeNegocio({ itens }: { itens: Negocio[] }) {
   return itens.map((negocio) => ({
     value: negocio.id,
@@ -225,60 +227,61 @@ export function OpcoesDeNegocio({ itens }: { itens: Negocio[] }) {
   }));
 }
 
-/* Placeholder de valor AUSENTE: o mesmo glifo do separador fazendo o trabalho
- * oposto. `" · "` JUNTA dois valores; `"—"` SUBSTITUI um valor que não existe.
- * Convenção de tabela densa (Linear, Stripe, Vercel) — trocar por hífen piora a
- * tipografia, não conserta voz.
+/* Placeholder for a MISSING value: the same glyph as the separator doing the
+ * opposite job. `" · "` JOINS two values; `"—"` REPLACES a value that does not
+ * exist. A dense table convention (Linear, Stripe, Vercel): swapping it for a
+ * hyphen worsens the typography, it does not fix voice.
  *
- * O discriminador é o espaço, e ele não é sobra de formatação: separador se
- * escreve com espaço em volta porque `a·b` não se lê; placeholder se escreve
- * pelado porque não há o que separar. No audit de /admin (visant-board,
- * 2026-08-10) eram 9 dos 16 achados de "literal só de separador" — barulho
- * suficiente pra alguém desligar o portão inteiro. */
+ * The discriminator is the space, and it is not leftover formatting: a
+ * separator is written with spaces around it because `a·b` cannot be read; a
+ * placeholder is written bare because there is nothing to separate. In the
+ * /admin audit (visant-board, 2026-08-10) these were 9 of 16 "separator-only
+ * literal" findings, enough noise for someone to turn off the whole gate. */
 export function CelulaDeHoras({ horas }: { horas: number | null }) {
   return <span>{horas != null ? horas : '—'}</span>;   // IGNORA
 }
 
-/* Contraexemplo obrigatório do contraexemplo: travessão COM espaço continua
- * sendo prosa, e continua proibido. Sem esta linha, "exigir espaço" viraria
- * porta de entrada pro travessão de prosa. */
+/* Mandatory counterexample to the counterexample: a dash WITH spaces is still
+ * prose, and still forbidden. Without this line, "require a space" would
+ * become a way in for the prose dash. */
 export function AvisoDeRessalva({ pct }: { pct: number }) {
   return <p>{pct}% do orçado{' — '}EXTRAI leia com ressalva</p>;
 }
 
-/* Genérico com objeto dentro, seguido de chamada. A máscara de `{expr}` come o
- * argumento de tipo, o `>` do genérico vira "fechamento de tag" e o resto da
- * linha (`(jobsRaw), [jobsRaw]);`) é extraído como texto. Começa em parêntese,
- * então CALL_EXPR não vê identificador colado no `(` — o nome ficou do outro lado
- * do corte. O portão acusava ponto-e-vírgula de copy de venda num `useMemo`.
- * Falso POSITIVO, achado no audit do kanban do comercial (2026-08-07).
+/* Generic with an object inside, followed by a call. The `{expr}` mask eats the
+ * type argument, the generic's `>` becomes a "tag close" and the rest of the
+ * line (`(jobsRaw), [jobsRaw]);`) is extracted as text. It starts with a
+ * parenthesis, so CALL_EXPR sees no identifier glued to the `(`: the name stayed
+ * on the other side of the cut. The gate flagged a sales-copy semicolon on a
+ * `useMemo`. A false POSITIVE, found in the sales kanban audit (2026-08-07).
  *
- * O contraexemplo é obrigatório: parêntese com vírgula é prose legítima em
- * português, e a regra não pode passar a matar copy por causa de um parêntese. */
+ * The counterexample is mandatory: a parenthesis followed by a comma is
+ * legitimate Portuguese prose, and the rule must not start killing copy
+ * because of a parenthesis. */
 export function ListaDeJobs({ jobsRaw }: { jobsRaw: unknown }) {
   const jobsList = useMemo(() => pickList<{ id: string; job: string }>(jobsRaw), [jobsRaw]);   // IGNORA
   return <p>EXTRAI a segunda opção (a melhor delas), aliás, é a que fecha mais</p>;
 }
 
-/* Genérico no MEIO de uma assinatura: o `>` de `Map<string, Tween>` vira
- * "fechamento de tag" e o resto dos parâmetros era extraído como copy, com o
- * pipe da união acusando pipe-separador. Falso POSITIVO, audit da MN Group
- * (2026-09-28). Contraexemplo: rótulo com dois-pontos é copy e continua entrando. */
+/* A generic in the MIDDLE of a signature: the `>` of `Map<string, Tween>`
+ * becomes a "tag close" and the rest of the parameters was extracted as copy,
+ * with the union pipe flagging pipe-separador. A false POSITIVE, MN Group audit
+ * (2026-09-28). Counterexample: a label with a colon is copy and still gets in. */
 export function fly(root: HTMLElement | null, flights: Map<string, Tween>, id: string, dir: 'open' | 'close') {   // IGNORA
   return <p>EXTRAI Nome: escreva como aparece no documento</p>
 }
 
-/* Genérico seguido de sufixo de tipo ou de acesso a membro. O `>` que fecha o
- * argumento de tipo vira "fechamento de tag" e o que vem depois era lido como
- * texto de JSX:
- *   - `Node<FlowNodeData>[] | ((prev: ...` entregava `[] | ((prev: Node`, e o
- *     pipe da união acusava pipe-separador (CollaborativeCanvas.tsx);
+/* A generic followed by a type suffix or a member access. The `>` that closes
+ * the type argument becomes a "tag close" and what follows was read as JSX
+ * text:
+ *   - `Node<FlowNodeData>[] | ((prev: ...` handed over `[] | ((prev: Node`, and
+ *     the union pipe flagged pipe-separador (CollaborativeCanvas.tsx);
  *   - `(ref as React.MutableRefObject<Konva.Stage | null>).current = node;`
- *     entregava `).current = node;`, e o `;` acusava ponto-e-vírgula
+ *     handed over `).current = node;`, and the `;` flagged a semicolon
  *     (KonvaCanvas.tsx).
- * Falso POSITIVO, onda 4 do slop killer do visantlabs-os (2026-10-05). Texto de
- * tela nunca começa com `[]` nem com `.membro` colado. Contraexemplo obrigatório:
- * parêntese fechado depois de tag inline, seguido de ponto e ESPAÇO, é prosa. */
+ * A false POSITIVE, wave 4 of the visantlabs-os slop killer (2026-10-05). Screen
+ * text never starts with `[]` or a glued `.member`. Mandatory counterexample:
+ * a closing parenthesis after an inline tag, followed by a period and a SPACE, is prose. */
 type Setters = {
   setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;   // IGNORA
 };
@@ -287,20 +290,20 @@ export function setRef(ref: unknown, node: unknown) {
   return <p>(veja <a href="/docs">a documentação</a>). EXTRAI depois disso tudo segue igual</p>;
 }
 
-/* União de TypeScript escrita como DOCUMENTAÇÃO de prop, na página do design
- * system: `<span>position:</span> 'left' | 'right'` e
- * `aspectRatio: 'number | string (default 1; masonry = natural)'`. O pipe ali é
- * o operador de união, não separador de copy, e o portão acusava pipe-separador
- * (e o `;` do parêntese acusava ponto-e-vírgula). Regra: se TODO segmento entre
- * pipes é literal entre aspas, palavra de tipo (string, number, boolean,
- * ReactNode, undefined, null...) ou identificador com cara de código
- * (camelCase, `a.b`, `T[]`, `T<U>`), é tipo. Uma anotação final entre
- * parênteses, `(default ...)`, não conta. Falso POSITIVO, src/pages/
+/* A TypeScript union written as prop DOCUMENTATION, on the design system page:
+ * `<span>position:</span> 'left' | 'right'` and
+ * `aspectRatio: 'number | string (default 1; masonry = natural)'`. The pipe
+ * there is the union operator, not a copy separator, and the gate flagged
+ * pipe-separador (and the `;` inside the parenthesis flagged a semicolon). Rule:
+ * if EVERY segment between pipes is a quoted literal, a type word (string,
+ * number, boolean, ReactNode, undefined, null...) or a code-looking identifier
+ * (camelCase, `a.b`, `T[]`, `T<U>`), it is a type. A trailing parenthesized
+ * annotation, `(default ...)`, does not count. A false POSITIVE, src/pages/
  * DesignSystemPage.tsx (2026-10-05).
  *
- * Contraexemplos obrigatórios: pipe de copy de verdade continua entrando, com
- * frase em cada lado OU com palavra solta comum (nav de rodapé), porque palavra
- * capitalizada sozinha não é identificador de código. */
+ * Mandatory counterexamples: a real copy pipe still gets in, with a sentence on
+ * each side OR with a plain loose word (footer nav), because a lone
+ * capitalized word is not a code identifier. */
 export function PropsDoc() {
   const doc = {
     aspectRatio: 'number | string (default 1; masonry = natural)',   // IGNORA

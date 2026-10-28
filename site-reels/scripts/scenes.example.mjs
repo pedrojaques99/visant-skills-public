@@ -1,4 +1,4 @@
-// Cenas gravadas. trim = segundos cortados do início (carregamento da página).
+// Recorded scenes. trim = seconds cut from the start (page loading).
 export const SCENES = [
   {
     name: '01-logo-nevoa-light',
@@ -34,7 +34,7 @@ export const SCENES = [
     path: '/',
     async prepare(page, { scrollTo, wait }) {
       await scrollTo(page, '#jardim', 800)
-      await wait(7000) // cena 3D (ez-tree) carrega perto da viewport e demora
+      await wait(7000) // 3D scene (ez-tree) loads near the viewport and takes a while
     },
     async act(page, { scrollThrough, wait }) {
       await wait(1500)
@@ -45,7 +45,7 @@ export const SCENES = [
   {
     name: '05-jardim-caminhada',
     path: '/jardim',
-    crf: 24, // grão + rastro pesam: mantém < 100MB
+    crf: 24, // grain + trails are heavy: keeps it < 100MB
     async prepare(page, { wait }) {
       await wait(4000)
     },

@@ -1,17 +1,17 @@
 /**
- * O self-test do `corta-scan.js` — as três geometrias travadas num fixture.
+ * The `corta-scan.js` self-test: the three geometries locked in a fixture.
  *
- * Existe pelo mesmo motivo que o `--self-test` do `ruido-scan`: quem mexer nos
- * limiares (os 40% de cobertura, os 2px de sobra) precisa descobrir na hora que
- * afrouxou a regra até ela não achar mais nada. Detector que devolve zero passa
- * por tela limpa, e é o pior modo de falha de um portão.
+ * It exists for the same reason as `ruido-scan`'s `--self-test`: whoever touches
+ * the thresholds (the 40% coverage, the 2px overflow) needs to find out right
+ * away that they loosened the rule until it finds nothing. A detector that
+ * returns zero passes as a clean screen, and that is a gate's worst failure mode.
  *
  *   node scripts/corta-self-test.mjs
  *
- * Pede `playwright-core` e um Chrome — os dois já existem em qualquer repo que
- * rode harness. SEM eles, o script sai 0 dizendo que não testou: "não consegui
- * rodar" nunca é "passou", e também não é "está quebrado" (a mesma lição do
- * guard de ambiente dos harness desta casa).
+ * Needs `playwright-core` and a Chrome; both already exist in any repo that
+ * runs a harness. WITHOUT them, the script exits 0 saying it did not test: "I
+ * could not run" is never "passed", and it is not "broken" either (the same
+ * lesson as the environment guard in this house's harnesses).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,22 +22,22 @@ const fixture = path.join(aqui, 'fixtures', 'corta-casos.html');
 const snippet = fs.readFileSync(path.join(aqui, 'corta-scan.js'), 'utf8');
 
 /*
- * `playwright-core` é resolvido a partir do REPO, não desta skill.
+ * `playwright-core` is resolved from the REPO, not from this skill.
  *
- * A skill mora em `~/.claude/skills/`, e um `import('playwright-core')` daqui
- * procura por um node_modules dentro de `~/.claude` — que não existe. O
- * primeiro teste deste script disse "sem playwright-core neste repo" dentro de
- * um repo que tinha playwright-core instalado: o modo de falha exato que o guard
- * existe pra evitar, acontecendo POR CAUSA do guard.
+ * The skill lives in `~/.claude/skills/`, and an `import('playwright-core')`
+ * from here looks for a node_modules inside `~/.claude`, which does not exist.
+ * The first run of this script said "no playwright-core in this repo" inside a
+ * repo that had playwright-core installed: the exact failure mode the guard
+ * exists to prevent, happening BECAUSE of the guard.
  *
- * (E o glob que estava escrito aqui FECHAVA este comentário: dois asteriscos
- * mais barra é o fim de um bloco, então metade da explicação virava código e o
- * arquivo nem parseava. Glob em comentário de bloco, nunca.)
+ * (And the glob that was written here CLOSED this comment: two asterisks plus a
+ * slash end a block, so half the explanation became code and the file did not
+ * even parse. Never put a glob in a block comment.)
  */
 /*
- * Mesma ordem do verify-screens: `playwright-core` ou `playwright` do cwd
- * (createRequire no repo-alvo), e por último o cache do npx. Repo que só tem
- * `playwright` no topo dava NÃO TESTADO procurando só o `-core`.
+ * Same order as verify-screens: `playwright-core` or `playwright` from the cwd
+ * (createRequire in the target repo), and last the npx cache. A repo with only
+ * `playwright` at the top level gave NOT TESTED when looking only for `-core`.
  */
 let chromium;
 {
@@ -46,7 +46,7 @@ let chromium;
   const exigir = createRequire(path.join(process.cwd(), 'package.json'));
   for (const nome of ['playwright-core', 'playwright']) {
     try {
-      ({ chromium } = exigir(nome)); // CJS: require direto, o import por file:// devolve namespace sem os browsers
+      ({ chromium } = exigir(nome)); // CJS: plain require; importing via file:// returns a namespace without the browsers
       break;
     } catch {}
   }
@@ -62,7 +62,7 @@ let chromium;
   }
 }
 if (!chromium) {
-  console.log('corta-self-test: sem playwright(-core) no repo atual nem no cache do npx — NÃO TESTADO (não é aprovação). Rode do repo-alvo.');
+  console.log('corta-self-test: no playwright(-core) in the current repo or the npx cache: NOT TESTED (this is not a pass). Run it from the target repo.');
   process.exit(0);
 }
 
@@ -72,15 +72,15 @@ const exe =
     (p) => fs.existsSync(p),
   );
 if (!exe) {
-  console.log('corta-self-test: nenhum Chrome encontrado (defina CHROME=) — NÃO TESTADO.');
+  console.log('corta-self-test: no Chrome found (set CHROME=): NOT TESTED.');
   process.exit(0);
 }
 
 const browser = await chromium.launch({ executablePath: exe });
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await page.goto('file://' + fixture.replace(/\\/g, '/'));
-/* fonte carregada antes de medir: a largura de uma palavra não existe antes
-   disso, e medir antes é medir o fallback (ver references/ambiente.md) */
+/* font loaded before measuring: a word's width does not exist before that, and
+   measuring earlier measures the fallback font (see references/environment.md) */
 await page.evaluate(() => document.fonts.ready);
 const achados = await page.evaluate(`${snippet}; corta('body', { verbose: false }).map(({ no, ...r }) => r)`);
 await browser.close();
@@ -93,14 +93,14 @@ for (const [regra, n] of Object.entries(esperado)) {
   const achou = contado[regra] ?? 0;
   const ok = achou === n;
   if (!ok) falhou++;
-  console.log(`  ${ok ? 'ok  ' : 'FALHA'}  ${regra.padEnd(20)} esperado ${n}, achou ${achou}`);
+  console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${regra.padEnd(20)} expected ${n}, found ${achou}`);
 }
 for (const regra of Object.keys(contado)) {
   if (esperado[regra] === undefined) {
     falhou++;
-    console.log(`  FALHA  ${regra.padEnd(20)} apareceu e não é esperado (${contado[regra]}x)`);
+    console.log(`  FAIL  ${regra.padEnd(20)} showed up and is not expected (${contado[regra]}x)`);
   }
 }
-for (const a of achados) console.log(`         ${a.regra}: ${a.el} — ${a.detalhe}`);
-console.log(falhou ? `\ncorta-self-test: ${falhou} regra(s) fora do esperado.` : '\ncorta-self-test: as 3 geometrias batem com o fixture.');
+for (const a of achados) console.log(`         ${a.regra}: ${a.el}: ${a.detalhe}`);
+console.log(falhou ? `\ncorta-self-test: ${falhou} rule(s) off the expected count.` : '\ncorta-self-test: all 3 geometries match the fixture.');
 process.exit(falhou ? 1 : 0);

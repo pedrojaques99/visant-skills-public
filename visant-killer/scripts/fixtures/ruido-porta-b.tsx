@@ -1,11 +1,11 @@
 /**
- * A SEGUNDA PONTA da R9 (`porta-repetida`), que só existe fora do primeiro
- * arquivo — é o ponto da regra: o defeito não cabe num arquivo, e por isso
- * passou por sete detectores.
+ * The SECOND END of R9 (`porta-repetida`), which only exists outside the first
+ * file: that is the point of the rule. The defect does not fit in one file, and
+ * that is why it got past seven detectors.
  *
- * Este arquivo é de propósito o menor possível. Tudo que entra aqui entra no
- * self-test das outras regras também, e fixture que cresce sem motivo faz o
- * número esperado de todas elas mudar junto.
+ * This file is as small as possible on purpose. Everything here also goes into
+ * the self-test of the other rules, and a fixture that grows for no reason makes
+ * the expected count of all of them change together.
  */
 export function PortaDaCaixa() {
   return <input type="text" placeholder="endereço da faixa" />;

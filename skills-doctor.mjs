@@ -1,27 +1,28 @@
 #!/usr/bin/env node
 /**
- * skills-doctor — portão executável do frontmatter das skills.
+ * skills-doctor: executable gate for skill frontmatter.
  *
- * Existe por uma falha real: a `visant-killer` tem "nível vale do silício" na
- * lista de gatilhos, o pedido começou com exatamente essa frase, e ela não
- * disparou. Investigando, duas skills tinham YAML QUEBRADO (`Triggers: "x"` e
- * `no pedido: gráfico` dentro de escalar sem aspas — o `: ` fecha a chave e o
- * parser morre), e o resto tinha descrição de 800-1300 caracteres competindo
- * com outras 90 skills.
+ * It exists because of a real failure: `visant-killer` had "nível vale do
+ * silício" in its trigger list, the request started with exactly that phrase,
+ * and it did not fire. On inspection, two skills had BROKEN YAML (`Triggers: "x"`
+ * and `no pedido: gráfico` inside an unquoted scalar; the `: ` closes the key
+ * and the parser dies), and the rest had 800-1300 character descriptions
+ * competing with 90 other skills.
  *
- * A lição: descrição de skill é código. Se não passa num parser, a skill não
- * existe — e ninguém percebe, porque a falha é silenciosa. Isto é o parser.
+ * The lesson: a skill description is code. If it does not pass a parser, the
+ * skill does not exist, and nobody notices because the failure is silent.
+ * This is the parser.
  *
- *   node skills-doctor.mjs                # audita o repo inteiro
- *   node skills-doctor.mjs visant-motion  # audita skills específicas
- *   node skills-doctor.mjs --root=../x  # audita outro repo de skills
- *   node skills-doctor.mjs --live         # audita ~/.claude/skills (o que roda de verdade)
- *   node skills-doctor.mjs --fix          # conserta o que é mecânico (aspas, dobra de linha)
+ *   node skills-doctor.mjs                # audit the whole repo
+ *   node skills-doctor.mjs visant-motion  # audit specific skills
+ *   node skills-doctor.mjs --root=../x    # audit another skills repo
+ *   node skills-doctor.mjs --live         # audit ~/.claude/skills (what actually runs)
+ *   node skills-doctor.mjs --fix          # fix what is mechanical (quotes, line folding)
  *   node skills-doctor.mjs --json
- *   node skills-doctor.mjs --self-test    # prova as regras nos dois sentidos
+ *   node skills-doctor.mjs --self-test    # prove the rules both ways
  *
- * Sai 1 se houver ERROR, 0 se só WARN. Um WARN é orçamento; um ERROR é uma
- * skill que não vai ser encontrada.
+ * Exits 1 on any ERROR, 0 if only WARN. A WARN is budget; an ERROR is a skill
+ * that will not be found.
  */
 
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
@@ -33,57 +34,58 @@ import yaml from "js-yaml";
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 /* -------------------------------------------------------------------------- */
-/* Orçamento                                                                  */
+/* Budget                                                                     */
 /* -------------------------------------------------------------------------- */
 
-/* Por que 350/500 e não o teto de 1024 que a plataforma aceita: o teto é o que
-   cabe, não o que funciona. A descrição não é lida isolada — ela concorre com
-   todas as outras no mesmo índice. Descrição longa não aumenta a chance de
-   disparar, dilui: enterra o gatilho literal ("nível vale do silício") no meio
-   de 200 palavras de justificativa que nenhum seletor pontua. O formato que
-   dispara é uma frase de intenção + os gatilhos literais, e isso cabe em 350. */
+/* Why 350/500 and not the 1024 ceiling the platform accepts: the ceiling is
+   what fits, not what works. A description is not read in isolation; it
+   competes with every other one in the same index. A long description does not
+   raise the odds of firing, it dilutes: it buries the literal trigger ("nível
+   vale do silício") in 200 words of justification that no selector scores. The
+   format that fires is one intent sentence + the literal triggers, and that
+   fits in 350. */
 const DESC_WARN = 350;
 const DESC_ERROR = 500;
 
-/* Corpo do SKILL.md: cada linha aqui é contexto gasto TODA vez que a skill
-   carrega. Acima de 250 linhas, mova para `references/` e cite sob demanda. */
+/* SKILL.md body: every line here is context spent EVERY time the skill
+   loads. Above 250 lines, move it to `references/` and cite it on demand. */
 const BODY_WARN = 250;
 
 const KNOWN_KEYS = new Set(["name", "description", "license", "allowed-tools", "metadata", "tags"]);
 
 /* -------------------------------------------------------------------------- */
-/* Regras                                                                     */
+/* Rules                                                                      */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Cada regra recebe o contexto do arquivo e devolve achados. Manter as regras
- * como dados (e não como ifs soltos no fluxo) é o que deixa o --self-test
- * afirmar "toda regra ainda dispara" — uma regra que parou de casar calada é
- * pior que nenhuma regra, porque a auditoria volta verde.
+ * Each rule takes the file context and returns findings. Keeping rules as
+ * data (not as loose ifs in the flow) is what lets --self-test assert "every
+ * rule still fires": a rule that silently stopped matching is worse than no
+ * rule, because the audit comes back green.
  */
 const RULES = [
   {
     id: "no-frontmatter",
     level: "ERROR",
-    check: (c) => (c.raw === null ? ["SKILL.md não abre com bloco `---` de frontmatter"] : []),
+    check: (c) => (c.raw === null ? ["SKILL.md does not open with a `---` frontmatter block"] : []),
   },
   {
     id: "yaml-invalid",
     level: "ERROR",
-    check: (c) => (c.raw !== null && c.parseError ? [`YAML inválido: ${c.parseError}`] : []),
+    check: (c) => (c.raw !== null && c.parseError ? [`invalid YAML: ${c.parseError}`] : []),
   },
   {
     id: "colon-bomb",
     level: "ERROR",
-    /* Pega a bomba MESMO quando o parser da vez tolerou. Foi assim que a
-       visant-refine passou no loader e morreu no js-yaml: parser diferente,
-       tolerância diferente. Escalar sem aspas contendo `: ` é indefinido, e
-       "funciona no meu parser" não é contrato. */
+    /* Catches the bomb EVEN when the current parser tolerated it. That is how
+       visant-refine passed the loader and died in js-yaml: different parser,
+       different tolerance. An unquoted scalar containing `: ` is undefined, and
+       "works in my parser" is not a contract. */
     check: (c) => {
       const out = [];
       for (const { key, text, line } of c.plainScalars) {
         const m = text.match(/\S: |\s: /);
-        if (m) out.push(`\`${key}\` é escalar sem aspas e contém "${m[0].trim() || ": "}" (linha ${line}) — aspe o valor`);
+        if (m) out.push(`\`${key}\` is an unquoted scalar containing "${m[0].trim() || ": "}" (line ${line}); quote the value`);
       }
       return out;
     },
@@ -91,20 +93,20 @@ const RULES = [
   {
     id: "name-missing",
     level: "ERROR",
-    check: (c) => (c.fm && !c.fm.name ? ["frontmatter sem `name`"] : []),
+    check: (c) => (c.fm && !c.fm.name ? ["frontmatter has no `name`"] : []),
   },
   {
     id: "name-mismatch",
     level: "ERROR",
     check: (c) =>
-      c.fm?.name && c.fm.name !== c.dir ? [`\`name: ${c.fm.name}\` ≠ pasta \`${c.dir}\``] : [],
+      c.fm?.name && c.fm.name !== c.dir ? [`\`name: ${c.fm.name}\` ≠ folder \`${c.dir}\``] : [],
   },
   {
     id: "name-shape",
     level: "ERROR",
     check: (c) =>
       c.fm?.name && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(c.fm.name)
-        ? [`\`name\` deve ser kebab-case minúsculo, veio "${c.fm.name}"`]
+        ? [`\`name\` must be lowercase kebab-case, got "${c.fm.name}"`]
         : [],
   },
   {
@@ -112,7 +114,7 @@ const RULES = [
     level: "ERROR",
     check: (c) =>
       c.fm && !String(c.fm.description ?? "").trim()
-        ? ["sem `description` — a skill não pode ser escolhida por relevância, só digitando o nome"]
+        ? ["no `description`: the skill cannot be picked by relevance, only by typing its name"]
         : [],
   },
   {
@@ -120,7 +122,7 @@ const RULES = [
     level: "ERROR",
     check: (c) =>
       c.descLen > DESC_ERROR
-        ? [`description com ${c.descLen} chars (teto ${DESC_ERROR}) — dilui o gatilho, corte para 1 frase + 5-8 gatilhos literais`]
+        ? [`description has ${c.descLen} chars (ceiling ${DESC_ERROR}); it dilutes the trigger, cut to 1 sentence + 5-8 literal triggers`]
         : [],
   },
   {
@@ -128,29 +130,29 @@ const RULES = [
     level: "WARN",
     check: (c) =>
       c.descLen > DESC_WARN && c.descLen <= DESC_ERROR
-        ? [`description com ${c.descLen} chars (alvo ${DESC_WARN})`]
+        ? [`description has ${c.descLen} chars (target ${DESC_WARN})`]
         : [],
   },
   {
     id: "desc-multiline",
     level: "ERROR",
-    /* `|` preserva as quebras: a description vira várias linhas e o índice de
-       skills mostra só a primeira. Todo o resto do gatilho some. `>-` dobra e
-       é seguro, mas ainda assim uma linha só é o formato que nunca surpreende. */
+    /* `|` keeps line breaks: the description becomes several lines and the
+       skills index shows only the first one. The rest of the trigger is lost.
+       `>-` folds and is safe, but a single line is still the format that never
+       surprises. */
     check: (c) =>
       c.desc.includes("\n")
-        ? ["description tem quebra de linha literal (bloco `|`) — o índice trunca na primeira linha; use `>-` ou aspas"]
+        ? ["description has a literal line break (`|` block); the index truncates at the first line, use `>-` or quotes"]
         : [],
   },
   {
     id: "desc-no-triggers",
     level: "WARN",
-    /* Descrição sem NENHUM gatilho entre aspas é descrição que só casa por
-       semântica difusa. Os disparos confiáveis vêm da frase literal que o
-       usuário digita. */
+    /* A description with NO quoted trigger only matches by fuzzy semantics.
+       Reliable firing comes from the literal phrase the user types. */
     check: (c) =>
       c.desc && !/["“'](.{3,60})["”']/.test(c.desc) && !/\/[a-z][a-z0-9-]+/.test(c.desc)
-        ? ["description sem gatilho literal entre aspas nem `/comando` — só casa por semântica difusa"]
+        ? ["description has no quoted literal trigger and no `/command`; it only matches by fuzzy semantics"]
         : [],
   },
   {
@@ -160,7 +162,7 @@ const RULES = [
       c.fm
         ? Object.keys(c.fm)
             .filter((k) => !KNOWN_KEYS.has(k))
-            .map((k) => `chave de frontmatter desconhecida: \`${k}\``)
+            .map((k) => `unknown frontmatter key: \`${k}\``)
         : [],
   },
   {
@@ -168,20 +170,20 @@ const RULES = [
     level: "WARN",
     check: (c) =>
       c.bodyLines > BODY_WARN
-        ? [`corpo com ${c.bodyLines} linhas (alvo ${BODY_WARN}) — mova o excedente para references/`]
+        ? [`body has ${c.bodyLines} lines (target ${BODY_WARN}); move the excess to references/`]
         : [],
   },
 ];
 
 /* -------------------------------------------------------------------------- */
-/* Leitura                                                                    */
+/* Reading                                                                    */
 /* -------------------------------------------------------------------------- */
 
 const FM_RE = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
 
 /**
- * Lista os escalares "planos" (sem aspas, sem bloco) do frontmatter, para a
- * regra colon-bomb poder acusar independente do parser.
+ * Lists the "plain" scalars (unquoted, not block) of the frontmatter, so the
+ * colon-bomb rule can flag them regardless of the parser.
  */
 function plainScalars(raw) {
   const out = [];
@@ -190,7 +192,7 @@ function plainScalars(raw) {
     const m = lines[i].match(/^([A-Za-z0-9_-]+):[ \t]+(.*)$/);
     if (!m) continue;
     const [, key, rest] = m;
-    if (/^["'>|&*!]/.test(rest.trim())) continue; // aspado ou bloco: seguro
+    if (/^["'>|&*!]/.test(rest.trim())) continue; // quoted or block: safe
     if (!rest.trim()) continue;
     out.push({ key, text: rest, line: i + 1 });
   }
@@ -228,33 +230,33 @@ function inspect(skillDir) {
 }
 
 /**
- * Regra ENTRE skills, que nenhuma checagem por arquivo pega: duas skills
- * reivindicando o mesmo gatilho literal.
+ * A rule BETWEEN skills that no per-file check catches: two skills claiming
+ * the same literal trigger.
  *
- * É o defeito que o feedback descreveu como "cinco skills cobrindo qualidade de
- * interface": quando o mesmo território é reivindicado várias vezes, a escolha
- * certa deixa de ser óbvia e o custo de errar sobe. Descrição curta resolve
- * diluição; só isto resolve disputa.
+ * It is the defect feedback described as "five skills covering interface
+ * quality": when the same territory is claimed several times, the right choice
+ * stops being obvious and the cost of a wrong pick goes up. Short descriptions
+ * fix dilution; only this fixes disputes.
  */
 function crossCheck(results) {
-  const donos = new Map();
+  const owners = new Map();
   for (const r of results) {
     if (!r.ctx?.desc) continue;
     for (const m of r.ctx.desc.matchAll(/["“']([^"”']{4,60})["”']/g)) {
       const t = m[1].toLowerCase().trim();
-      if (!donos.has(t)) donos.set(t, []);
-      donos.get(t).push(r.dir);
+      if (!owners.has(t)) owners.set(t, []);
+      owners.get(t).push(r.dir);
     }
   }
   const findings = [];
-  for (const [gatilho, skills] of donos) {
+  for (const [trigger, skills] of owners) {
     const uniq = [...new Set(skills)];
     if (uniq.length > 1) {
       findings.push({
         rule: 'gatilho-duplicado',
         level: 'WARN',
         skill: uniq[0],
-        message: `gatilho "${gatilho}" reivindicado por ${uniq.length} skills: ${uniq.join(', ')} — escolha uma dona`,
+        message: `trigger "${trigger}" claimed by ${uniq.length} skills: ${uniq.join(', ')}; pick one owner`,
       });
     }
   }
@@ -263,7 +265,7 @@ function crossCheck(results) {
 
 function audit(skillDir) {
   const ctx = inspect(skillDir);
-  if (ctx.missing) return { dir: ctx.dir, findings: [], skipped: "sem SKILL.md" };
+  if (ctx.missing) return { dir: ctx.dir, findings: [], skipped: "no SKILL.md" };
   const findings = [];
   for (const rule of RULES) {
     for (const message of rule.check(ctx)) {
@@ -274,14 +276,14 @@ function audit(skillDir) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* --fix: só o que é mecânico e reversível                                    */
+/* --fix: only what is mechanical and reversible                             */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Conserta duas coisas e nada mais: escalar sem aspas que contém `: `, e bloco
- * `|` que vira `>-`. NÃO reescreve descrição longa — encurtar é decisão
- * editorial, e um script que "resume" a descrição da skill acaba apagando
- * justamente o gatilho literal que faz ela disparar.
+ * Fixes two things and nothing else: an unquoted scalar containing `: `, and
+ * a `|` block that becomes `>-`. It does NOT rewrite long descriptions:
+ * shortening is an editorial decision, and a script that "summarizes" a skill
+ * description ends up deleting exactly the literal trigger that makes it fire.
  */
 function fixFile(skillDir) {
   const file = join(skillDir, "SKILL.md");
@@ -293,20 +295,20 @@ function fixFile(skillDir) {
   let raw = m[1];
   const changes = [];
 
-  // `|` (literal, preserva quebras) → `>-` (dobrado, uma linha só no consumo)
+  // `|` (literal, keeps breaks) → `>-` (folded, a single line when consumed)
   raw = raw.replace(/^([A-Za-z0-9_-]+): \|\s*$/gm, (_, key) => {
-    changes.push(`${key}: bloco \`|\` → \`>-\``);
+    changes.push(`${key}: block \`|\` → \`>-\``);
     return `${key}: >-`;
   });
 
-  // escalar plano com `: ` dentro → aspas simples com escape YAML ('' para ')
+  // plain scalar with `: ` inside → single quotes with YAML escaping ('' for ')
   for (const { key, text: val, line } of plainScalars(raw)) {
     if (!/\S: |\s: /.test(val)) continue;
     const quoted = `'${val.replace(/'/g, "''")}'`;
     const lines = raw.split(/\r?\n/);
     lines[line - 1] = `${key}: ${quoted}`;
     raw = lines.join("\n");
-    changes.push(`${key}: escalar aspado (continha ": ")`);
+    changes.push(`${key}: scalar quoted (contained ": ")`);
   }
 
   if (!changes.length) return null;
@@ -319,31 +321,30 @@ function fixFile(skillDir) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * Prova nos dois sentidos, que é o único jeito de um zero valer alguma coisa:
- * (a) toda regra dispara na fixture defeituosa, (b) a fixture limpa devolve
- * zero. Sem (b), um regex que virou `/$^/` passa despercebido para sempre.
+ * Proves both ways, the only way a zero is worth anything: (a) every rule
+ * fires on its broken fixture, (b) the clean fixture returns zero. Without (b),
+ * a regex that turned into `/$^/` goes unnoticed forever.
  */
 const FIXTURES = {
   bad: {
-    "no-frontmatter": "# sem frontmatter nenhum\n",
-    // aspas simples que nunca fecham: erro de stream, não de indentação
-    "yaml-invalid": "---\nname: yaml-invalid\ndescription: 'abre a aspa e nunca fecha, tipo \"abre\"\n---\n",
-    "colon-bomb": "---\nname: colon-bomb\ndescription: Faz coisa. Triggers: \"abre\", \"fecha\", /colon-bomb\n---\n",
-    "name-missing": "---\ndescription: 'Faz coisa. Gatilhos: \"abre\".'\n---\n",
-    "name-mismatch": "---\nname: outro-nome\ndescription: 'Faz coisa, tipo \"abre a porta\".'\n---\n",
-    "name-shape": "---\nname: Name_Shape\ndescription: 'Faz coisa, tipo \"abre a porta\".'\n---\n",
+    "no-frontmatter": "# no frontmatter at all\n",
+    // single quote that never closes: a stream error, not an indentation one
+    "yaml-invalid": "---\nname: yaml-invalid\ndescription: 'opens the quote and never closes it, like \"open\"\n---\n",
+    "colon-bomb": "---\nname: colon-bomb\ndescription: Does a thing. Triggers: \"open\", \"close\", /colon-bomb\n---\n",
+    "name-missing": "---\ndescription: 'Does a thing. Triggers: \"open\".'\n---\n",
+    "name-mismatch": "---\nname: outro-nome\ndescription: 'Does a thing, like \"open the door\".'\n---\n",
+    "name-shape": "---\nname: Name_Shape\ndescription: 'Does a thing, like \"open the door\".'\n---\n",
     "desc-missing": "---\nname: desc-missing\ndescription: ''\n---\n",
-    "desc-too-long": `---\nname: desc-too-long\ndescription: '${"palavra ".repeat(70)}\"abre\"'\n---\n`,
-    "desc-long": `---\nname: desc-long\ndescription: '${"palavra ".repeat(46)}\"abre\"'\n---\n`,
-    "desc-multiline": "---\nname: desc-multiline\ndescription: |\n  Primeira linha, tipo \"abre\".\n  Segunda linha some do índice.\n---\n",
-    "desc-no-triggers": "---\nname: desc-no-triggers\ndescription: Faz uma coisa vaga e difusa sem nenhum gatilho literal.\n---\n",
-    "unknown-key": "---\nname: unknown-key\ndescription: 'Faz coisa, tipo \"abre\".'\ninventada: sim\n---\n",
-    "body-long": `---\nname: body-long\ndescription: 'Faz coisa, tipo \"abre\".'\n---\n${"linha\n".repeat(BODY_WARN + 10)}`,
+    "desc-too-long": `---\nname: desc-too-long\ndescription: '${"keyword ".repeat(70)}\"open\"'\n---\n`,
+    "desc-long": `---\nname: desc-long\ndescription: '${"keyword ".repeat(46)}\"open\"'\n---\n`,
+    "desc-multiline": "---\nname: desc-multiline\ndescription: |\n  First line, like \"open\".\n  Second line disappears from the index.\n---\n",
+    "desc-no-triggers": "---\nname: desc-no-triggers\ndescription: Does a vague, fuzzy thing with no literal trigger at all.\n---\n",
+    "unknown-key": "---\nname: unknown-key\ndescription: 'Does a thing, like \"open\".'\ninvented: yes\n---\n",
+    "body-long": `---\nname: body-long\ndescription: 'Does a thing, like \"open\".'\n---\n${"line\n".repeat(BODY_WARN + 10)}`,
   },
-  /* A fixture limpa é o lado que quase todo mundo esquece. Ela precisa passar
-     por TODAS as regras em silêncio, senão o zero de uma auditoria de verdade
-     também é ruído. */
-  good: "---\nname: good\ndescription: >-\n  Faz uma coisa específica e verificável. Use quando o pedido citar \"abre a\n  porta\", \"fecha a porta\", \"tranca\", ou /good.\n---\n\n# Good\n\nCorpo curto.\n",
+  /* The clean fixture is the side almost everyone forgets. It has to pass
+     EVERY rule silently, otherwise the zero of a real audit is noise too. */
+  good: "---\nname: good\ndescription: >-\n  Does one specific, verifiable thing. Use when the request mentions \"open the\n  door\", \"close the door\", \"lock it\", or /good.\n---\n\n# Good\n\nShort body.\n",
 };
 
 function selfTest() {
@@ -359,7 +360,7 @@ function selfTest() {
     for (const f of findings) fired.add(f.rule);
     if (!findings.some((f) => f.rule === ruleId)) {
       problems.push(
-        `regra \`${ruleId}\` NÃO disparou na fixture feita pra ela (disparou: ${findings.map((f) => f.rule).join(", ") || "nada"})`,
+        `rule \`${ruleId}\` did NOT fire on its own fixture (fired: ${findings.map((f) => f.rule).join(", ") || "nothing"})`,
       );
     }
   }
@@ -369,38 +370,38 @@ function selfTest() {
   writeFileSync(join(goodDir, "SKILL.md"), FIXTURES.good, "utf8");
   const clean = audit(goodDir).findings;
   if (clean.length) {
-    problems.push(`falso positivo na fixture limpa: ${clean.map((f) => `${f.rule} — ${f.message}`).join(" | ")}`);
+    problems.push(`false positive on the clean fixture: ${clean.map((f) => `${f.rule}: ${f.message}`).join(" | ")}`);
   }
 
   const silent = RULES.filter((r) => !fired.has(r.id)).map((r) => r.id);
-  if (silent.length) problems.push(`regra(s) que nunca dispararam: ${silent.join(", ")}`);
+  if (silent.length) problems.push(`rule(s) that never fired: ${silent.join(", ")}`);
 
-  /* crossCheck não mora em RULES (é regra ENTRE skills), então precisa da
-     própria prova — nos dois sentidos, como todas as outras. */
+  /* crossCheck does not live in RULES (it is a rule BETWEEN skills), so it
+     needs its own proof, both ways, like all the others. */
   const mk = (name, desc) => ({ dir: name, ctx: { desc } });
-  const disputa = crossCheck([
-    mk("a", 'Faz coisa. Use em "audita essa tela".'),
-    mk("b", 'Faz outra. Use em "audita essa tela".'),
+  const dispute = crossCheck([
+    mk("a", 'Does a thing. Use on "audit this screen".'),
+    mk("b", 'Does another. Use on "audit this screen".'),
   ]);
-  if (!disputa.some((f) => f.rule === "gatilho-duplicado")) {
-    problems.push("gatilho-duplicado não disparou com duas skills no mesmo gatilho");
+  if (!dispute.some((f) => f.rule === "gatilho-duplicado")) {
+    problems.push("gatilho-duplicado did not fire with two skills on the same trigger");
   }
-  const semDisputa = crossCheck([
-    mk("a", 'Faz coisa. Use em "audita essa tela".'),
-    mk("b", 'Faz outra. Use em "gera o criativo".'),
+  const noDispute = crossCheck([
+    mk("a", 'Does a thing. Use on "audit this screen".'),
+    mk("b", 'Does another. Use on "generate the creative".'),
   ]);
-  if (semDisputa.length) {
-    problems.push(`gatilho-duplicado deu falso positivo em gatilhos distintos: ${JSON.stringify(semDisputa)}`);
+  if (noDispute.length) {
+    problems.push(`gatilho-duplicado gave a false positive on distinct triggers: ${JSON.stringify(noDispute)}`);
   }
 
   if (problems.length) {
-    console.error("skills-doctor --self-test FALHOU");
+    console.error("skills-doctor --self-test FAILED");
     for (const p of problems) console.error(`  - ${p}`);
     process.exit(1);
   }
   console.log(
-    `skills-doctor --self-test ok — ${RULES.length}/${RULES.length} regras disparam, ` +
-      `fixture limpa devolve zero.`,
+    `skills-doctor --self-test ok: ${RULES.length}/${RULES.length} rules fire, ` +
+      `clean fixture returns zero.`,
   );
   process.exit(0);
 }
@@ -417,7 +418,7 @@ const doFix = argv.includes("--fix");
 const live = argv.includes("--live");
 const names = argv.filter((a) => !a.startsWith("--"));
 
-// --root=<pasta>: outro repo de skills (o privado usa este doctor em vez de manter cópia).
+// --root=<folder>: another skills repo (the private one uses this doctor instead of keeping a copy).
 const rootArg = argv.find((a) => a.startsWith("--root="))?.slice(7);
 const ROOT = live ? join(homedir(), ".claude", "skills") : rootArg ? resolve(rootArg) : HERE;
 
@@ -446,7 +447,7 @@ if (doFix) {
       for (const c of changes) console.log(`    ${c}`);
     }
   }
-  console.log(n ? `skills-doctor --fix: ${n} skill(s) consertada(s).` : "skills-doctor --fix: nada mecânico a consertar.");
+  console.log(n ? `skills-doctor --fix: ${n} skill(s) fixed.` : "skills-doctor --fix: nothing mechanical to fix.");
 }
 
 const results = skillDirs.map(audit);
@@ -474,9 +475,9 @@ for (const [skill, fs_] of bySkill) {
 
 const clean = results.length - bySkill.size;
 console.log(
-  `\nskills-doctor: ${results.length} skill(s) — ${clean} limpa(s), ${errors.length} ERROR, ${warns.length} WARN`,
+  `\nskills-doctor: ${results.length} skill(s), ${clean} clean, ${errors.length} ERROR, ${warns.length} WARN`,
 );
 if (errors.length) {
-  console.log("ERROR = a skill não vai ser encontrada. Conserte antes de confiar em qualquer auditoria.");
+  console.log("ERROR = the skill will not be found. Fix it before trusting any audit.");
 }
 process.exit(errors.length ? 1 : 0);

@@ -1,21 +1,21 @@
 /**
- * grafo — quem importa quem, numa passada só, sem dependência.
+ * grafo: who imports whom, in a single pass, with no dependencies.
  *
- * Existe porque duas perguntas do visant-killer não cabem num arquivo:
+ * It exists because two visant-killer questions do not fit in one file:
  *
- *   1. `killer-scan --roots`: um achado num componente de `ui/` importado por 40
- *      telas vale 40 achados. Sem o fan-out, a lista do portão manda consertar
- *      a página que a pessoa abriu primeiro, e o defeito volta na próxima tela
- *      que usa a mesma peça.
- *   2. `ruido-scan` / `porta-repetida`: "duas portas na mesma tela" só é defeito
- *      se as duas aparecem JUNTAS. A rodada 1 do slop killer (2026-10-05) deu 25
- *      achados dessa regra e quase todos eram telas diferentes ou ramos
- *      exclusivos. A mesma tela é, estaticamente, um ancestral comum próximo na
- *      árvore de imports — e isso só se vê com o grafo.
+ *   1. `killer-scan --roots`: a finding in a `ui/` component imported by 40
+ *      screens is worth 40 findings. Without the fan-out, the gate list says to
+ *      fix the page the person opened first, and the defect comes back on the
+ *      next screen that uses the same piece.
+ *   2. `ruido-scan` / `porta-repetida`: "two doors on the same screen" is only a
+ *      defect if both appear TOGETHER. Round 1 of the slop killer (2026-10-05)
+ *      gave 25 findings for this rule and almost all were different screens or
+ *      exclusive branches. The same screen is, statically, a close common
+ *      ancestor in the import tree, and that is only visible with the graph.
  *
- * O que ele NÃO é: um bundler. Resolve import relativo, alias do tsconfig
- * (`paths`) e o `@/` de Vite como fallback. O que não resolve fica fora do
- * grafo, e fora do grafo quer dizer "não sei", nunca "não importa".
+ * What it is NOT: a bundler. It resolves relative imports, tsconfig aliases
+ * (`paths`) and Vite's `@/` as a fallback. What it cannot resolve stays out of
+ * the graph, and out of the graph means "I don't know", never "doesn't matter".
  */
 
 import fs from 'node:fs';
@@ -31,7 +31,7 @@ const TENTATIVAS = ['', '.tsx', '.ts', '.jsx', '.js', '.mjs', '/index.tsx', '/in
 
 export const normP = (p) => path.resolve(p).split(path.sep).join('/');
 
-/** Sobe do arquivo até achar `package.json`. Sem achar, a pasta do próprio arquivo. */
+/** Walks up from the file until it finds `package.json`. If none is found, returns null. */
 export function raizDoProjeto(arquivo) {
   let d = path.dirname(path.resolve(arquivo));
   for (;;) {
@@ -56,7 +56,7 @@ function walk(p, out) {
   return out;
 }
 
-/** `paths` do tsconfig, lido como JSON com comentário e vírgula sobrando. */
+/** tsconfig `paths`, read as JSON with comments and trailing commas. */
 function aliases(raiz) {
   const out = [];
   for (const nome of ['tsconfig.json', 'tsconfig.app.json', 'jsconfig.json']) {
@@ -73,11 +73,11 @@ function aliases(raiz) {
         if (!Array.isArray(v) || !v.length) continue;
         out.push({ prefixo: k.replace(/\*$/, ''), curinga: k.endsWith('*'), alvo: path.resolve(base, v[0].replace(/\*$/, '')) });
       }
-    } catch { /* tsconfig ilegível: segue com o fallback */ }
+    } catch { /* unreadable tsconfig: continue with the fallback */ }
   }
-  /* `@/` → `src/` é a convenção de Vite e Next; vale como último recurso. */
+  /* `@/` -> `src/` is the Vite and Next convention; it applies as a last resort. */
   if (!out.some((a) => a.prefixo === '@/')) out.push({ prefixo: '@/', curinga: true, alvo: path.join(raiz, 'src') });
-  /* O mais específico primeiro, igual ao Vite. */
+  /* Most specific first, same as Vite. */
   return out.sort((a, b) => b.prefixo.length - a.prefixo.length);
 }
 
@@ -98,36 +98,36 @@ function resolver(spec, deArquivo, als) {
   let achou = null;
   for (const t of TENTATIVAS) {
     const f = base + t;
-    try { if (fs.statSync(f).isFile()) { achou = normP(f); break; } } catch { /* tenta a próxima */ }
+    try { if (fs.statSync(f).isFile()) { achou = normP(f); break; } } catch { /* try the next one */ }
   }
   resolvidos.set(k, achou);
   return achou;
 }
-/* Cache de resolução: o mesmo `@/components/ui/button` aparece em 246 arquivos,
-   e cada tentativa é um stat no disco (lento em drive de rede). */
+/* Resolution cache: the same `@/components/ui/button` shows up in 246 files,
+   and each attempt is a disk stat (slow on a network drive). */
 const resolvidos = new Map();
 
-/** Comentário vira espaço do mesmo tamanho: import comentado não é import. */
+/** A comment becomes whitespace of the same length: a commented-out import is not an import. */
 /*
- * UMA passada, da esquerda pra direita — e não duas.
+ * ONE pass, left to right, not two.
  *
- * A versão em duas passadas (bloco primeiro, linha depois) quebrou na primeira
- * leitura do navConfig real: o comentário de linha `// /community e
- * /community/* NÃO são marketing` tem um `/*` dentro, a passada de bloco o
- * tomou por abertura e apagou tudo até o próximo `*\/`, cinquenta linhas abaixo
- * — com a lista de rotas de login junto. Numa regex só com alternância, quem
- * começa primeiro ganha, que é como o próprio parser do JS decide.
+ * The two-pass version (block first, then line) broke on the first read of the
+ * real navConfig: the line comment `// /community and
+ * /community/* are NOT marketing` has a `/*` inside, the block pass took it for
+ * an opener and erased everything up to the next `*\/`, fifty lines below,
+ * along with the list of login routes. In a single regex with alternation,
+ * whoever starts first wins, which is how the JS parser itself decides.
  *
- * O `//` depois de `:` fica (é `http://`, não comentário). A posição de cada
- * caractere é preservada: comentário vira espaço do mesmo tamanho, e
- * `arquivo:linha` continua certo.
+ * A `//` after `:` stays (it is `http://`, not a comment). Each character's
+ * position is preserved: a comment becomes whitespace of the same length, and
+ * `file:line` stays correct.
  */
 export const semComentario = (src) =>
   src.replace(/\/\*[\s\S]*?\*\/|(^|[^:\\])(\/\/[^\n]*)/gm, (m, p1, linha) =>
     linha !== undefined ? p1 + linha.replace(/[^\n]/g, ' ') : m.replace(/[^\n]/g, ' '),
   );
 
-/** Nomes locais que um import cria — é com eles que a tela renderiza `<Nome`. */
+/** Local names an import creates; they are what the screen renders as `<Name`. */
 function nomesDoImport(clausula) {
   const nomes = [];
   const c = clausula.replace(/\btype\s+/g, '');
@@ -145,7 +145,7 @@ function nomesDoImport(clausula) {
   return nomes;
 }
 
-/** Quantas vezes cada identificador aparece no arquivo — uma passada só. */
+/** How many times each identifier appears in the file, in a single pass. */
 const contagem = (s) => {
   const c = new Map();
   for (const m of s.matchAll(/[A-Za-z_$][\w$]*/g)) c.set(m[0], (c.get(m[0]) ?? 0) + 1);
@@ -155,34 +155,34 @@ const contagem = (s) => {
 const cache = new Map();
 
 /**
- * Monta o grafo do projeto que contém `arquivos[0]`.
+ * Builds the graph of the project that contains `arquivos[0]`.
  *
- * Os nós são TODO arquivo de código sob `src/` (ou `app/`, `pages/`,
- * `components/`, `lib/` quando não há `src`), não só o alvo da varredura:
- * fan-out medido dentro de um recorte mente pra baixo, e um ancestral comum
- * fora do recorte continua sendo a mesma tela. Os arquivos do alvo entram
- * também, para o caso de estarem fora dessas pastas (os fixtures do self-test).
+ * The nodes are EVERY code file under `src/` (or `app/`, `pages/`,
+ * `components/`, `lib/` when there is no `src`), not just the scan target:
+ * fan-out measured inside a slice under-reports, and a common ancestor outside
+ * the slice is still the same screen. The target files are added too, in case
+ * they live outside those folders (the self-test fixtures).
  *
- * Retorna:
- *   deps:      arquivo -> [{ para, lazy, nomes, usado }]
- *   importers: arquivo -> Set(arquivo)   (estático e lazy)
- *   lazyCount: arquivo -> nº de import() dinâmicos (roteador tem muitos)
- *   fonte:     arquivo -> código-fonte
+ * Returns:
+ *   deps:      file -> [{ para, lazy, nomes, usado }]
+ *   importers: file -> Set(file)   (static and lazy)
+ *   lazyCount: file -> number of dynamic import() calls (a router has many)
+ *   fonte:     file -> source code
  */
 export function montarGrafo(arquivos) {
   const primeiro = arquivos.find(Boolean);
   const raiz = primeiro ? raizDoProjeto(primeiro) : null;
   /*
-   * Só pasta de app conhecida. Andar a raiz inteira quando não há `src/` foi
-   * descartado na primeira execução: os fixtures moram sob `~/.claude`, que tem
-   * `package.json`, e o grafo saía varrendo plugins e transcrições.
+   * Known app folders only. Walking the whole root when there is no `src/` was
+   * dropped on the first run: the fixtures live under `~/.claude`, which has a
+   * `package.json`, and the graph went off scanning plugins and transcripts.
    */
   const pastas = !raiz
     ? []
     : fs.existsSync(path.join(raiz, 'src'))
       ? ['src']
       : ['app', 'pages', 'components', 'lib'].filter((d) => fs.existsSync(path.join(raiz, d)));
-  /* Sem pasta de app, o grafo é só o que foi passado — e a chave do cache também. */
+  /* Without an app folder, the graph is only what was passed in, and so is the cache key. */
   const chave = `${raiz ?? '-'}|${pastas.length ? '' : [...arquivos].sort().join('|')}`;
   if (cache.has(chave)) return cache.get(chave);
 
@@ -207,20 +207,20 @@ export function montarGrafo(arquivos) {
       if (!para) continue;
       const nomes = m[1] ? nomesDoImport(m[1]) : [];
       /*
-       * `usado`: o nome aparece fora do próprio import. Import morto não põe
-       * ninguém na tela — caso real da rodada 1: BudgetMachinePage importava um
-       * painel que nunca renderizava, e o grafo dizia que as portas dele
-       * conviviam com as do formulário.
+       * `usado` (used): the name appears outside its own import. A dead import
+       * puts nobody on screen. Real case from round 1: BudgetMachinePage
+       * imported a panel that never rendered, and the graph said its doors
+       * lived alongside the form's.
        */
-      /* conta FORA das linhas de import: o caminho `'./BrandCustomizationPanel'`
-         repete o nome e fazia todo import morto parecer usado */
+      /* count OUTSIDE the import lines: the path `'./BrandCustomizationPanel'`
+         repeats the name and made every dead import look used */
       ids ??= contagem(s.replace(IMPORT_ESTATICO, ' '));
       const usado = nomes.some((n) => (ids.get(n) ?? 0) >= 1);
       lista.push({ para, lazy: false, nomes, usado });
     }
     /*
-     * Import dinâmico. O nome local vem da atribuição (`const X = lazy(() =>
-     * import('./X'))`), e é ele que aparece na rota como `<X />`.
+     * Dynamic import. The local name comes from the assignment (`const X =
+     * lazy(() => import('./X'))`), and that is what appears in the route as `<X />`.
      */
     let nLazy = 0;
     for (const m of s.matchAll(/(?:const\s+([A-Za-z_$][\w$]*)\s*=\s*[^;]{0,80}?)?\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)) {
@@ -241,13 +241,14 @@ export function montarGrafo(arquivos) {
   return g;
 }
 
-/** Quantos arquivos importam `arquivo` (estático ou lazy). */
+/** How many files import `arquivo` (static or lazy). */
 export const fanOut = (g, arquivo) => g.importers.get(normP(arquivo))?.size ?? 0;
 
 /**
- * Arquivo que não serve de "mesma tela": o roteador (cinco ou mais `import()`
- * dinâmicos — cada um é uma rota) e o barril (`index.ts` que só reexporta).
- * Passar por eles como ancestral comum juntaria o app inteiro numa tela só.
+ * Files that do not count as "the same screen": the router (five or more
+ * dynamic `import()` calls, each one a route) and the barrel (an `index.ts`
+ * that only re-exports). Going through them as a common ancestor would merge
+ * the whole app into one screen.
  */
 export function ehHub(g, f) {
   if ((g.lazyCount.get(f) ?? 0) >= 5) return true;
@@ -260,10 +261,10 @@ export function ehHub(g, f) {
 }
 
 /**
- * Ancestrais de `f` até `prof` níveis, com o filho por onde se chegou.
- * Mapa: ancestral -> filho imediato desse ancestral no caminho até `f`
- * (o próprio `f` mapeia pra si). Só aresta estática E usada conta: rota
- * separada por `import()` é tela separada, e import morto não renderiza nada.
+ * Ancestors of `f` up to `prof` levels, with the child they were reached through.
+ * Map: ancestor -> that ancestor's immediate child on the path to `f`
+ * (`f` itself maps to itself). Only a static AND used edge counts: a route
+ * split by `import()` is a separate screen, and a dead import renders nothing.
  */
 export function ancestrais(g, f, prof = 2) {
   const out = new Map([[f, f]]);
@@ -284,6 +285,6 @@ export function ancestrais(g, f, prof = 2) {
   return out;
 }
 
-/** Os nomes com que `pai` importa `filho` — é por eles que o JSX o chama. */
+/** The names `pai` imports `filho` under; the JSX calls it by them. */
 export const nomesEm = (g, pai, filho) =>
   (g.deps.get(pai) ?? []).filter((d) => d.para === filho).flatMap((d) => d.nomes);

@@ -1,25 +1,25 @@
 #!/usr/bin/env node
-/* killer-scan — o portão do visant-killer num comando.
+/* killer-scan: the visant-killer gate in one command.
  *
  *   node killer-scan.mjs components/admin/finance/MeiTaxCard.tsx
  *   node killer-scan.mjs components/admin/finance app/admin/fiscal
- *   node killer-scan.mjs --quiet <paths>      só o placar e o exit code
+ *   node killer-scan.mjs --quiet <paths>      only the scoreboard and the exit code
  *
- * Roda os três detectores NO ALVO (nunca no repo inteiro, senão a dívida antiga
- * afoga o achado novo) e imprime um placar só:
+ * Runs the three detectors ON THE TARGET (never on the whole repo, or the old
+ * debt drowns the new finding) and prints a single scoreboard:
  *
- *   1. npx impeccable detect        tells de IA genérica
- *   2. npm run audit:design         token e cor crua (repo without a token gate:
+ *   1. npx impeccable detect        generic AI tells
+ *   2. npm run audit:design         tokens and raw color (repo without a token gate:
  *                                   built-in fallback, raw hex/rgb/hsl + Tailwind palette)
- *   3. copy-lint do visant-copy     vício de linguagem
+ *   3. visant-copy's copy-lint      language tics
  *
- * O pulo do gato está no 3: rodar copy-lint direto num .tsx enche a tela de
- * falso positivo, porque o menos da subtração casa com "hífen como travessão" e
- * todo comentário em português casa com travessão. Aqui as strings que chegam no
- * olho do usuário são extraídas primeiro (texto de JSX e prop de rótulo), viram
- * um JSON com a chave "arquivo:linha", e o copy-lint roda em cima disso.
+ * The trick is in 3: running copy-lint straight on a .tsx floods the screen with
+ * false positives, because the subtraction minus matches "hyphen as dash" and
+ * every code comment matches the dash rule. Here the strings that reach the
+ * user's eye are extracted first (JSX text and label props), become a JSON keyed
+ * by "file:line", and copy-lint runs on that.
  *
- * Exit 1 se qualquer portão falhar. Sem dependência: node puro.
+ * Exit 1 if any gate fails. No dependencies: plain node.
  */
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -45,10 +45,10 @@ const targets = args
 const roots = args.includes('--roots');
 
 if (!targets.length && !selfTest) {
-  console.error('uso: node killer-scan.mjs [--quiet] --report AUDIT.md <arquivos-ou-pastas>');
-  console.error('     node killer-scan.mjs --init-report AUDIT.md <alvo>   (gera o esqueleto, uma linha por ROTA)');
-  console.error('     node killer-scan.mjs --roots <alvo>                  (raiz primeiro: peça compartilhada × fan-out)');
-  console.error('     node killer-scan.mjs --self-test                     (checa o extrator de copy, o leitor de rotas e o fallback de token)');
+  console.error('usage: node killer-scan.mjs [--quiet] --report AUDIT.md <files-or-folders>');
+  console.error('       node killer-scan.mjs --init-report AUDIT.md <target>   (writes the skeleton, one row per ROUTE)');
+  console.error('       node killer-scan.mjs --roots <target>                  (root first: shared piece x fan-out)');
+  console.error('       node killer-scan.mjs --self-test                       (checks the copy extractor, the route reader and the token fallback)');
   process.exit(2);
 }
 
@@ -72,17 +72,17 @@ const npm = isWin ? 'npm.cmd' : 'npm';
 const stripAnsi = (s) => s.replace(/\[[0-9;]*m/g, '');
 const norm = (p) => p.split(sep).join('/');
 
-/* ---------- alvo: expande pasta em lista de arquivo ---------- */
+/* ---------- target: expands a folder into a file list ---------- */
 
 const EXT = /\.(tsx|jsx|ts|js|css)$/;
-/* `__tests__` entra aqui porque o extrator de copy lia o nome do `describe` e
-   do `it` como se fosse texto de interface: "MockupRenderButton — portão de
-   acesso" virava achado de travessão num lugar que nenhum usuário lê. Nome de
-   teste é documentação de código, e código não segue a regra de voz. */
+/* `__tests__` is here because the copy extractor read `describe` and `it`
+   names as if they were interface text: a test title with a dash became a
+   dash finding in a place no user ever reads. Test names are code
+   documentation, and code does not follow the voice rule. */
 const SKIP_DIR = /^(node_modules|\.next|\.git|dist|build|coverage|__tests__|__mocks__)$/;
-/* O mesmo motivo vale pro teste colocado ao lado do componente (`PianoRoll.test.tsx`):
-   na /final (2026-10-09) os nomes de `it('⇧↑ sobe a oitava; …')` deram 10 achados de
-   seta e ponto-e-vírgula, todos falsos — o pulo por PASTA não via arquivo `.test.`. */
+/* Same reason for a test placed next to the component (`PianoRoll.test.tsx`):
+   on /final (2026-10-09) the `it(...)` names gave 10 arrow and semicolon
+   findings, all false; skipping by FOLDER did not see `.test.` files. */
 const TESTE = /\.(test|spec)\.[cm]?[jt]sx?$/;
 
 function walk(p, out = []) {
@@ -93,17 +93,17 @@ function walk(p, out = []) {
       walk(join(p, name), out);
     }
   } else if (EXT.test(p) && !TESTE.test(p)) {
-    /* Absoluto sempre. Guardar `relative(ROOT, p)` funcionava enquanto o alvo
-       estava debaixo do cwd e quebrava calado quando não estava: entre drives
-       o relativo não resolve de volta, e o scan passa a ler arquivo nenhum
-       enquanto continua imprimindo "zero achado". Um zero por não ter olhado é
-       pior que um erro. */
+    /* Always absolute. Storing `relative(ROOT, p)` worked while the target sat
+       under the cwd and broke silently when it did not: across drives the
+       relative path does not resolve back, and the scan reads no file at all
+       while still printing "zero findings". A zero from not looking is worse
+       than an error. */
     out.push(norm(p));
   }
   return out;
 }
 
-/** Só encurta o caminho na impressão, e só quando ele está mesmo sob a base. */
+/** Only shortens the path when printing, and only when it really is under the base. */
 const disp = (p) => {
   const r = relative(ROOT, p);
   return norm(r && !r.startsWith('..') && !isAbsolute(r) ? r : p);
@@ -112,13 +112,13 @@ const disp = (p) => {
 const files = [];
 if (!selfTest) {
   for (const t of targets) {
-    /* `resolve`, não o argumento cru: agente que chama o portão de fora manda
-       caminho absoluto do Windows, e o script precisa tratar isso como o caso
-       normal, não como a exceção. */
+    /* `resolve`, not the raw argument: an agent calling the gate from outside
+       passes an absolute Windows path, and the script must treat that as the
+       normal case, not the exception. */
     const a = resolve(t);
     if (!existsSync(a)) {
-      console.error(`alvo não existe: ${t}`);
-      console.error(`  (resolvido para ${a})`);
+      console.error(`target does not exist: ${t}`);
+      console.error(`  (resolved to ${a})`);
       process.exit(2);
     }
     walk(a, files);
@@ -126,17 +126,17 @@ if (!selfTest) {
 }
 const uiFiles = files.filter((f) => /\.(tsx|jsx)$/.test(f));
 
-/* Copy também mora em `.ts`, e essa era a maior cegueira do portão.
+/* Copy also lives in `.ts`, and that was the gate's biggest blind spot.
  *
- * O extrator só olhava `.tsx`/`.jsx`, então frase escrita numa lib e RENDERIZADA pela
- * tela nunca era varrida. Caso real (mockup-store, 2026-08-05): `art-classify.ts`
- * devolvia `reason: "proporção casa com a superfície — preenche sem cortar"`, com
- * travessão, e o painel de render passava essa string direto pro olho do usuário. O
- * portão dizia "copy zero" com um vício de linguagem na tela.
+ * The extractor only looked at `.tsx`/`.jsx`, so a sentence written in a lib and
+ * RENDERED by the screen was never scanned. Real case (mockup-store, 2026-08-05):
+ * `art-classify.ts` returned a `reason:` string with a dash, and the render panel
+ * passed it straight to the user's eye. The gate said "copy zero" with a
+ * language tic on screen.
  *
- * Varrer `.ts` inteiro seria ruído (mensagem de log, chave de erro, texto de CLI). A
- * regra é o CONTRATO: string literal atribuída a uma propriedade que existe para virar
- * texto de interface. Fora dessa lista, `.ts` continua fora do portão. */
+ * Scanning all of `.ts` would be noise (log messages, error keys, CLI text). The
+ * rule is the CONTRACT: a string literal assigned to a property that exists to
+ * become interface text. Outside this list, `.ts` stays out of the gate. */
 const COPY_BEARING_PROP =
   /\b(label|title|placeholder|description|heading|subtitle|tooltip|hint|reason|message|helperText|errorMessage|emptyMessage|cta|caption)\s*:\s*(["'`])((?:[^"'`\\]|\\.)*)\2/g;
 const libFiles = files.filter((f) => /\.ts$/.test(f) && !/\.d\.ts$/.test(f));
@@ -147,13 +147,13 @@ function runImpeccable() {
   const r = spawnSync(npx, ['impeccable', 'detect', ...targets], {
     cwd: ROOT, encoding: 'utf8', shell: isWin,
   });
-  if (r.error || r.status === null) return { skipped: 'impeccable não rodou', findings: [] };
+  if (r.error || r.status === null) return { skipped: 'impeccable did not run', findings: [] };
   const out = stripAnsi(`${r.stdout || ''}${r.stderr || ''}`);
   if (/unknown command|not found|command not found/i.test(out)) {
-    return { skipped: 'impeccable não instalado', findings: [] };
+    return { skipped: 'impeccable not installed', findings: [] };
   }
-  // Cada achado sai como "path:line" ou como bloco por arquivo; o que importa
-  // pro portão é a contagem de erro, então qualquer linha de achado conta.
+  // Each finding comes out as "path:line" or as a per-file block; what matters
+  // for the gate is the error count, so any finding line counts.
   const findings = out
     .split(/\r?\n/)
     .filter((l) => /\[[A-Z_]{3,}\]|✖|error/i.test(l) && l.trim())
@@ -164,16 +164,17 @@ function runImpeccable() {
 
 /* ---------- 2. audit:design ---------- */
 
-/* Portão de token que mora como ARQUIVO, não como script npm.
+/* Token gate that lives as a FILE, not as an npm script.
  *
- * Formato esperado (o do `scan-design-violations.mjs` do visantlabs-os):
+ * Expected format (that of visantlabs-os's `scan-design-violations.mjs`):
  *
- *   ERR [nome-da-regra] mensagem
- *     caminho/arquivo.tsx:123
- *       <trecho de código>
+ *   ERR [rule-name] message
+ *     path/file.tsx:123
+ *       <code excerpt>
  *
- * Só `ERR` é portão. `WRN` entra no julgamento — a mesma regra do parser de ✖
- * acima, e o motivo é o mesmo: aviso em massa vira ruído e ensina a ignorar.
+ * Only `ERR` gates. `WRN` goes to judgment, the same rule as the ✖ parser
+ * below, for the same reason: mass warnings become noise and teach people to
+ * ignore them.
  */
 function runDesignScannerFile() {
   const CANDIDATES = [
@@ -186,9 +187,9 @@ function runDesignScannerFile() {
     return runTokenFallback('repo has no audit:design/lint:design script nor scripts/scan-design-*.mjs');
   }
 
-  /* `--all`: o scanner imprime só 5 locais por regra por padrão, e o portão
-     contava no máximo 5 por regra — um repo com 40 rgba crus aparecia com 5.
-     Só o scan-design-violations conhece a flag; os outros rodam sem. */
+  /* `--all`: the scanner prints only 5 locations per rule by default, and the
+     gate counted at most 5 per rule: a repo with 40 raw rgba showed 5. Only
+     scan-design-violations knows the flag; the others run without it. */
   const extra = found.endsWith('scan-design-violations.mjs') ? ['--all'] : [];
   const r = spawnSync(process.execPath, [join(ROOT, found), ...extra], {
     cwd: ROOT,
@@ -209,9 +210,10 @@ function runDesignScannerFile() {
     }
     const loc = raw.match(/^\s+(\S+?):(\d+)\s*$/);
     if (!loc || severity !== 'err') continue;
-    /* O scanner varre o repo inteiro e imprime caminho relativo ao cwd; a lista
-       de alvos é absoluta. Resolver os dois pro mesmo formato antes de comparar,
-       senão o filtro nunca casa e o portão devolve zero com o repo cheio. */
+    /* The scanner sweeps the whole repo and prints paths relative to the cwd;
+       the target list is absolute. Resolve both to the same form before
+       comparing, or the filter never matches and the gate returns zero on a
+       full repo. */
     const f = norm(resolve(ROOT, loc[1]));
     if (files.includes(f)) findings.push(`${disp(f)}:${loc[2]}  ${rule}`);
   }
@@ -238,8 +240,9 @@ function runDesignScannerFile() {
  * Left out: token/theme files (`tokens.css`, `theme.css`, `globals.css`,
  * `*-theme.*`, `tailwind.config.*`, a `tokens/` or `theme/` folder), `:root`,
  * `.dark`, `[data-theme]` and `@theme` blocks, comment lines, and any line with
- * a written exception: `EXCEÇÃO ao token-fallback/<rule>: reason` on the same
- * line or up to 8 lines above (same contract as the other scanners).
+ * a written exception: `EXCEPTION to token-fallback/<rule>: reason` (or the
+ * Portuguese `EXCEÇÃO ao token-fallback/<rule>: reason`) on the same line or up
+ * to 8 lines above (same contract as the other scanners).
  */
 const TF_EXT = /\.(tsx|jsx|css)$/;
 const TF_DIR_TEMA = /\/(tokens?|themes?)\//i;
@@ -262,7 +265,7 @@ function arquivoDeTema(f) {
 }
 
 function excecaoTF(lines, i, regra) {
-  const re = new RegExp(`EXCE[ÇC][ÃA]O ao token-fallback/${regra}(?![\\w-])`);
+  const re = new RegExp(`(?:EXCE[ÇC][ÃA]O ao|EXCEPTION to) token-fallback/${regra}(?![\\w-])`);
   for (let k = Math.max(0, i - 8); k <= i; k++) if (re.test(lines[k])) return true;
   return false;
 }
@@ -327,23 +330,23 @@ function runAuditDesign() {
   if (!existsSync(pkgPath)) return runTokenFallback('repo has no package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
-  /* Nem todo repo batiza o portão de token de `audit:design`. O boxy-app chama
-     de `lint:design` e o portão dizia "PULADO" com 218 achados de token em
-     aberto — pulo silencioso que parece aprovação, o mesmo defeito do falso
-     negativo do extrator. Aceita os apelidos conhecidos antes de desistir. */
+  /* Not every repo names its token gate `audit:design`. boxy-app calls it
+     `lint:design` and the gate said "SKIPPED" with 218 open token findings: a
+     silent skip that looks like approval, the same defect as the extractor's
+     false negative. Accept the known aliases before giving up. */
   const ALIASES = ['audit:design', 'lint:design', 'design:lint', 'lint:tokens'];
   const scriptName = ALIASES.find((n) => pkg.scripts?.[n]);
   if (!scriptName) {
-    /* Nem todo repo expõe o portão de token como script npm. O visantlabs-os
-       guarda o dele como ARQUIVO (`scripts/scan-design-violations.mjs`), e o
-       killer imprimia "PULADO" com o scanner ali do lado — pulo silencioso que
-       parece aprovação, o MESMO defeito que o bloco acima já tinha consertado
-       uma vez para os apelidos de npm. Procurar por arquivo antes de desistir. */
+    /* Not every repo exposes its token gate as an npm script. visantlabs-os
+       keeps its own as a FILE (`scripts/scan-design-violations.mjs`), and the
+       killer printed "SKIPPED" with the scanner right there: a silent skip that
+       looks like approval, the SAME defect the block above had already fixed
+       once for npm aliases. Look for the file before giving up. */
     return runDesignScannerFile();
   }
 
-  /* Formato de linter em grep (`arquivo:linha:conteúdo`, seção por `--- x ---`).
-     É o formato do `lint:design`; o `audit:design` cai no parser de ✖ abaixo. */
+  /* grep-style linter format (`file:line:content`, sections as `--- x ---`).
+     This is `lint:design`'s format; `audit:design` falls to the ✖ parser below. */
   if (scriptName !== 'audit:design') {
     const r = spawnSync(npm, ['run', '--silent', scriptName], {
       cwd: ROOT, encoding: 'utf8', shell: isWin,
@@ -356,10 +359,10 @@ function runAuditDesign() {
       if (head) { section = head[1]; continue; }
       const m = raw.match(/^(\S+?):(\d+):/);
       if (!m) continue;
-      /* O linter varre o repo inteiro e imprime caminho RELATIVO ao cwd; a
-         lista de alvos é absoluta. Resolver os dois pro mesmo formato antes de
-         comparar — senão o filtro nunca casa e o portão devolve zero achado de
-         token com o repo cheio deles. */
+      /* The linter sweeps the whole repo and prints paths RELATIVE to the cwd;
+         the target list is absolute. Resolve both to the same form before
+         comparing, or the filter never matches and the gate returns zero token
+         findings on a repo full of them. */
       const f = norm(resolve(ROOT, m[1]));
       if (files.includes(f)) findings.push(`${disp(f)}:${m[2]}  ${section || 'token'}`);
     }
@@ -371,9 +374,9 @@ function runAuditDesign() {
   });
   const out = stripAnsi(`${r.stdout || ''}${r.stderr || ''}`);
 
-  // Formato: cabeçalho "caminho.tsx [zona]" e depois achados indentados
-  // "✖ [RULE] line 12:34". Só erro (✖) é portão; aviso e info entram no
-  // julgamento, não no gate.
+  // Format: header "path.tsx [zone]" then indented findings
+  // "✖ [RULE] line 12:34". Only errors (✖) gate; warnings and info go to
+  // judgment, not the gate.
   const findings = [];
   let current = null;
   for (const raw of out.split(/\r?\n/)) {
@@ -388,143 +391,145 @@ function runAuditDesign() {
   return { skipped: null, findings, via: 'npm run audit:design' };
 }
 
-/* ---------- 3. copy: extrai só o que o usuário lê ---------- */
+/* ---------- 3. copy: extracts only what the user reads ---------- */
 
 const CLASSY = /(^|\s)(flex|grid|block|inline|absolute|relative|fixed|sticky|truncate|shrink|grow|hidden|rounded|shadow|border|outline|ring|animate-|transition|duration-|ease-|origin-|opacity-|z-|overflow|whitespace|tracking-|leading-|font-|italic|uppercase|lowercase|capitalize|tabular-nums|text-|bg-|from-|via-|to-|fill-|stroke-|w-|h-|min-|max-|p[xytblrse]?-|m[xytblrse]?-|gap-|space-|items-|justify-|self-|place-|col-|row-|order-|basis-|divide-|cursor-|select-|pointer-events|sm:|md:|lg:|xl:|hover:|focus|active:|group|peer|data-\[|aria-\[|\[&)/;
 
 const LABEL_PROPS = /\b(label|title|placeholder|alt|description|heading|subtitle|tooltip|emptyMessage|emptyLabel|confirmLabel|cancelLabel|actionLabel|helperText|errorMessage|aria-label)\s*=\s*(["'])((?:[^"'\\]|\\.)*)\2/g;
 
-/* Cheiro de código que escapou da extração. Sem isso, `a > 0 ? b : null;` vira
-   "copy" pelo extrator de texto de JSX e o portão acusa ponto-e-vírgula em
-   cima de uma expressão ternária. */
-/* A crase entrou na lista pelo mesmo motivo dos outros: ela delimita template
-   literal e NUNCA aparece em texto que o usuário lê. Sem ela, o extrator de
-   texto de JSX comia o que vem depois do `>` de um genérico com argumento em
-   template — `querySelector<HTMLMediaElement>(`[src*="id=${id}"]`)` voltava como
-   copy e o portão acusava ponto-e-vírgula em cima de um seletor de DOM. O ramo
-   de "linha solta" já barrava crase; o de texto de JSX não. */
+/* Code smell that escaped extraction. Without this, `a > 0 ? b : null;` becomes
+   "copy" through the JSX text extractor and the gate flags a semicolon on top
+   of a ternary expression. */
+/* The backtick joined the list for the same reason as the others: it delimits a
+   template literal and NEVER appears in text the user reads. Without it, the
+   JSX text extractor ate what follows the `>` of a generic with a template
+   argument: `querySelector<HTMLMediaElement>(`[src*="id=${id}"]`)` came back as
+   copy and the gate flagged a semicolon on a DOM selector. The "loose line"
+   branch already blocked backticks; the JSX text branch did not. */
 const CODEY = /(=>|===|!==|&&|\|\||\?\?|\{|\}|`)|(^|\s)(const|let|var|return|function|import|export|await|async|typeof|null|undefined|true|false|void|Promise|boolean|props|className|Math|Number|String|Intl)(\s|$|\.|\(|;|,|\|)/;
 
-/** Acesso a propriedade (`prev.year`). Frase de verdade tem espaço depois do ponto. */
+/** Property access (`prev.year`). A real sentence has a space after the period. */
 const PROP_ACCESS = /[a-z]\.[a-z]/i;
 
-/* Três cheiros de código que passavam por `looksLikeCopy` e faziam o portão
-   acusar vício de linguagem em cima de sintaxe. Achados no audit das rotas
-   públicas (2026-08-03):
-     - data URI: `data:${tipo};base64,${b64}` virava copy e o `;` do MIME era
-       lido como ponto-e-vírgula de copy de venda;
-     - chamada de função: o extrator de texto de JSX come o que vem depois do
-       `>` de um genérico (`useSWR<T>(chave)`) e entrega a chamada inteira;
-     - membro de união de tipo: o laço de literal captura o texto ENTRE duas
-       strings (`X["type"]; state: Y["`), e o `];` vinha junto.
-   Copy de verdade não tem `;base64`, não cola identificador em parêntese
-   (escreve "algo (assim)", com espaço) e não fecha colchete antes de vírgula. */
+/* Three code smells that slipped through `looksLikeCopy` and made the gate
+   flag language tics on syntax. Found in the public routes audit (2026-08-03):
+     - data URI: `data:${type};base64,${b64}` became copy and the MIME `;` was
+       read as a sales-copy semicolon;
+     - function call: the JSX text extractor eats what follows the `>` of a
+       generic (`useSWR<T>(key)`) and hands over the whole call;
+     - type union member: the literal loop captures the text BETWEEN two
+       strings (`X["type"]; state: Y["`), and the `];` came along.
+   Real copy has no `;base64`, does not glue an identifier to a parenthesis
+   (it writes "something (like this)", with a space) and does not close a
+   bracket before a comma. */
 const DATA_URI = /^data:|;base64/i;
 const CALL_EXPR = /\w\(/;
 const TYPE_SYNTAX = /\]\s*[;,]/;
 
-/* Cauda de chamada, quando o identificador ficou do outro lado do corte.
+/* Call tail, when the identifier ended up on the other side of the cut.
  *
- * `pickList<{ id: string; job: string }>(jobsRaw), [jobsRaw]);` — a máscara de
- * `{expr}` come o argumento de tipo, o `>` do genérico passa a parecer fechamento
- * de tag, e o que sobra DEPOIS dele é `(jobsRaw), [jobsRaw]);`. Começa em
- * parêntese, então `CALL_EXPR` (que pede identificador colado no `(`) não vê nada:
- * o nome da função ficou do lado esquerdo do corte. O portão acusava
- * "ponto-e-vírgula de copy de venda" numa linha de `useMemo`. Falso positivo,
- * achado no audit do kanban do comercial (visant-board, 2026-08-07).
+ * `pickList<{ id: string; job: string }>(jobsRaw), [jobsRaw]);`: the `{expr}`
+ * mask eats the type argument, the generic's `>` starts looking like a tag
+ * close, and what is left AFTER it is `(jobsRaw), [jobsRaw]);`. It starts with a
+ * parenthesis, so `CALL_EXPR` (which needs an identifier glued to the `(`) sees
+ * nothing: the function name stayed on the left side of the cut. The gate
+ * flagged a "sales-copy semicolon" on a `useMemo` line. False positive, found
+ * in the sales kanban audit (visant-board, 2026-08-07).
  *
- * `);` e não `)` seguido de qualquer coisa: prose em português usa parêntese com
- * vírgula ("(a melhor delas), aliás"), e bloquear isso mataria copy de verdade.
- * Fechar parêntese e encerrar com ponto-e-vírgula é código. */
+ * `);` and not `)` followed by anything: Portuguese prose uses a parenthesis
+ * followed by a comma, and blocking that would kill real copy. Closing a
+ * parenthesis and ending with a semicolon is code. */
 const CODE_TAIL = /\)\s*;/;
 
-/* Anotação de parâmetro TypeScript, quando o `>` de um genérico no MEIO da
- * assinatura vira "fechamento de tag": `fly(root, flights: Map<string, Tween>,
- * id: string, dir: 'open' | 'close')` entregava `, id: string, dir: 'open' |
- * 'close')` como copy, e o pipe da união virava "pipe-separador". Falso POSITIVO,
- * achado no audit da MN Group (AboutChapters.tsx, 2026-09-28).
+/* TypeScript parameter annotation, when the `>` of a generic in the MIDDLE of
+ * the signature becomes a "tag close": `fly(root, flights: Map<string, Tween>,
+ * id: string, dir: 'open' | 'close')` handed over `, id: string, dir: 'open' |
+ * 'close')` as copy, and the union pipe became "pipe-separator". False
+ * POSITIVE, found in the MN Group audit (AboutChapters.tsx, 2026-09-28).
  *
- * Só tipo primitivo depois dos dois-pontos: "Nome: Pedro" é copy legítima e não
- * pode cair aqui. Nenhuma interface em português escreve "id: string". */
+ * Only a primitive type after the colon: "Name: Pedro" is legitimate copy and
+ * must not land here. No interface writes "id: string". */
 const TS_PARAM = /\b\w+\??\s*:\s*(?:string|number|boolean|unknown|null|undefined)\b/;
 
-/* Sobra de genérico TypeScript lida como texto de JSX: o `>` que fecha um
- * argumento de tipo vira "fechamento de tag" e o que vem colado depois dele é
- * sufixo de tipo ou acesso a membro, nunca texto de tela:
- *   - `Node<FlowNodeData>[] | ((prev: ...` entregava `[] | ((prev: Node` e o
- *     pipe da união acusava pipe-separador (visantlabs-os CollaborativeCanvas);
+/* TypeScript generic leftover read as JSX text: the `>` that closes a type
+ * argument becomes a "tag close" and what is glued right after it is a type
+ * suffix or a member access, never screen text:
+ *   - `Node<FlowNodeData>[] | ((prev: ...` handed over `[] | ((prev: Node` and
+ *     the union pipe flagged pipe-separador (visantlabs-os CollaborativeCanvas);
  *   - `(ref as React.MutableRefObject<Konva.Stage | null>).current = node;`
- *     entregava `).current = node;` e acusava ponto-e-vírgula (KonvaCanvas).
- * Achado na onda 4 do slop killer do visantlabs-os (2026-10-05).
+ *     handed over `).current = node;` and flagged a semicolon (KonvaCanvas).
+ * Found in wave 4 of the visantlabs-os slop killer (2026-10-05).
  *
- * Só no ramo de texto de JSX, e só no COMEÇO do candidato: `[]` (array de tipo)
- * ou `.membro` colado, com ou sem `)` antes. Prosa depois de tag inline começa
- * com `). Depois` (ponto e ESPAÇO), e isso continua sendo extraído; o fixture
- * trava o contraexemplo. */
+ * Only in the JSX text branch, and only at the START of the candidate: `[]`
+ * (type array) or a glued `.member`, with or without `)` before it. Prose after
+ * an inline tag starts with `). Then` (period and SPACE), and that is still
+ * extracted; the fixture locks the counterexample. */
 const GENERIC_TAIL = /^(?:\[\]|\)?\.[A-Za-z_$])/;
 
-/* Par chave=valor separado por ponto-e-vírgula: cookie, header, query string.
+/* key=value pair separated by semicolons: cookie, header, query string.
    `document.cookie = 'auth_error=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'`
-   tem letra, tem espaço e não tem nenhum cheiro de código dos filtros acima —
-   passava por `looksLikeCopy` inteira e o portão acusava ponto-e-vírgula de copy
-   de venda em cima de um `Set-Cookie`. Achado no audit do boxy-app (login-form).
-   Copy de verdade não escreve `chave=valor;`. */
+   has letters, has spaces and none of the code smells above: it passed
+   `looksLikeCopy` whole and the gate flagged a sales-copy semicolon on a
+   `Set-Cookie`. Found in the boxy-app audit (login-form).
+   Real copy does not write `key=value;`. */
 const KV_STRING = /[A-Za-z_-]+=[^;=]*;/;
 
-/* Propriedade de objeto com literal de texto (`description: 'Faça sua...'`).
-   O extrator de linha solta engolia a linha INTEIRA, com o nome da chave e as
-   aspas, e o extrator de literal pegava a mesma frase limpa. Como o dedupe é
-   por string exata, as duas versões sobreviviam e eram concatenadas: a frase
-   aparecia DUAS vezes no texto entregue ao copy-lint, e toda regra de
-   repetição (`max: 1`, o selo de credibilidade) acusava repetição com uma
-   ocorrência só. Achado em app/perguntas/layout.tsx, um único "tempo real".
-   O literal já é coberto pelo laço de string, então aqui a linha solta sai. */
+/* Object property with a text literal (`description: '...'`).
+   The loose-line extractor swallowed the WHOLE line, key name and quotes
+   included, and the literal extractor caught the same sentence clean. Since
+   dedupe is by exact string, both versions survived and were concatenated: the
+   sentence appeared TWICE in the text handed to copy-lint, and every
+   repetition rule (`max: 1`, the credibility seal) flagged a repetition with a
+   single occurrence. Found in app/perguntas/layout.tsx, a single "tempo real".
+   The literal is already covered by the string loop, so the loose line goes. */
 const OBJ_PROP = /^\s*['"]?[A-Za-z_$][\w$-]*['"]?\s*:\s*['"`]/;
 
-/* Título de documento (`metadata.title`, openGraph/twitter). O pipe e o hífen
-   ali são a convenção de SERP e de aba do navegador ("Sobre | Visant® Studio"),
-   não a bolinha separadora de copy de venda: trocar por dois-pontos piora o
-   produto. Só as duas regras de delimitador são dispensadas; emoji, guru e
-   selo continuam valendo no título. `description` NÃO entra aqui, que é prosa
-   de verdade e aparece no snippet do Google. */
+/* Document title (`metadata.title`, openGraph/twitter). The pipe and hyphen
+   there are the SERP and browser-tab convention ("About | Visant® Studio"),
+   not the sales-copy dot separator: swapping them for a colon makes the
+   product worse. Only the two delimiter rules are waived; emoji, guru and
+   seal still apply to the title. `description` is NOT included, it is real
+   prose and shows up in the Google snippet. */
 const DOC_TITLE_PROP = /^\s*title\s*:\s*['"`]/;
 const DOC_TITLE_MARK = '~doctitle';
 const DELIMITER_RULES = new Set(['pipe-separador', 'hifen-como-travessao']);
 
-/* ---------- voz do produto: o mesmo princípio do DOC_TITLE, um nível acima ----------
+/* ---------- product voice: the same principle as DOC_TITLE, one level up ----------
  *
- * O `copy-lint` do visant-copy foi escrito para UMA voz: a de venda da Visant. Rodado
- * sobre um produto com convenção própria e consistente, ele acusa a convenção inteira
- * — e aí o portão pede 132 reescritas que PIORAM o produto, exatamente o argumento que
- * já existia para o título de documento acima.
+ * visant-copy's `copy-lint` was written for ONE voice: Visant's sales voice. Run
+ * on a product with its own consistent convention, it flags the whole
+ * convention, and then the gate asks for 132 rewrites that make the product
+ * WORSE, exactly the argument that already existed for the document title above.
  *
- * Achado no audit da caixa de discos do liminal-stage (2026-08-14): 14 achados, todos
- * `bolinha` e `travessao`, 9 deles em linhas que o trabalho auditado não tocou, e 132
- * usos de `·` em 26 arquivos commitados antes — `ao vivo · 3`, `em breve · 2d`,
- * `55/120 · limpar`. Não é tique de IA; é o separador de batida daquele produto.
+ * Found in the liminal-stage record box audit (2026-08-14): 14 findings, all
+ * `bolinha` and `travessao`, 9 of them on lines the audited work did not touch,
+ * and 132 uses of `·` in 26 files committed earlier (`ao vivo · 3`,
+ * `em breve · 2d`, `55/120 · limpar`). Not an AI tic; it is that product's beat
+ * separator.
  *
- * Opt-in por repositório, e com preço: um `.killer-voice.json` na raiz do alvo,
- * nomeando SÓ as regras que aquele produto adotou e um `motivo` escrito de verdade.
- * Sem motivo (ou com um de menos de 40 caracteres) o arquivo é ignorado e o portão
- * volta a acusar — porque é essa a diferença entre exceção e `audit-ignore` mudo, que
- * é o que esta skill inteira existe pra impedir.
+ * Opt-in per repository, with a price: a `.killer-voice.json` at the target's
+ * root, naming ONLY the rules that product adopted and a real written `motivo`
+ * (reason). Without a reason (or with one under 40 characters) the file is
+ * ignored and the gate flags again, because that is the difference between an
+ * exception and a mute `audit-ignore`, which is what this whole skill exists to
+ * prevent.
  *
- * Só regra de DELIMITADOR é dispensável. Emoji, guru, selo, ponto-e-vírgula de venda
- * e travessão em prosa continuam valendo: convenção de microcópia é uma escolha de
- * pontuação, não um passe livre de voz. */
+ * Only DELIMITER rules can be waived. Emoji, guru, seal, sales semicolon and dash
+ * in prose still apply: a microcopy convention is a punctuation choice, not a
+ * free pass on voice. */
 const VOICE_RULES = new Set(['bolinha', 'travessao', 'pipe-separador', 'hifen-como-travessao']);
 const productVoice = () => {
   try {
     const cfg = JSON.parse(readFileSync(join(ROOT, '.killer-voice.json'), 'utf8'));
     const motivo = typeof cfg.motivo === 'string' ? cfg.motivo.trim() : '';
     if (motivo.length < 40) {
-      return { rules: new Set(), warn: '.killer-voice.json ignorado: `motivo` ausente ou curto demais (mín. 40 caracteres)' };
+      return { rules: new Set(), warn: '.killer-voice.json ignored: `motivo` missing or too short (min. 40 characters)' };
     }
     const rules = new Set((cfg.dispensa || []).filter((r) => VOICE_RULES.has(r)));
     const bad = (cfg.dispensa || []).filter((r) => !VOICE_RULES.has(r));
     return {
       rules,
-      warn: bad.length ? `.killer-voice.json: só regra de delimitador é dispensável — ignorado: ${bad.join(', ')}` : null,
+      warn: bad.length ? `.killer-voice.json: only delimiter rules can be waived; ignored: ${bad.join(', ')}` : null,
       motivo,
     };
   } catch {
@@ -532,50 +537,50 @@ const productVoice = () => {
   }
 };
 
-/* Literal que é SÓ separador, sem letra nenhuma.
+/* A literal that is ONLY a separator, with no letters at all.
  *
- * `label: cond ? \`${negocio.name} · ${negocio.cliente}\` : negocio.name` — depois
- * de mascarar a interpolação, o que resta do template é " · ". Zero letra, três
- * caracteres: morria nas duas primeiras linhas de `looksLikeCopy` (comprimento
- * mínimo e `\p{L}`), e o portão dizia "copy zero" sobre uma bolinha que ia
- * direto pro combobox do usuário. Falso NEGATIVO, que é o grave: parece
- * aprovação.
+ * `label: cond ? \`${deal.name} · ${deal.client}\` : deal.name`: after
+ * masking the interpolation, what is left of the template is " · ". Zero
+ * letters, three characters: it died in the first two lines of `looksLikeCopy`
+ * (minimum length and `\p{L}`), and the gate said "copy zero" about a dot that
+ * went straight into the user's combobox. A false NEGATIVE, which is the
+ * serious one: it looks like approval.
  *
- * A regra é estreita de propósito: só passa se o literal for EXCLUSIVAMENTE
- * pontuação/espaço E carregar um vício. Assim `" · "` entra e `" (%) "` não —
- * nenhum código vira falso positivo, porque literal de código com bolinha ou
- * travessão dentro praticamente não existe. Achado no audit da aba Propostas do
- * CRM (visant-board, 2026-08-07).
+ * The rule is narrow on purpose: it only passes if the literal is EXCLUSIVELY
+ * punctuation/space AND carries a tic. So `" · "` gets in and `" (%) "` does
+ * not; no code becomes a false positive, because a code literal with a dot or
+ * dash inside practically does not exist. Found in the CRM Proposals tab audit
+ * (visant-board, 2026-08-07).
  *
- * O ESPAÇO É PARTE DA REGRA, e não sobra de formatação.
+ * THE SPACE IS PART OF THE RULE, not leftover formatting.
  *
- * Separador e placeholder de vazio são o mesmo glifo fazendo trabalhos opostos:
- * o separador JUNTA dois valores (`a · b`) e por isso é escrito com espaço em
- * volta, porque sem espaço não se lê; o placeholder SUBSTITUI um valor ausente
- * (`{v ?? "—"}` numa célula de tabela) e é escrito pelado, porque não há o que
- * separar. Sem esta distinção, o portão acusava as duas coisas com a mesma
- * palavra e a lista virava barulho: no audit de /admin (visant-board,
- * 2026-08-10), 9 dos 16 achados de "literal só de separador" eram travessão de
- * célula vazia — convenção de tabela densa, a mesma do Linear, do Stripe e da
- * Vercel, e trocar por hífen é piorar a tipografia.
+ * Separator and empty placeholder are the same glyph doing opposite jobs: the
+ * separator JOINS two values (`a · b`) and so is written with spaces around
+ * it, because without spaces it cannot be read; the placeholder REPLACES a
+ * missing value (`{v ?? "—"}` in a table cell) and is written bare, because
+ * there is nothing to separate. Without this distinction the gate flagged both
+ * with the same word and the list became noise: in the /admin audit
+ * (visant-board, 2026-08-10), 9 of 16 "separator-only literal" findings were
+ * empty-cell dashes, a dense table convention (the same as Linear, Stripe and
+ * Vercel), and swapping it for a hyphen worsens the typography.
  *
- * Exigir espaço não abre buraco no caso que criou a regra: `" · "` do combobox
- * continua entrando, e `" — "` de prosa também. Sai só o glifo pelado, que é
- * dado ausente, não voz. */
+ * Requiring a space opens no hole in the case that created the rule: the
+ * combobox `" · "` still gets in, and a prose `" — "` too. Only the bare glyph
+ * goes, which is missing data, not voice. */
 const SO_SEPARADOR_COM_VICIO = /^(?=\s*[·—][\s·—]*$)(?=.*\s)[\s·—]+$/;
 
-/* União de TypeScript escrita como documentação de prop, a da página de design
- * system: `'left' | 'right'`, `"sm" | "md"`,
- * `number | string (default 1; masonry = natural)`. O pipe é operador de união,
- * não separador de copy, e o portão acusava pipe-separador (src/pages/
- * DesignSystemPage.tsx, 2026-10-05).
+/* TypeScript union written as prop documentation, the design system page kind:
+ * `'left' | 'right'`, `"sm" | "md"`,
+ * `number | string (default 1; masonry = natural)`. The pipe is a union
+ * operator, not a copy separator, and the gate flagged pipe-separador
+ * (src/pages/DesignSystemPage.tsx, 2026-10-05).
  *
- * É tipo quando TODO segmento entre pipes é literal entre aspas, palavra de tipo
- * ou identificador com cara de código, e pelo menos um é literal ou palavra de
- * tipo. A anotação final entre parênteses (`(default 'x')`) sai antes do teste.
- * "Identificador com cara de código" exige camelCase, `a.b`, `T[]`, `T<U>` ou
- * `_`/`$`: palavra capitalizada solta ("Home | Sobre") é nav de rodapé, é copy,
- * e continua entrando. Ver fixture PropsDoc. */
+ * It is a type when EVERY segment between pipes is a quoted literal, a type
+ * word or a code-looking identifier, and at least one is a literal or type
+ * word. The trailing parenthesized annotation (`(default 'x')`) is removed
+ * before the test. "Code-looking identifier" requires camelCase, `a.b`, `T[]`,
+ * `T<U>` or `_`/`$`: a loose capitalized word ("Home | Sobre") is a footer nav,
+ * it is copy, and still gets in. See the PropsDoc fixture. */
 const TYPE_WORD = /^(?:string|number|boolean|bigint|symbol|object|unknown|any|never|void|null|undefined|true|false|ReactNode|ReactElement|JSX\.Element|Date|File|Blob)(?:\[\])*\??$/;
 const TYPE_LITERAL = /^(?:'[^']*'|"[^"]*"|`[^`]*`|-?\d+(?:\.\d+)?)$/;
 const CODE_IDENT = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*(?:<[^<>]*>)?(?:\[\])*\??$/;
@@ -596,11 +601,11 @@ function isTypeUnion(t) {
   return anchored;
 }
 
-/** true se a string parece texto de interface, e não className, path ou id. */
+/** true if the string looks like interface text, not a className, path or id. */
 function looksLikeCopy(s) {
-  /* Sem `trim()` aqui: o espaço em volta é justamente o que separa o separador
-     (`" · "`, junta dois valores) do placeholder de vazio (`"—"`, substitui um
-     valor). Trimar antes de testar apagava a evidência e os dois casavam. */
+  /* No `trim()` here: the surrounding space is exactly what separates the
+     separator (`" · "`, joins two values) from the empty placeholder (`"—"`,
+     replaces a value). Trimming before the test erased the evidence and both matched. */
   if (SO_SEPARADOR_COM_VICIO.test(s)) return true;
   const t = s.trim();
   if (t.length < 4) return false;
@@ -615,22 +620,23 @@ function looksLikeCopy(s) {
   if (TS_PARAM.test(t)) return false;
   if (isTypeUnion(t)) return false;
   if (KV_STRING.test(t)) return false;
-  /* Menos de duas palavras não é frase: mata sobra de assinatura de tipo
-     ("| void;") que escapa pelo extrator de texto entre tags.
+  /* Fewer than two words is not a sentence: kills type signature leftovers
+     ("| void;") that escape through the between-tags text extractor.
 
-     A exceção existe porque copy de JSX chega PARTIDA: em
-     `<span>{n} à vista · </span>` o fragmento que sobra é "à vista ·", que tem uma
-     palavra só e carrega justamente a bolinha que o portão deveria acusar. Sem a
-     exceção o detector dizia zero sobre um separador visível no header da home —
-     falso negativo, que é o defeito grave: parece aprovação. Fragmento que carrega bolinha
-     ou travessão conta como copy mesmo com uma palavra. O ponto-e-vírgula ficou
-     FORA da exceção: sobra de assinatura de tipo (`(k: string): ;`) termina em `;`
-     e voltaria como falso positivo — o fixture pegou isso na primeira tentativa. Lixo de tipo não
-     entra por aqui porque CODEY e TYPE_SYNTAX já rodaram acima. */
+     The exception exists because JSX copy arrives SPLIT: in
+     `<span>{n} à vista · </span>` the leftover fragment is "à vista ·", which
+     has a single word and carries exactly the dot the gate should flag. Without
+     the exception the detector said zero about a visible separator in the home
+     header: a false negative, the serious defect, it looks like approval. A
+     fragment carrying a dot or dash counts as copy even with one word. The
+     semicolon stayed OUT of the exception: a type signature leftover
+     (`(k: string): ;`) ends in `;` and would come back as a false positive (the
+     fixture caught that on the first try). Type junk does not get in here
+     because CODEY and TYPE_SYNTAX already ran above. */
   const CARREGA_VICIO = /[·—]/;
   if ((t.match(/\p{L}{2,}/gu) || []).length < 2 && !CARREGA_VICIO.test(t)) return false;
   if (/^[./#@]|^https?:|\.(tsx?|jsx?|css|json|svg|png|webp)$/i.test(t)) return false;
-  if (/^[a-z0-9_.:-]+$/.test(t) && !/\s/.test(t)) return false; // id, chave, slug
+  if (/^[a-z0-9_.:-]+$/.test(t) && !/\s/.test(t)) return false; // id, key, slug
   if (!/\s/.test(t) && !/[áàâãéêíóôõúüç]/i.test(t)) return false;
   return true;
 }
@@ -640,11 +646,11 @@ function extractCopy(file) {
   const src = raw0.split(/\r?\n/);
   const out = {};
   let inBlockComment = false;
-  /* Arquivo de metadata do Next: `title:` de objeto ali é título de documento.
-     As DUAS formas contam. Só `export const metadata` deixava passar a rota
-     dinâmica, que monta o título em `generateMetadata` com template
-     (`` title: `${nome} | Visant® Studio` ``) — e era justamente ali que o
-     portão acusava mais pipe. */
+  /* Next metadata file: an object `title:` there is a document title. BOTH
+     forms count. Only `export const metadata` let the dynamic route through,
+     which builds the title in `generateMetadata` with a template
+     (`` title: `${name} | Visant® Studio` ``), and that was exactly where the
+     gate flagged the most pipes. */
   const isMetadataFile = /export\s+(?:const\s+metadata\b|(?:async\s+)?function\s+generateMetadata\b)/.test(raw0);
 
   src.forEach((raw, i) => {
@@ -661,21 +667,22 @@ function extractCopy(file) {
     line = line.replace(/(^|\s)\/\/.*$/, '');
     if (!line.trim()) return;
 
-    /* Entidade HTML sai antes de qualquer regra: o `;` de `&quot;` não é
-       pontuação, e o portão acusava ponto-e-vírgula em copy correta. */
-    /* Lista fechada de entidade era gap garantido: `&quot;` estava lá e
-       `&ldquo;`/`&rdquo;` não, então aspa curva em copy acusava ponto-e-vírgula
-       (components/brand/steps/PublishStep.tsx). Entidade nomeada é um formato,
-       então a regra passa a ser o formato. */
+    /* HTML entities go before any rule: the `;` in `&quot;` is not
+       punctuation, and the gate flagged a semicolon on correct copy. */
+    /* A closed entity list was a guaranteed gap: `&quot;` was there and
+       `&ldquo;`/`&rdquo;` were not, so a curly quote in copy flagged a semicolon
+       (components/brand/steps/PublishStep.tsx). A named entity is a format, so
+       the rule becomes the format. */
     line = line.replace(/&(?:[a-zA-Z][a-zA-Z0-9]{1,10}|#\d+|#x[0-9a-fA-F]+);/g, '"');
 
-    /* Saída de desenvolvedor não é interface. `console.debug(`[render] ${ms}ms
-       total · ${st}`)`, dentro de um bloco `NODE_ENV === "development"`, acusava
-       bolinha — e bolinha em log é formatação de terminal, não vício de copy.
-       Nenhum `console.*` chega no olho do usuário, então a chamada sai antes de
-       qualquer extração. Corta da chamada até o fim da linha porque a chamada vai
-       até o fim do statement, e copy depois de um console na MESMA linha não
-       existe. Achado no audit da operação de cenas (mockup-store, 2026-08-06). */
+    /* Developer output is not interface. `console.debug(`[render] ${ms}ms
+       total · ${st}`)`, inside a `NODE_ENV === "development"` block, flagged a
+       dot, and a dot in a log is terminal formatting, not a copy tic. No
+       `console.*` reaches the user's eye, so the call goes before any
+       extraction. It cuts from the call to the end of the line because the call
+       runs to the end of the statement, and copy after a console call on the
+       SAME line does not exist. Found in the scene operations audit
+       (mockup-store, 2026-08-06). */
     const devOut = line.search(/\bconsole\s*\.\s*[a-zA-Z]+\s*\(/);
     if (devOut !== -1) line = line.slice(0, devOut);
     if (!line.trim()) return;
@@ -683,10 +690,10 @@ function extractCopy(file) {
     const key = `${file}:${i + 1}`;
     const found = [];
 
-    /* Mascarar `{expr}` antes de olhar texto de JSX. Sem isso, a linha mais
-       comum de copy do repo escapa inteira: `Acima de {fmt(X)} — obrigatória.`
-       tem chave e parêntese, então o extrator de linha solta a descarta, e o de
-       texto entre tags para no `{`. */
+    /* Mask `{expr}` before looking at JSX text. Without this, the most common
+       copy line in the repo escapes whole: `Acima de {fmt(X)} — obrigatória.`
+       has a brace and a parenthesis, so the loose-line extractor discards it,
+       and the between-tags extractor stops at the `{`. */
     let masked = line;
     for (let k = 0; k < 6; k++) {
       const next = masked.replace(/\{[^{}]*\}/g, '\u0001');
@@ -694,11 +701,11 @@ function extractCopy(file) {
       masked = next;
     }
 
-    /* Segunda máscara, só da interpolação, e ela existe para os literais. A
-       máscara de JSX acima come o `{...}` inteiro, mas copy de verdade mora
-       DENTRO de expressão (um ternário com dois templates, por exemplo): com uma
-       máscara só, a string do ternário nunca era extraída e o portão dizia
-       "zero" sobre texto que ninguém tinha checado. Achado pelo fixture. */
+    /* Second mask, interpolation only, and it exists for the literals. The JSX
+       mask above eats the whole `{...}`, but real copy lives INSIDE expressions
+       (a ternary with two templates, for example): with a single mask the
+       ternary's string was never extracted and the gate said "zero" about text
+       nobody had checked. Found by the fixture. */
     let interp = line;
     for (let k = 0; k < 6; k++) {
       const next = interp.replace(/\$\{[^{}]*\}/g, ' ');
@@ -707,45 +714,46 @@ function extractCopy(file) {
     }
     const unmask = (s) => s.replace(/\u0001/g, ' ').replace(/\s+/g, ' ').trim();
 
-    /* texto de JSX: o que sobra entre > e <, ou depois de > no fim da linha.
-       O `>` de tag vem colado no que o antecede (`<span>`), o de comparação vem
-       com espaço (`a > 0`), e `=>` e `>=` ficam de fora pelos lookarounds. */
-    /* O  da lookbehind é a máscara de {expr}. Sem ele o extrator era cego
-       pro formato mais comum de botão do repo: <button onClick={fn}>Texto</button>
-       fecha a tag logo depois da máscara, então o caractere antes do > deixa de
-       ser letra e a copy inteira nunca era lida. Falso NEGATIVO, o grave: o portão
-       dizia zero sobre texto que ninguém tinha checado. Achado pelo fixture no
-       audit do Gravador (jaques-os, 2026-08-05). */
+    /* JSX text: what is left between > and <, or after > at the end of the line.
+       A tag's `>` is glued to what precedes it (`<span>`), a comparison's comes
+       with a space (`a > 0`), and `=>` and `>=` are excluded by the lookarounds. */
+    /* The U+0001 in the lookbehind is the {expr} mask. Without it the extractor
+       was blind to the repo's most common button format:
+       <button onClick={fn}>Text</button> closes the tag right after the mask, so
+       the character before the > is no longer a letter and the whole copy was
+       never read. A false NEGATIVE, the serious one: the gate said zero about
+       text nobody had checked. Found by the fixture in the Recorder audit
+       (jaques-os, 2026-08-05). */
     for (const m of masked.matchAll(/(?<=[A-Za-z0-9"'\]\/_-])>(?!=)([^<>]+)(?=<|$)/g)) {
-      /* Corta no { que sobrou. JSX de várias linhas deixa a expressão ABERTA no
-         fim da linha (`Aperte <b>Gravar</b> — ou {estado?.atalho`), e o candidato
-         vinha com esse pedaço de código colado; o CODEY então descartava a frase
-         inteira por causa da chave. Falso NEGATIVO: um travessão visível na tela
-         passou pelo portão e só apareceu quando alguém ABRIU a página. Achado no
-         audit do Gravador (jaques-os, 2026-08-05). */
+      /* Cut at the leftover {. Multi-line JSX leaves the expression OPEN at the
+         end of the line (`Aperte <b>Gravar</b> — ou {estado?.atalho`), and the
+         candidate came with that piece of code glued on; CODEY then discarded
+         the whole sentence because of the brace. A false NEGATIVE: a dash
+         visible on screen passed the gate and only showed up when someone
+         OPENED the page. Found in the Recorder audit (jaques-os, 2026-08-05). */
       const cand = unmask(m[1]).split("{")[0].trim();
       if (GENERIC_TAIL.test(cand)) continue;
       if (looksLikeCopy(cand)) found.push(cand);
     }
-    /* Texto solto de JSX multilinha. A linha não tem tag nenhuma pra ancorar,
-       então o filtro é o inverso: nada de operador nem de identificador. Sigla
-       em caixa alta passa de propósito (MEI, IRPF, DAS, COFINS são copy). */
+    /* Loose multi-line JSX text. The line has no tag to anchor on, so the
+       filter is the reverse: no operators and no identifiers. Uppercase
+       acronyms pass on purpose (MEI, IRPF, DAS, COFINS are copy). */
     if (!/[<>]/.test(masked) && !/[*?+=;|&`_]|[a-z][A-Z]/.test(masked) && !OBJ_PROP.test(line)) {
       const cand = unmask(masked);
       if (looksLikeCopy(cand)) found.push(cand);
     }
-    // prop de rótulo
+    // label prop
     for (const m of line.matchAll(LABEL_PROPS)) {
       if (looksLikeCopy(m[3])) found.push(m[3]);
     }
-    // literal em template ou string dentro de expressão de render
+    // literal in a template or string inside a render expression
     for (const m of interp.matchAll(/[`'"]([^`'"]{6,})[`'"]/g)) {
       if (looksLikeCopy(m[1]) && /\s/.test(m[1]) && /[a-záéíóúãõç]{3}/i.test(m[1])) {
         found.push(m[1].trim());
       }
     }
-    /* O separador puro, que o laço acima não alcança de dois jeitos: ele exige
-       6 caracteres e 3 letras seguidas, e " · " não tem nem um nem outro. Ver
+    /* The pure separator, which the loop above misses in two ways: it requires
+       6 characters and 3 letters in a row, and " · " has neither. See
        SO_SEPARADOR_COM_VICIO. */
     for (const m of interp.matchAll(/[`'"]([^`'"]{1,8})[`'"]/g)) {
       if (SO_SEPARADOR_COM_VICIO.test(m[1])) found.push(m[1]);
@@ -760,7 +768,7 @@ function extractCopy(file) {
   return out;
 }
 
-/* Extração de `.ts`: só o que o contrato diz que vira texto de tela. Ver
+/* `.ts` extraction: only what the contract says becomes screen text. See
    COPY_BEARING_PROP. */
 function extractLibCopy(file) {
   const raw0 = readFileSync(isAbsolute(file) ? file : join(ROOT, file), 'utf8');
@@ -796,24 +804,24 @@ function extractLibCopy(file) {
 
 function runCopy() {
   const script = join(homedir(), '.claude', 'skills', 'visant-copy', 'scripts', 'copy-lint.mjs');
-  if (!existsSync(script)) return { skipped: 'copy-lint do visant-copy não encontrado', findings: [] };
-  if (!uiFiles.length && !libFiles.length) return { skipped: 'nenhum .tsx/.ts no alvo', findings: [] };
+  if (!existsSync(script)) return { skipped: "visant-copy's copy-lint not found", findings: [] };
+  if (!uiFiles.length && !libFiles.length) return { skipped: 'no .tsx/.ts in the target', findings: [] };
 
-  /* Um JSON POR ARQUIVO, e não um bag do alvo inteiro. As regras de família do
-     copy-lint contam por documento ("selo de credibilidade no máximo uma vez por
-     página"), então juntar seis arquivos num JSON fazia a palavra aparecer uma
-     vez em cada um e o portão acusar repetição que não existe. Achado com este
-     bug: três arquivos diferentes, um "real" cada. */
+  /* One JSON PER FILE, not a bag for the whole target. copy-lint's family
+     rules count per document ("credibility seal at most once per page"), so
+     merging six files into one JSON made the word appear once in each and the
+     gate flagged a repetition that does not exist. Found with this bug: three
+     different files, one "real" each. */
   const perFile = [
     ...uiFiles.map((f) => [f, extractCopy(f)]),
     ...libFiles.map((f) => [f, extractLibCopy(f)]),
   ].filter(([, bag]) => Object.keys(bag).length);
   const bag = Object.fromEntries(perFile.flatMap(([, b]) => Object.entries(b)));
   const strings = Object.keys(bag).length;
-  if (!strings) return { skipped: 'nenhuma string de interface extraída', findings: [], strings: 0 };
+  if (!strings) return { skipped: 'no interface string extracted', findings: [], strings: 0 };
 
-  // --dump mostra o que a extração considerou copy. Use quando o portão de copy
-  // der um resultado que você não acredita, nos dois sentidos.
+  // --dump shows what the extraction considered copy. Use it when the copy gate
+  // gives a result you do not believe, in either direction.
   if (args.includes('--dump')) {
     for (const [k, v] of Object.entries(bag)) console.log(`  ${k}  ${v}`);
   }
@@ -821,7 +829,7 @@ function runCopy() {
   const dir = mkdtempSync(join(tmpdir(), 'killer-copy-'));
   const findings = [];
   const voice = productVoice();
-  if (voice.warn) findings.push(`(aviso) ${voice.warn}`);
+  if (voice.warn) findings.push(`(warning) ${voice.warn}`);
 
   perFile.forEach(([file, fileBag], i) => {
     const jsonPath = join(dir, `copy-${i}.json`);
@@ -830,15 +838,20 @@ function runCopy() {
     const out = stripAnsi(`${r.stdout || ''}${r.stderr || ''}`);
     for (const line of out.split(/\r?\n/)) {
       const m = line.match(/^\s{2}([a-z-]+)\s{2,}(.+)$/);
-      if (m && !/^(Como consertar|Aviso)/.test(m[1])) {
+      if (m && !/^(Como consertar|Aviso|How to fix|Warnings)/.test(m[1])) {
         const rule = m[1];
-        // O produto declarou este delimitador como convenção própria. Ver productVoice().
+        // The product declared this delimiter as its own convention. See productVoice().
         if (voice.rules.has(rule)) continue;
-        // Título de documento não responde por delimitador. Ver DOC_TITLE_PROP.
+        // A document title does not answer for delimiters. See DOC_TITLE_PROP.
         let locs = m[2].split(',').map((s) => s.trim()).filter(Boolean);
         if (DELIMITER_RULES.has(rule)) locs = locs.filter((l) => !l.includes(DOC_TITLE_MARK));
         if (!locs.length) continue;
-        findings.push(`${locs.join(', ').split(DOC_TITLE_MARK).join('')}  ${rule}`);
+        // Same path format as the other gates: relative to the audited repo.
+        const short = (l) => {
+          const i = l.lastIndexOf(':');
+          return i > 0 ? `${disp(l.slice(0, i))}${l.slice(i)}` : l;
+        };
+        findings.push(`${locs.map((l) => short(l.split(DOC_TITLE_MARK).join(''))).join(', ')}  ${rule}`);
       }
     }
     void file;
@@ -847,34 +860,34 @@ function runCopy() {
   return { skipped: null, findings, strings };
 }
 
-/* ---------- rotas: o relatório é por TELA, não por arquivo ----------
+/* ---------- routes: the report is per SCREEN, not per file ----------
  *
- * O `--init-report` cobrava uma linha por arquivo de interface quando o repo não
- * tem `page.tsx` (Vite + react-router). No visantlabs-os isso era 582 linhas
- * pra rodar o portão em `src/` — tabela que ninguém preenche, e portão que
- * ninguém preenche é portão pulado. A unidade de decisão do visant-frontend é a
- * ROTA (quem chega ali, o que ela move), então a tabela passa a ser uma linha
- * por rota, com o arquivo da página ao lado.
+ * `--init-report` asked for one row per interface file when the repo has no
+ * `page.tsx` (Vite + react-router). In visantlabs-os that was 582 rows to run
+ * the gate on `src/`: a table nobody fills in, and a gate nobody fills in is a
+ * skipped gate. visant-frontend's unit of decision is the ROUTE (who arrives
+ * there, what it moves), so the table becomes one row per route, with the page
+ * file next to it.
  *
- * Lê o roteador (`<Route path=… element={…}>`), resolve o componente da página
- * pelo import do próprio roteador (estático ou `lazy(() => import(…))`) e pede
- * ao arquivo de navegação (`navConfig`) a pista de shell de cada rota: o nome da
- * lista ou função que menciona aquele caminho (`isMarketing`,
- * `BRAND_EDITOR_PREFIXES`…). A pista vai em coluna própria e NUNCA preenche a
- * superfície: classificar continua sendo trabalho de quem audita.
+ * Reads the router (`<Route path=... element={...}>`), resolves the page
+ * component through the router's own imports (static or
+ * `lazy(() => import(...))`) and asks the navigation file (`navConfig`) for each
+ * route's shell hint: the name of the list or function that mentions that path
+ * (`isMarketing`, `BRAND_EDITOR_PREFIXES`...). The hint goes in its own column
+ * and NEVER fills in the surface: classifying is still the auditor's job.
  *
- * Sem roteador, volta ao comportamento antigo (arquivo `page|layout|template`, e
- * na falta deles, todo arquivo de interface do alvo).
+ * Without a router, falls back to the old behavior (`page|layout|template`
+ * files, and failing those, every interface file in the target).
  */
 const ROUTER_CANDIDATES = [
   'src/App.tsx', 'src/App.jsx', 'src/routes.tsx', 'src/router.tsx',
   'src/routes/index.tsx', 'src/router/index.tsx', 'src/main.tsx', 'App.tsx',
 ];
 const NAV_CANDIDATES = ['src/config/navConfig.ts', 'src/config/nav.ts', 'src/navConfig.ts', 'src/lib/nav.ts'];
-/* Embrulho de rota: portão, provedor, limite de erro. A página é o que sobra. */
+/* Route wrapper: gate, provider, error boundary. The page is what is left. */
 const WRAPPER = /(Gate|Guard|Provider|Boundary|Wrapper|Suspense|Protected\w*|RequireAuth\w*|Layout|Shell|Fragment)$/;
 
-/** Fim de uma tag JSX começando em `i` (`<Route …>` ou `<Route … />`), contando chaves. */
+/** End of a JSX tag starting at `i` (`<Route ...>` or `<Route ... />`), counting braces. */
 function fimDaTag(src, i) {
   let prof = 0;
   for (let j = i; j < src.length; j++) {
@@ -886,7 +899,7 @@ function fimDaTag(src, i) {
   return src.length;
 }
 
-/** Valor de `attr={…}` com chaves balanceadas. */
+/** Value of `attr={...}` with balanced braces. */
 function valorEntreChaves(tag, attr) {
   const m = tag.match(new RegExp(`\\b${attr}\\s*=\\s*\\{`));
   if (!m) return null;
@@ -909,7 +922,7 @@ function lerRotas(root, routerRel = null) {
   const routerFile = normP(join(root, rel));
   const src = semComentario(readFileSync(routerFile, 'utf8'));
   const g = montarGrafo([routerFile]);
-  /* nome local -> arquivo, pelos imports do próprio roteador */
+  /* local name -> file, through the router's own imports */
   const arquivoDe = new Map();
   for (const d of g.deps.get(routerFile) ?? []) for (const n of d.nomes) arquivoDe.set(n, d.para);
 
@@ -919,7 +932,7 @@ function lerRotas(root, routerRel = null) {
     const tag = src.slice(m.index, fimDaTag(src, m.index) + 1);
     const p = tag.match(/\bpath\s*=\s*(?:"([^"]+)"|'([^']+)'|\{\s*["'`]([^"'`]+)["'`]\s*\})/);
     const caminho = p ? (p[1] ?? p[2] ?? p[3]) : /\bindex\b/.test(tag) ? '(index)' : null;
-    if (!caminho) continue; // rota de layout sem path: o filho é que é a tela
+    if (!caminho) continue; // layout route without a path: the child is the screen
     const el = valorEntreChaves(tag, 'element') ?? valorEntreChaves(tag, 'Component') ?? '';
     const nav = el.match(/<Navigate\b[^>]*\bto\s*=\s*(?:"([^"]+)"|'([^']+)'|\{\s*["'`]([^"'`]+)["'`]\s*\})/);
     if (nav) {
@@ -933,18 +946,18 @@ function lerRotas(root, routerRel = null) {
     const emPages = naoEmbrulho.find((n) => /\/pages\//.test(arquivoDe.get(n) ?? ''));
     const nome = emPages ?? naoEmbrulho[naoEmbrulho.length - 1] ?? ids[ids.length - 1];
     if (!nome) continue;
-    /* sem import: componente definido no próprio roteador (ex.: `HomeRoute`) */
+    /* no import: component defined in the router itself (e.g. `HomeRoute`) */
     rotas.push({ caminho, componente: nome, arquivo: arquivoDe.get(nome) ?? routerFile });
   }
   return { routerFile, rotas, redirecionamentos };
 }
 
-/** Pista de shell pelo arquivo de navegação: quem menciona este caminho. */
+/** Shell hint from the navigation file: who mentions this path. */
 function lerNav(root, navRel = null) {
   const rel = navRel ?? NAV_CANDIDATES.find((r) => existsSync(join(root, r)));
   if (!rel) return null;
   const src = semComentario(readFileSync(join(root, rel), 'utf8'));
-  /* só símbolo de topo (coluna 0): o `const clean` de dentro de uma função não é pista de shell */
+  /* top-level symbols only (column 0): a `const clean` inside a function is not a shell hint */
   const simbolos = [...src.matchAll(/^(?:export\s+)?(?:function\s+([A-Za-z_$][\w$]*)|const\s+([A-Za-z_$][\w$]*)\s*(?::[^=\n]+)?=)/gm)]
     .map((m) => ({ idx: m.index, nome: m[1] ?? m[2] }));
   const literais = [...src.matchAll(/['"`](\/[\w\-/]*)['"`]/g)].map((m) => {
@@ -957,7 +970,7 @@ function lerNav(root, navRel = null) {
     dica(caminho) {
       const p = caminho.replace(/\/:[^/]+/g, '/x').replace(/\/\*$/, '');
       const casa = literais.filter(({ lit }) =>
-        /* prefixo cru, como o código faz: `p.startsWith('/thank-you')` cobre `/thank-you-pro` */
+        /* raw prefix, as the code does: `p.startsWith('/thank-you')` covers `/thank-you-pro` */
         p === lit || (lit.length > 1 && p.startsWith(lit)),
       );
       if (!casa.length) return '';
@@ -969,8 +982,8 @@ function lerNav(root, navRel = null) {
 }
 
 /**
- * As telas que o alvo cobra: `page|layout|template` (Next), senão as rotas do
- * roteador cuja página está no alvo, senão todo arquivo de interface do alvo.
+ * The screens the target asks for: `page|layout|template` (Next), else the
+ * router's routes whose page is in the target, else every interface file in the target.
  */
 function telasDoAlvo() {
   const routeLike = uiFiles.filter((f) => /(^|\/)(page|layout|template)\.(tsx|jsx)$/.test(f));
@@ -991,28 +1004,29 @@ function telasDoAlvo() {
   return { cobrados: uiFiles, porRota: null };
 }
 
-/* ---------- self-test do extrator ---------- */
+/* ---------- extractor self-test ---------- */
 
 /**
- * O extrator é heurística, então ele precisa de prova nos DOIS sentidos: string
- * extraída que não era copy (falso positivo, enche a tela e a pessoa desliga o
- * portão) e copy que nunca foi extraída (falso negativo, o portão diz "zero"
- * sobre texto que ninguém checou — o pior dos dois, porque parece sucesso).
+ * The extractor is a heuristic, so it needs proof in BOTH directions: a string
+ * extracted that was not copy (false positive, floods the screen and people
+ * turn the gate off) and copy that was never extracted (false negative, the
+ * gate says "zero" about text nobody checked; the worse of the two, because it
+ * looks like success).
  *
- * O fixture carrega o contrato dentro dele: linha com EXTRAI deve sair, linha
- * com IGNORA não. Cada caso lá já mordeu de verdade.
+ * The fixture carries the contract inside it: a line with EXTRAI must come out,
+ * a line with IGNORA must not. Every case there has bitten for real.
  */
 function runSelfTest() {
   const here = dirname(fileURLToPath(import.meta.url));
   const fixture = join(here, 'fixtures', 'copy-extractor.tsx');
   if (!existsSync(fixture)) {
-    console.error(`fixture não encontrado: ${fixture}`);
+    console.error(`fixture not found: ${fixture}`);
     process.exit(2);
   }
 
-  /* Dois fixtures, um contrato. O de `.ts` entrou depois, quando se descobriu que copy
-     escrita em lib e renderizada pela tela nunca tinha sido varrida — falso negativo,
-     que é o grave: o portão dizia zero sobre texto que ninguém checou. */
+  /* Two fixtures, one contract. The `.ts` one came later, when it turned out that
+     copy written in a lib and rendered by the screen had never been scanned: a
+     false negative, the serious kind; the gate said zero about text nobody checked. */
   const libFixture = join(here, 'fixtures', 'lib-copy-extractor.ts');
   const bag = {
     ...extractCopy(fixture),
@@ -1023,9 +1037,9 @@ function runSelfTest() {
     ...(existsSync(libFixture) ? readFileSync(libFixture, 'utf8').split(/\r?\n/) : []),
   ];
   const lineOf = (k) => Number(k.split(DOC_TITLE_MARK).join('').slice(k.lastIndexOf(':') + 1));
-  /* As linhas de cada fixture são contadas do 1, então a marcação vai por
-     `arquivo:linha` e a varredura de falso negativo percorre cada arquivo com o seu
-     próprio offset. Misturar os dois num índice só acusaria linha errada. */
+  /* Each fixture's lines are counted from 1, so the marking goes by
+     `file:line` and the false-negative sweep walks each file with its own
+     offset. Mixing both into one index would flag the wrong line. */
   const extractedByFile = new Map();
   for (const key of Object.keys(bag)) {
     const clean = key.split(DOC_TITLE_MARK).join('');
@@ -1036,32 +1050,32 @@ function runSelfTest() {
 
   const falsePositives = [];
   for (const [key, value] of Object.entries(bag)) {
-    /* A exceção do separador puro.
+    /* The pure separator exception.
      *
-     * O contrato normal é que a palavra EXTRAI viaje DENTRO da copy, e é isso que
-     * prova que a frase certa foi extraída. Um separador (" · ") não tem palavra
-     * nenhuma — é a definição do caso —, então ele nunca pode satisfazer essa
-     * checagem, e sem esta exceção o fixture do caso acusaria o próprio conserto
-     * como falso positivo.
+     * The normal contract is that the word EXTRAI travels INSIDE the copy, and
+     * that is what proves the right sentence was extracted. A separator (" · ")
+     * has no word at all (that is the definition of the case), so it can never
+     * satisfy that check, and without this exception the case's fixture would
+     * flag its own fix as a false positive.
      *
-     * Não abre buraco: a varredura por LINHA logo abaixo continua exigindo o
-     * marcador na linha (EXTRAI que não sai vira falso negativo, IGNORA que sai
-     * vira falso positivo). Para o separador, o marcador de linha é a única prova
-     * possível — e continua sendo prova. */
+     * It opens no hole: the per-LINE sweep right below still requires the marker
+     * on the line (EXTRAI that does not come out is a false negative, IGNORA that
+     * comes out is a false positive). For the separator, the line marker is the
+     * only possible proof, and it is still proof. */
     if (!value.includes('EXTRAI') && !SO_SEPARADOR_COM_VICIO.test(value)) {
-      falsePositives.push(`linha ${lineOf(key)}: ${value}`);
+      falsePositives.push(`line ${lineOf(key)}: ${value}`);
     }
-    /* Contaminação: o nome da chave e as aspas vieram junto com a frase. Sem
-       esta asserção o fixture só provava que a linha foi extraída, e a extração
-       dobrada passava batida — que é como o bug do selo de credibilidade
-       sobreviveu. Falso positivo que parece sucesso é o pior. */
+    /* Contamination: the key name and quotes came along with the sentence.
+       Without this assertion the fixture only proved the line was extracted,
+       and the doubled extraction went unnoticed, which is how the credibility
+       seal bug survived. A false positive that looks like success is the worst. */
     if (/[A-Za-z_$][\w$]*\s*:\s*['"`]/.test(value)) {
-      falsePositives.push(`linha ${lineOf(key)}: veio com a chave junto -> ${value}`);
+      falsePositives.push(`line ${lineOf(key)}: came with the key attached -> ${value}`);
     }
-    // Extração dobrada: a mesma frase duas vezes dentro do mesmo valor.
+    // Doubled extraction: the same sentence twice inside the same value.
     const words = value.split(/\s+/);
     if (words.length >= 8 && words.slice(0, 4).join(' ') === words.slice(4, 8).join(' ')) {
-      falsePositives.push(`linha ${lineOf(key)}: frase extraída em dobro -> ${value}`);
+      falsePositives.push(`line ${lineOf(key)}: sentence extracted twice -> ${value}`);
     }
   }
 
@@ -1069,17 +1083,17 @@ function runSelfTest() {
   const sweep = (path, lines) => {
     const extracted = extractedByFile.get(norm(path)) ?? extractedByFile.get(path) ?? new Set();
     lines.forEach((line, i) => {
-      // Só linhas de código: o cabeçalho do fixture explica o contrato e cita as
-      // duas palavras dentro de comentário.
-      // `{/* ... */}` conta como comentário: no fixture ele é a anotação do caso
-      // seguinte, e comentário nunca é copy.
+      // Code lines only: the fixture header explains the contract and mentions
+      // both words inside a comment.
+      // `{/* ... */}` counts as a comment: in the fixture it annotates the next
+      // case, and a comment is never copy.
       const isComment = /^\s*(\{\s*)?(\/\/|\*|\/\*)/.test(line);
       if (isComment) return;
       if (line.includes('EXTRAI') && !extracted.has(i + 1)) {
-        falseNegatives.push(`${path.split(/[\\/]/).pop()} linha ${i + 1}: ${line.trim()}`);
+        falseNegatives.push(`${path.split(/[\\/]/).pop()} line ${i + 1}: ${line.trim()}`);
       }
       if (line.includes('IGNORA') && extracted.has(i + 1)) {
-        falsePositives.push(`${path.split(/[\\/]/).pop()} linha ${i + 1}: marcada IGNORA e foi extraída`);
+        falsePositives.push(`${path.split(/[\\/]/).pop()} line ${i + 1}: marked IGNORA and was extracted`);
       }
     });
   };
@@ -1087,27 +1101,27 @@ function runSelfTest() {
   if (existsSync(libFixture)) sweep(libFixture, readFileSync(libFixture, 'utf8').split(/\r?\n/));
 
   const total = Object.keys(bag).length;
-  console.log(`\nself-test do extrator de copy  (${total} string(s) extraída(s) do fixture)\n`);
+  console.log(`\ncopy extractor self-test  (${total} string(s) extracted from the fixture)\n`);
 
   if (falsePositives.length) {
-    console.log(`[FALHA] falso positivo: ${falsePositives.length}`);
+    console.log(`[FAIL]  false positive: ${falsePositives.length}`);
     for (const f of falsePositives) console.log(`          ${f}`);
   } else {
-    console.log('[OK]    nenhum falso positivo');
+    console.log('[OK]    no false positive');
   }
 
   if (falseNegatives.length) {
-    console.log(`[FALHA] falso negativo: ${falseNegatives.length}`);
+    console.log(`[FAIL]  false negative: ${falseNegatives.length}`);
     for (const f of falseNegatives) console.log(`          ${f}`);
   } else {
-    console.log('[OK]    nenhum falso negativo');
+    console.log('[OK]    no false negative');
   }
 
   /*
-   * O leitor de rotas do `--init-report`, contra `fixtures/rotas/`: página
-   * importada, página lazy atrás de um portão, página definida no próprio
-   * roteador, redirecionamento, rota de layout sem path, rota comentada — e a
-   * armadilha do `/*` dentro de comentário de linha no navConfig.
+   * The `--init-report` route reader, against `fixtures/rotas/`: imported page,
+   * lazy page behind a gate, page defined in the router itself, redirect,
+   * layout route without a path, commented-out route, and the `/*` trap inside
+   * a line comment in navConfig.
    */
   const rotasFalhas = [];
   {
@@ -1117,19 +1131,19 @@ function runSelfTest() {
     const fim = (f) => f.split('/').slice(-2).join('/');
     const got = (lidas?.rotas ?? []).map((r) => `${r.caminho}=${fim(r.arquivo)}`).join(' ');
     const want = '/=src/App.tsx /pricing=pages/Pricing.tsx /canvas/:id=pages/Canvas.tsx';
-    if (got !== want) rotasFalhas.push(`rotas: esperado "${want}", veio "${got}"`);
+    if (got !== want) rotasFalhas.push(`routes: expected "${want}", got "${got}"`);
     const red = (lidas?.redirecionamentos ?? []).map((r) => `${r.caminho}>${r.para}`).join(' ');
-    if (red !== '/old>/pricing') rotasFalhas.push(`redirecionamentos: esperado "/old>/pricing", veio "${red}"`);
+    if (red !== '/old>/pricing') rotasFalhas.push(`redirects: expected "/old>/pricing", got "${red}"`);
     for (const [p, w] of [['/pricing', 'nav: isMarketing'], ['/login', 'nav: isMarketing'], ['/canvas/:id', 'nav: EDITOR_PREFIXES']]) {
-      const d = nav?.dica(p) ?? '(sem nav)';
-      if (d !== w) rotasFalhas.push(`dica(${p}): esperado "${w}", veio "${d}"`);
+      const d = nav?.dica(p) ?? '(no nav)';
+      if (d !== w) rotasFalhas.push(`hint(${p}): expected "${w}", got "${d}"`);
     }
   }
   if (rotasFalhas.length) {
-    console.log(`[FALHA] leitor de rotas: ${rotasFalhas.length}`);
+    console.log(`[FAIL]  route reader: ${rotasFalhas.length}`);
     for (const f of rotasFalhas) console.log(`          ${f}`);
   } else {
-    console.log('[OK]    leitor de rotas (3 rotas, 1 redirecionamento, pista de shell)');
+    console.log('[OK]    route reader (3 routes, 1 redirect, shell hint)');
   }
 
   /*
@@ -1162,7 +1176,7 @@ function runSelfTest() {
     }
   }
   if (tokenFalhas.length) {
-    console.log(`[FALHA] token fallback: ${tokenFalhas.length}`);
+    console.log(`[FAIL]  token fallback: ${tokenFalhas.length}`);
     for (const f of tokenFalhas) console.log(`          ${f}`);
   } else {
     console.log('[OK]    token fallback (fires on the dirty fixtures, silent on clean and theme files)');
@@ -1172,8 +1186,8 @@ function runSelfTest() {
   console.log('-'.repeat(64));
   console.log(
     failed
-      ? 'EXTRATOR QUEBRADO. Conserte antes de confiar em qualquer "zero" do portão de copy.'
-      : 'EXTRATOR OK. Caso novo que escapar: acrescente no fixture, nunca substitua.'
+      ? 'EXTRACTOR BROKEN. Fix it before trusting any "zero" from the copy gate.'
+      : 'EXTRACTOR OK. A new case that slips through: add it to the fixture, never replace one.'
   );
   console.log('-'.repeat(64));
   process.exit(failed ? 1 : 0);
@@ -1181,41 +1195,43 @@ function runSelfTest() {
 
 if (selfTest) runSelfTest();
 
-/* ---------- portão 0: superfícies e tela vista ---------- */
+/* ---------- gate 0: surfaces and screen seen ---------- */
 
-/* Este portão existe por dois relatos da mesma falha.
+/* This gate exists because of two reports of the same failure.
  *
- * O primeiro: alguém rodou motion-lint e refine-scan, viu os dois zerados, e
- * chamou de passada completa — pulou o visant-frontend sem perceber. Não foi
- * descuido. Os outros dois terminam em script, e script dá sensação de
- * acabamento; o visant-frontend terminava numa PERGUNTA, que não tem exit code.
- * Agente sempre gravita pro que fecha em zero.
+ * The first: someone ran motion-lint and refine-scan, saw both at zero, and
+ * called it a full pass, skipping visant-frontend without noticing. It was not
+ * carelessness. The other two end in a script, and a script feels finished;
+ * visant-frontend ended in a QUESTION, which has no exit code. Agents always
+ * gravitate toward what closes at zero.
  *
- * O segundo: um bug de AnimatePresence travou o passo de um formulário de
- * captação e passou por tsc, ESLint, motion-lint, impeccable, audit:design e
- * copy-lint. Seis portões verdes numa tela que ninguém abriu.
+ * The second: an AnimatePresence bug froze a step of a lead-capture form and
+ * passed tsc, ESLint, motion-lint, impeccable, audit:design and copy-lint. Six
+ * green gates on a screen nobody opened.
  *
- * A conclusão dos dois é a mesma: regra que depende de disciplina de quem lê
- * falha na rota 40. Então a classificação das superfícies e o registro de ter
- * ABERTO a tela viram artefato que o script confere, e sem eles nenhuma
- * execução pode imprimir PORTÃO ABERTO. */
+ * Both lead to the same conclusion: a rule that depends on the reader's
+ * discipline fails on route 40. So the surface classification and the record
+ * of having OPENED the screen become an artifact the script checks, and
+ * without them no run can print GATE OPEN. */
 
 const SURFACE_RE = /\b(A|B|C)\b/;
 
 function readReport(path) {
   const abs = resolve(path);
-  if (!existsSync(abs)) return { fatal: `relatório não existe: ${abs}` };
+  if (!existsSync(abs)) return { fatal: `report does not exist: ${abs}` };
   const text = readFileSync(abs, 'utf8');
 
   /*
-   * Tabelas markdown, lidas PELO CABEÇALHO.
+   * Markdown tables, read BY HEADER.
    *
-   * O formato antigo era posicional (`| arquivo | superfície | variável |`), e
-   * continua aceito. O novo, por rota, é `| Rota | Arquivo | Superfície |
-   * Variável | Shell | Notas |`: ler por posição pegaria o arquivo como
-   * superfície e acusaria a tabela inteira de vazia. O cabeçalho diz onde está
-   * cada coisa; tabela sem coluna de superfície no cabeçalho (a de "Tela
-   * vista", por exemplo) cai no posicional, como sempre caiu.
+   * The old format was positional (`| file | surface | variable |`), and it is
+   * still accepted. The new per-route one is `| Route | File | Surface |
+   * Variable | Shell | Notes |`: reading by position would take the file as
+   * the surface and flag the whole table as empty. The header says where each
+   * thing is; a table with no surface column in its header (the "Screen seen"
+   * one, for example) falls back to positional, as it always did. Headers are
+   * matched in English and in Portuguese (Rota/Arquivo/Superfície/Variável),
+   * so reports written before the translation keep working.
    */
   const linhasMd = text.split(/\r?\n/);
   const celulas = (l) => l.split('|').slice(1, -1).map((c) => c.trim());
@@ -1224,15 +1240,15 @@ function readReport(path) {
   let cols = null;
   for (let i = 0; i < linhasMd.length; i++) {
     const l = linhasMd[i];
-    if (!l.trim().startsWith('|')) { cols = null; continue; } // tabela acabou
+    if (!l.trim().startsWith('|')) { cols = null; continue; } // table ended
     if (ehSeparador(l)) continue;
     const c = celulas(l);
     if (ehSeparador(linhasMd[i + 1] ?? '')) {
       const idx = (re) => c.findIndex((x) => re.test(x));
       const sup = idx(/superf|surface/i);
       cols = sup === -1 ? null : {
-        rota: idx(/^(rota|route|tela)$/i),
-        arquivo: idx(/^(arquivo|file|componente|p[aá]gina)$/i),
+        rota: idx(/^(rota|route|tela|screen)$/i),
+        arquivo: idx(/^(arquivo|file|componente|component|p[aá]gina|page)$/i),
         sup,
         vari: idx(/vari[aá]vel|variable/i),
       };
@@ -1244,35 +1260,36 @@ function readReport(path) {
   const classified = new Map();
   for (const { cells, cols: cc } of rows) {
     const pick = (k) => (cc[k] >= 0 ? cells[cc[k]] : '') ?? '';
-    if (!cc && (cells.length < 3 || /^(arquivo|rota|file|componente)$/i.test(cells[0]))) continue;
+    if (!cc && (cells.length < 3 || /^(arquivo|rota|file|route|componente|component)$/i.test(cells[0]))) continue;
     const rota = cc ? pick('rota') : '';
     const what = cc ? pick('arquivo') || rota : cells[0];
     const surface = (cc ? pick('sup') : cells[1]) ?? '';
     const variable = (cc ? pick('vari') : cells[2]) ?? '';
     if (!what || !SURFACE_RE.test(surface)) continue;
-    /* Variável de negócio vazia, "?" ou "TBD" não conta: a tabela existe pra
-       forçar a frase "este elemento move X". Preencher com traço é a versão
-       burocrática de pular o passo. */
+    /* An empty business variable, "?" or "TBD" does not count: the table exists
+       to force the sentence "this element moves X". Filling it with a dash is
+       the bureaucratic way of skipping the step. */
     if (!variable || /^[-–—?]+$/.test(variable) || /^(tbd|a definir|n\/a)$/i.test(variable)) continue;
-    /* Chave = rota quando há: duas rotas da mesma página são duas linhas. */
+    /* Key = route when there is one: two routes of the same page are two rows. */
     classified.set(rota || norm(what), { arquivo: norm(what), rota, surface: surface.match(SURFACE_RE)[1], variable });
   }
 
-  /* Era `(?=^##\s|\Z)`. JavaScript não tem `\Z` — a engine lê como a LETRA "Z",
-     e com a flag `i` isso casa com qualquer "z" minúsculo. O `[\s\S]*?` é
-     preguiçoso, então a seção era cortada no primeiro "z" que aparecesse. Em
-     português isso é quase imediato: um relatório com 7 telas registradas
-     contava 1, e a mensagem do portão subnotificava exatamente a evidência que
-     ele existe pra exigir. `$(?![\s\S])` é o fim-de-texto de verdade sob `m`. */
-  const seenSection = text.match(/^##+[ \t]*Tela vista[\s\S]*?(?=^##[ \t]|$(?![\s\S]))/im)?.[0] ?? '';
-  /* Bullet OU linha de tabela.
+  /* It used to be `(?=^##\s|\Z)`. JavaScript has no `\Z`: the engine reads it
+     as the LETTER "Z", and with the `i` flag that matches any lowercase "z".
+     `[\s\S]*?` is lazy, so the section was cut at the first "z" that showed
+     up. In Portuguese that is almost immediate: a report with 7 recorded
+     screens counted 1, and the gate's message under-reported exactly the
+     evidence it exists to require. `$(?![\s\S])` is the real end-of-text under `m`.
+     The heading is accepted as `## Screen seen` or the Portuguese `## Tela vista`. */
+  const seenSection = text.match(/^##+[ \t]*(?:Tela vista|Screen seen)[\s\S]*?(?=^##[ \t]|$(?![\s\S]))/im)?.[0] ?? '';
+  /* Bullet OR table row.
    *
-   * O SKILL.md pede "uma linha por tela, com rota, largura, estado do dado e o
-   * que aconteceu" — quatro campos, que em markdown é uma TABELA. O parser só
-   * aceitava bullet, entao um relatorio escrito exatamente como a skill manda
-   * era lido como zero telas vistas, e o portao acusava de nao ter aberto a
-   * tela justamente quem tinha aberto e registrado direito. Ferramenta que
-   * cobra um formato e le outro ensina a fraudar o formato. */
+   * SKILL.md asks for "one row per screen, with route, width, data state and
+   * what happened": four fields, which in markdown is a TABLE. The parser only
+   * accepted bullets, so a report written exactly as the skill says was read
+   * as zero screens seen, and the gate accused the person who had opened and
+   * recorded the screen properly of not having opened it. A tool that demands
+   * one format and reads another teaches people to fake the format. */
   const seen = seenSection
     .split(/\r?\n/)
     .filter((l) => {
@@ -1281,7 +1298,7 @@ function readReport(path) {
       if (!t.startsWith('|')) return false;
       if (/^\|[\s|:-]+\|$/.test(t)) return false;
       const cells = t.split('|').slice(1, -1).map((c) => c.trim());
-      return cells.length >= 2 && cells[0] && !/^(rota|tela|url|caminho)$/i.test(cells[0]);
+      return cells.length >= 2 && cells[0] && !/^(rota|tela|url|caminho|route|screen|path)$/i.test(cells[0]);
     })
     .map((l) => l.trim().replace(/^[-*]\s+/, '').replace(/^\|/, '').replace(/\|$/, '').trim());
 
@@ -1293,8 +1310,8 @@ function gateZero(reportPath) {
     return {
       ok: false,
       why: [
-        'nenhum relatório passado (--report <arquivo.md>)',
-        'sem a classificação das superfícies isto é uma passada de linter, não uma auditoria',
+        'no report passed (--report <file.md>)',
+        'without the surface classification this is a linter pass, not an audit',
       ],
     };
   }
@@ -1304,16 +1321,16 @@ function gateZero(reportPath) {
 
   const why = [];
 
-  /* Toda tela do alvo precisa de linha. Componente folha herda a superfície da
-     rota, então só arquivo de interface de topo é cobrado — cobrar cada botão
-     transformaria a tabela em burocracia e ela deixaria de ser lida. */
+  /* Every screen in the target needs a row. A leaf component inherits the
+     route's surface, so only top-level interface files are required; requiring
+     every button would turn the table into bureaucracy and it would stop being read. */
   const { cobrados, porRota } = telasDoAlvo();
   const arquivosClassificados = [...r.classified.values()].map((v) => v.arquivo);
   const casa = (f, k) => f.endsWith(k) || k.endsWith(f) || f.includes(k);
   let faltando;
   if (porRota) {
-    /* Por rota: cada rota do alvo precisa da sua linha (pela rota ou, em
-       relatório antigo, pelo arquivo da página). */
+    /* Per route: each route in the target needs its row (by route or, in an
+       old report, by the page file). */
     const rotasClass = new Set([...r.classified.values()].map((v) => v.rota).filter(Boolean));
     faltando = porRota
       .filter((x) => !rotasClass.has(x.caminho) && !arquivosClassificados.some((k) => !rotasClass.size && casa(x.arquivo, k)))
@@ -1323,26 +1340,26 @@ function gateZero(reportPath) {
   }
 
   if (faltando.length) {
-    why.push(`${faltando.length} ${porRota ? 'rota(s)' : 'alvo(s)'} sem linha na tabela de superfícies:`);
+    why.push(`${faltando.length} ${porRota ? 'route(s)' : 'target(s)'} without a row in the surface table:`);
     for (const f of faltando.slice(0, 12)) why.push(`    ${f}`);
-    if (faltando.length > 12) why.push(`    ... e ${faltando.length - 12} a mais`);
+    if (faltando.length > 12) why.push(`    ... and ${faltando.length - 12} more`);
   }
 
   if (!r.seen.length) {
-    why.push('sem seção "## Tela vista": nenhuma evidência de que a tela foi ABERTA');
-    why.push('    portão verde não é tela vista — um AnimatePresence travado passa por todos eles');
+    why.push('no "## Screen seen" section ("## Tela vista" also accepted): no evidence that the screen was OPENED');
+    why.push('    a green gate is not a screen seen; a frozen AnimatePresence passes all of them');
   }
 
   return { ok: !why.length, why, classified: r.classified, seen: r.seen };
 }
 
-/* --init-report: o esqueleto já vem com uma linha por tela do alvo. O atrito de
-   montar a tabela na mão é exatamente o motivo de todo mundo pular esse passo,
-   e um passo que se pula não é um portão. */
+/* --init-report: the skeleton already comes with one row per screen in the
+   target. The friction of building the table by hand is exactly why everyone
+   skips this step, and a step that gets skipped is not a gate. */
 if (initReport) {
   const abs = resolve(initReport);
   if (existsSync(abs)) {
-    console.error(`já existe: ${abs} — não vou sobrescrever.`);
+    console.error(`already exists: ${abs} (will not overwrite).`);
     process.exit(2);
   }
   const telas = telasDoAlvo();
@@ -1356,121 +1373,122 @@ if (initReport) {
       const comp = x.componente && x.componente !== base ? ` (${x.componente})` : '';
       return `| ${x.caminho} | ${disp(x.arquivo)}${comp} |  |  | ${nav?.dica(x.caminho) ?? ''} |  |`;
     });
-    cabecalho = '| Rota | Arquivo | Superfície (A/B/C) | Variável de negócio que move | Shell | Notas |\n|---|---|---|---|---|---|';
+    cabecalho = '| Route | File | Surface (A/B/C) | Business variable it moves | Shell | Notes |\n|---|---|---|---|---|---|';
     if (telas.redirecionamentos?.length) {
-      extra = `\nRedirecionamentos (sem tela própria, não entram na tabela): ${telas.redirecionamentos
-        .map((x) => `\`${x.caminho}\` vai pra \`${x.para}\``)
+      extra = `\nRedirects (no screen of their own, not in the table): ${telas.redirecionamentos
+        .map((x) => `\`${x.caminho}\` goes to \`${x.para}\``)
         .join(', ')}.\n`;
     }
-    extra += `\nRotas lidas de \`${disp(telas.router)}\`${nav ? `; a coluna Shell é a pista de \`${nav.arquivo}\` (quem menciona o caminho), não a classificação` : ''}.\n`;
+    extra += `\nRoutes read from \`${disp(telas.router)}\`${nav ? `; the Shell column is the hint from \`${nav.arquivo}\` (who mentions the path), not the classification` : ''}.\n`;
   } else {
     rows = telas.cobrados.map((f) => `| ${disp(f)} |  |  |  |`);
-    cabecalho = '| Arquivo | Superfície (A/B/C) | Variável de negócio que move | Notas |\n|---|---|---|---|';
+    cabecalho = '| File | Surface (A/B/C) | Business variable it moves | Notes |\n|---|---|---|---|';
   }
   writeFileSync(
     abs,
-    `# Auditoria — ${targets.join(', ')}
+    `# Audit: ${targets.join(', ')}
 
-## Superfícies
+## Surfaces
 
-Uma linha por tela. **Preencha antes de consertar qualquer coisa.** Classificar
-depois de mexer é justificar o que já foi feito.
+One row per screen. **Fill this in before fixing anything.** Classifying
+after changing things is justifying what was already done.
 
-- **A aquisição** — quem não é cliente ainda. Persuadir, provar, converter.
-- **B trabalho** — quem usa todo dia. Velocidade, densidade, teclado.
-- **C confiança** — dinheiro, permissão, ação destrutiva. Não pode mentir.
+- **A acquisition**: whoever is not a customer yet. Persuade, prove, convert.
+- **B work**: whoever uses it every day. Speed, density, keyboard.
+- **C trust**: money, permission, destructive action. It cannot lie.
 
-Aplicar instinto de A numa tela B é o erro mais caro do frontend Visant.
+Applying A instincts to a B screen is the most expensive Visant frontend mistake.
 
 ${cabecalho}
 ${rows.join('\n')}
 ${extra}
-## Tela vista
+## Screen seen
 
-Uma linha por tela ABERTA, com o que foi visto. Sem isto o portão não abre —
-um AnimatePresence travado passa por tsc, ESLint, motion-lint, impeccable,
-audit:design e copy-lint sem acender nada.
+One row per screen OPENED, with what was seen. Without this the gate does not
+open: a frozen AnimatePresence passes tsc, ESLint, motion-lint, impeccable,
+audit:design and copy-lint without lighting anything up.
 
-Cada linha carrega: rota, largura, estado do dado, e o que aconteceu.
-Antes de medir qualquer coisa, confira que a página hidratou (veja
-\`visant-killer/references/ambiente.md\`) — metade dos achados de uma sessão
-foram o dev server mentindo, não a tela.
+Each row carries: route, width, data state, and what happened.
+Before measuring anything, check that the page hydrated (see
+\`visant-killer/references/environment.md\`): half the findings of one session
+were the dev server lying, not the screen.
 
 -
 
-## Achados
+## Findings
 
 `,
     'utf8',
   );
-  console.log(`esqueleto criado: ${abs}`);
-  console.log(`${rows.length} linha(s) de superfície pré-preenchida(s). Preencha e rode:`);
+  console.log(`skeleton created: ${abs}`);
+  console.log(`${rows.length} surface row(s) pre-filled. Fill them in and run:`);
   console.log(`  node killer-scan.mjs --report ${initReport} ${targets.join(' ')}`);
   process.exit(0);
 }
 
-/* ---------- detector 4: ruído de cromo ---------- */
+/* ---------- detector 4: chrome noise ---------- */
 
 /**
- * Poluição de interface: cromo que ninguém pediu.
+ * Interface pollution: chrome nobody asked for.
  *
- * Delegado a `ruido-scan.mjs`, que roda sozinho também. Aqui ele entra no
- * placar para que "portão aberto" passe a exigir também uma tela SEM excesso
- * de texto de apoio — não só uma tela sem bug.
+ * Delegated to `ruido-scan.mjs`, which also runs on its own. Here it joins the
+ * scoreboard so that "gate open" also requires a screen WITHOUT excess support
+ * text, not just a screen without bugs.
  */
 function runRuido() {
   const achados = scanRuido(uiFiles);
   return {
     findings: achados.map(
-      (a) => `${a.file}:${a.linha}  ${a.regra}  ${a.amostra}`,
+      (a) => `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`,
     ),
   };
 }
 
-/* ---------- placar ---------- */
+/* ---------- scoreboard ---------- */
 
 /*
- * O quarto detector, e o que os outros três nao viam.
+ * The fourth detector, and what the other three did not see.
  *
- * Os tres primeiros olham CODIGO (tell de IA), TOKEN (cor crua) e FRASE (vicio
- * de voz). Nenhum deles soma. O defeito que sobrava era a tela inteira correta
- * e ilegivel de tanto texto de apoio: rotulo em caixa-alta em todo trecho,
- * instrucao de uso ao lado de um controle que ja tem afordancia, a mesma
- * informacao dita em tres tamanhos. Cada linha dessas, sozinha, e defensavel;
- * o dano e o acumulado, e por isso nenhum linter de linha pegava.
+ * The first three look at CODE (AI tells), TOKENS (raw color) and SENTENCES
+ * (voice tics). None of them adds up. The defect left over was a screen that
+ * is entirely correct and unreadable from so much support text: an uppercase
+ * label on every block, usage instructions next to a control that already has
+ * an affordance, the same information said in three sizes. Each of those lines
+ * alone is defensible; the damage is the sum, which is why no line linter
+ * caught it.
  */
 const gates = [
-  { id: 'impeccable   (tell de IA)', ...runImpeccable() },
+  { id: 'impeccable   (AI tell)   ', ...runImpeccable() },
   { id: 'audit:design (token)     ', ...runAuditDesign() },
-  { id: 'copy         (vício)     ', ...runCopy() },
-  { id: 'ruído        (cromo)     ', ...runRuido() },
+  { id: 'copy         (tic)       ', ...runCopy() },
+  { id: 'noise        (chrome)    ', ...runRuido() },
 ];
 
 let failed = 0;
 const bar = '-'.repeat(64);
 
 if (!quiet) {
-  console.log(`\nkiller-scan  alvo: ${targets.join(' ')}`);
-  console.log(`arquivos no alvo: ${files.length} (${uiFiles.length} de interface)\n`);
+  console.log(`\nkiller-scan  target: ${targets.join(' ')}`);
+  console.log(`files in target: ${files.length} (${uiFiles.length} interface)\n`);
 }
 
 for (const g of gates) {
   if (g.skipped) {
-    console.log(`[PULADO] ${g.id}  ${g.skipped}`);
+    console.log(`[SKIPPED] ${g.id}  ${g.skipped}`);
     continue;
   }
   if (g.findings.length) {
     failed++;
-    console.log(`[FALHA]  ${g.id}  ${g.findings.length} achado(s)`);
-    // --all lista tudo: com o corte em 40 não dá pra dividir a limpeza por arquivo.
+    console.log(`[FAIL]    ${g.id}  ${g.findings.length} finding(s)`);
+    // --all lists everything: with the cut at 40 you cannot split the cleanup by file.
     const cap = args.includes('--all') ? Infinity : 40;
-    if (!quiet) for (const f of g.findings.slice(0, cap)) console.log(`           ${f}`);
-    if (!quiet && g.findings.length > cap) console.log(`           ... e ${g.findings.length - cap} a mais`);
+    if (!quiet) for (const f of g.findings.slice(0, cap)) console.log(`            ${f}`);
+    if (!quiet && g.findings.length > cap) console.log(`            ... and ${g.findings.length - cap} more`);
   } else {
-    const extra = g.strings != null ? ` (${g.strings} string(s) de interface)` : '';
-    console.log(`[OK]     ${g.id}  zero${extra}`);
+    const extra = g.strings != null ? ` (${g.strings} interface string(s))` : '';
+    console.log(`[OK]      ${g.id}  zero${extra}`);
   }
-  if (g.via && !quiet) console.log(`           via ${g.via}`);
+  if (g.via && !quiet) console.log(`            via ${g.via}`);
 }
 
 /* One line that says what ran and what did not. A skipped gate read as a pass
@@ -1486,20 +1504,20 @@ for (const g of gates) {
   );
 }
 
-/* ---------- --roots: raiz primeiro ----------
+/* ---------- --roots: root first ----------
  *
- * A lista do portão é por arquivo, na ordem em que os detectores acham. Isso
- * manda consertar primeiro a página que a pessoa abriu — e o defeito que mora
- * num componente de `ui/` importado por 68 telas volta na próxima que usa a
- * mesma peça. A rodada 1 do slop killer (2026-10-05) consertou `Thumb`,
- * `PageShell` e `GlassPanel` DEPOIS de dezenas de telas, uma por uma, quando
- * consertar a peça primeiro teria levado metade dos achados de uma vez.
+ * The gate's list is per file, in the order the detectors find things. That
+ * says to fix the page the person opened first, and a defect living in a
+ * `ui/` component imported by 68 screens comes back on the next one that uses
+ * the same piece. Round 1 of the slop killer (2026-10-05) fixed `Thumb`,
+ * `PageShell` and `GlassPanel` AFTER dozens of screens, one by one, when fixing
+ * the piece first would have taken half the findings at once.
  *
- * `--roots` junta os achados de TODOS os detectores pelo arquivo onde moram e
- * ranqueia os arquivos COMPARTILHADOS (em `components/ui`, `components/shared`
- * ou `lib/ui`, ou importados por 5+ arquivos) por fan-out × achados. Fan-out é
- * quantos arquivos do projeto importam a peça — medido no projeto inteiro, não
- * no recorte, porque a tela que herda o defeito pode estar fora do alvo.
+ * `--roots` groups the findings of ALL detectors by the file they live in and
+ * ranks SHARED files (in `components/ui`, `components/shared` or `lib/ui`, or
+ * imported by 5+ files) by fan-out x findings. Fan-out is how many project
+ * files import the piece, measured over the whole project, not the slice,
+ * because the screen that inherits the defect may be outside the target.
  */
 function raizPrimeiro() {
   const LOC = /((?:[A-Za-z]:)?[^\s,:]+\.(?:tsx|jsx|ts|js|css)):(\d+)/g;
@@ -1532,16 +1550,16 @@ if (roots) {
   const lista = raizPrimeiro();
   console.log(bar);
   if (!lista.length) {
-    console.log('RAIZ PRIMEIRO: nenhum achado em peça compartilhada. Os achados são locais de cada tela.');
+    console.log('ROOT FIRST: no finding in a shared piece. The findings are local to each screen.');
   } else {
-    console.log('RAIZ PRIMEIRO: conserte estes antes das telas (achados × arquivos que importam a peça)');
-    console.log(`  ${'score'.padStart(6)}  ${'fan-out'.padStart(7)}  ${'achados'.padStart(7)}  arquivo  (por detector)`);
+    console.log('ROOT FIRST: fix these before the screens (findings x files that import the piece)');
+    console.log(`  ${'score'.padStart(6)}  ${'fan-out'.padStart(7)}  ${'findings'.padStart(8)}  file  (per detector)`);
     const cap = args.includes('--all') ? Infinity : 15;
     for (const x of lista.slice(0, cap)) {
       const dets = [...x.dets].map(([d, n]) => `${d} ${n}`).join(', ');
-      console.log(`  ${String(x.score).padStart(6)}  ${String(x.fan).padStart(7)}  ${String(x.achados).padStart(7)}  ${disp(x.file)}  (${dets})`);
+      console.log(`  ${String(x.score).padStart(6)}  ${String(x.fan).padStart(7)}  ${String(x.achados).padStart(8)}  ${disp(x.file)}  (${dets})`);
     }
-    if (lista.length > cap) console.log(`  ... e ${lista.length - cap} a mais (--all lista tudo)`);
+    if (lista.length > cap) console.log(`  ... and ${lista.length - cap} more (--all lists everything)`);
   }
 }
 
@@ -1549,31 +1567,32 @@ const g0 = gateZero(reportPath);
 
 console.log(bar);
 if (failed) {
-  console.log(`PORTÃO FECHADO: ${failed} detector(es) com achado. Achado de portão vira conserto, não proposta.`);
+  console.log(`GATE CLOSED: ${failed} detector(s) with findings. A gate finding becomes a fix, not a proposal.`);
 } else if (!g0.ok) {
-  /* Detector zerado com portão 0 aberto NÃO é "aberto". Esta é a linha inteira
-     do conserto: o placar não pode mais dizer a palavra que faz o agente parar. */
-  console.log('PORTÃO INCOMPLETO: os detectores passaram, mas isto ainda não é uma auditoria.');
+  /* Detectors at zero with gate 0 open is NOT "open". This is the whole line of
+     the fix: the scoreboard can no longer say the word that makes the agent stop. */
+  console.log('GATE INCOMPLETE: the detectors passed, but this is not an audit yet.');
   for (const w of g0.why) console.log(`  ${w}`);
   console.log('');
-  console.log(`  gere o esqueleto:  node killer-scan.mjs --init-report AUDIT.md ${targets.join(' ')}`);
-  console.log(`  depois de preencher: node killer-scan.mjs --report AUDIT.md ${targets.join(' ')}`);
+  console.log(`  write the skeleton:  node killer-scan.mjs --init-report AUDIT.md ${targets.join(' ')}`);
+  console.log(`  after filling it in: node killer-scan.mjs --report AUDIT.md ${targets.join(' ')}`);
 } else {
   const skipped = gates.filter((g) => g.skipped).length;
   const porSup = [...g0.classified.values()].reduce((a, c) => ((a[c.surface] = (a[c.surface] ?? 0) + 1), a), {});
-  console.log(`PORTÃO ABERTO${skipped ? ` (com ${skipped} pulado, reporte isso)` : ''}.`);
+  console.log(`GATE OPEN${skipped ? ` (with ${skipped} skipped, report that)` : ''}.`);
   console.log(
-    `  superfícies classificadas: ${g0.classified.size} ` +
+    `  surfaces classified: ${g0.classified.size} ` +
       `(${Object.entries(porSup).map(([k, v]) => `${k}:${v}`).join('  ')})`,
   );
-  console.log(`  telas registradas como vistas: ${g0.seen.length}`);
+  console.log(`  screens recorded as seen: ${g0.seen.length}`);
   /*
-   * A LISTA DO QUE FALTA é o único lugar onde o `corta-scan` aparece sem alguém
-   * ter lido o SKILL.md inteiro — e ele mede justamente o que o portão não vê:
-   * palavra cortada e overlay empilhado, que só existem com a tela aberta.
+   * THE LIST OF WHAT IS LEFT is the only place where `corta-scan` shows up
+   * without someone having read the whole SKILL.md, and it measures exactly
+   * what the gate does not see: cut words and stacked overlays, which only
+   * exist with the screen open.
    */
-  console.log('  Falta: tsc, lint, 390px com dado real, backend parado, e o');
-  console.log('         corta-scan.js na tela aberta (texto cortado / overlay empilhado).');
+  console.log('  Still to do: tsc, lint, 390px with real data, backend stopped, and');
+  console.log('               corta-scan.js on the open screen (cut text / stacked overlay).');
 }
 console.log(bar);
 process.exit(failed || !g0.ok ? 1 : 0);

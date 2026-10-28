@@ -97,15 +97,15 @@ What it accepts, exactly:
 | code (`.js .jsx .ts .tsx .mjs .cjs .vue .svelte .astro`) | line by line, comments masked | `L<n>` |
 | any other text (`.md`, `.html`, `.txt`) | line by line, no masking | `L<n>` |
 
-- **Files only**, one or many. A directory crashes with `EISDIR`: expand it with
-  the shell, `node $L $(git ls-files '*.tsx')`.
-- Invalid JSON crashes the script with the parser error.
-- Three rules run **only on `.json`**: emoji, semicolon and pipe separator (in
-  `.md` the pipe is a table, in code `;` is syntax). In `.md`/`.tsx`, check emoji
-  and semicolons by eye.
-- Flags: `--quiet` (exit code only, for CI) and `--include-comments` (lint code
-  comments too).
-- No arguments prints usage and exits 1. Output is in Portuguese.
+- **Files or folders**, one or many. A folder is walked for the types above,
+  skipping `node_modules`, `.git`, `.next`, `dist`, `build`, `out`, `coverage`
+  and dot-folders.
+- Invalid JSON or a missing path stops with a one-line error and exit 1.
+- Emoji runs on every file. Semicolon and pipe separator run **only on
+  `.json`** (in `.md` the pipe is a table, in code `;` is syntax).
+- Flags: `--quiet` (exit code only, for CI), `--include-comments` (lint code
+  comments too), `--self-test` (all 18 rules fire, a clean sentence passes).
+  Messages are English; rule ids and quoted patterns stay Portuguese.
 
 Exit 1 with the key, the excerpt and the fix. Two warnings come **outside the
 exit code**, because good copy cannot fail on a detail:

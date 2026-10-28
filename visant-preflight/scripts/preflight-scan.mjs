@@ -1,27 +1,28 @@
 #!/usr/bin/env node
-/* preflight-scan — o pré-voo de projeto de cliente num comando.
+/* preflight-scan: the client-project preflight in one command.
  *
- *   node preflight-scan.mjs --assets "H:/Meu Drive/Clientes/Marca"
+ *   node preflight-scan.mjs --assets "H:/My Drive/Clients/Brand"
  *   node preflight-scan.mjs --fonts "Syncopate,Funnel Sans"
- *   node preflight-scan.mjs --assets <dir> --fonts "A,B" --report PREVOO.md
+ *   node preflight-scan.mjs --assets <dir> --fonts "A,B" --report PREFLIGHT.md
  *   node preflight-scan.mjs --self-test
  *
- * Responde as duas perguntas que ninguém faz antes de desenhar e que sempre
- * cobram depois:
+ * Answers the two questions nobody asks before designing and that always
+ * come due later:
  *
- *   1. A FOTOGRAFIA aguenta o layout que eu vou desenhar?
- *   2. As FONTES da marca são carregáveis, ou o navegador vai cair no fallback
- *      do sistema em silêncio?
+ *   1. Can the PHOTOGRAPHY hold the layout I am about to design?
+ *   2. Are the brand FONTS loadable, or will the browser silently fall back to
+ *      the system font?
  *
- * Ambas nasceram de prejuízo real (ver SKILL.md). Sem dependência: node puro,
- * leitura de cabeçalho de imagem na mão.
+ * Both were born from real losses (see SKILL.md). No dependencies: plain node,
+ * image headers read by hand.
  *
- * REGRA DE OURO DESTE SCRIPT: nunca filtrar em silêncio. A varredura que deu
- * origem a ele filtrou por dimensão mínima, escondeu uma pasta inteira de fotos
- * em alta e produziu o laudo "não existe foto em alta" — que estava errado.
- * Aqui tudo que é lido aparece, e tudo que é pulado aparece dizendo por quê.
+ * GOLDEN RULE OF THIS SCRIPT: never filter silently. The scan that gave birth
+ * to it filtered by minimum dimension, hid a whole folder of high-res photos
+ * and produced the verdict "there is no high-res photo", which was wrong.
+ * Here everything that is read shows up, and everything skipped shows up
+ * saying why.
  *
- * Exit 1 com --strict se algum item reprovar.
+ * Exit 1 with --strict if any item fails.
  */
 import { readdirSync, statSync, openSync, readSync, closeSync, writeFileSync } from 'node:fs';
 import { join, extname, basename, relative } from 'node:path';
@@ -33,26 +34,26 @@ const val = (n) => {
   return i !== -1 ? args[i + 1] : null;
 };
 
-/* ── Pisos de uso ───────────────────────────────────────────────────
-   Largura mínima do ARQUIVO para cada papel, assumindo tela de 1440 e
-   nenhuma ampliação. Não são opinião: são a conta de quantos pixels a
-   área ocupa. */
+/* ── Usage floors ───────────────────────────────────────────────────
+   Minimum FILE width for each role, assuming a 1440 screen and no
+   upscaling. Not opinion: it is the count of how many pixels the area
+   takes. */
 export const PISOS = [
-  { papel: 'faixa full-bleed', minW: 2000 },
-  { papel: 'retrato de herói', minW: 1000 },
-  { papel: 'célula de grade', minW: 700 },
-  { papel: 'thumb pequeno', minW: 400 },
+  { papel: 'full-bleed band', minW: 2000 },
+  { papel: 'hero portrait', minW: 1000 },
+  { papel: 'grid cell', minW: 700 },
+  { papel: 'small thumb', minW: 400 },
 ];
 
 export function papelDe(w) {
   const p = PISOS.find((x) => w >= x.minW);
-  return p ? p.papel : 'nada — pequena demais para web';
+  return p ? p.papel : 'nothing: too small for web';
 }
 
-/* ── Dimensão de imagem sem dependência ─────────────────────────────
-   PNG, JPEG e WebP cobrem tudo que aparece em pasta de marca. */
+/* ── Image dimensions without dependencies ──────────────────────────
+   PNG, JPEG and WebP cover everything that shows up in a brand folder. */
 export function dimensoes(buf) {
-  // PNG: assinatura + IHDR
+  // PNG: signature + IHDR
   if (buf.length >= 24 && buf.readUInt32BE(0) === 0x89504e47) {
     return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
   }
@@ -69,7 +70,7 @@ export function dimensoes(buf) {
       return { w: rd(24) + 1, h: rd(27) + 1 };
     }
   }
-  // JPEG: percorre marcadores até um SOFn
+  // JPEG: walks the markers until an SOFn
   if (buf.length > 4 && buf[0] === 0xff && buf[1] === 0xd8) {
     let o = 2;
     while (o + 9 < buf.length) {
@@ -96,7 +97,7 @@ function lerCabecalho(p, n = 65536) {
 
 const EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg']);
 
-/** Varre recursivamente. Devolve TUDO — inclusive o que não deu para ler. */
+/** Walks recursively. Returns EVERYTHING, including what could not be read. */
 export function inventario(raiz) {
   const achados = [];
   const pulados = [];
@@ -105,7 +106,7 @@ export function inventario(raiz) {
     try {
       itens = readdirSync(dir, { withFileTypes: true });
     } catch (e) {
-      pulados.push({ caminho: dir, motivo: `não deu para listar (${e.code})` });
+      pulados.push({ caminho: dir, motivo: `could not list (${e.code})` });
       return;
     }
     for (const it of itens) {
@@ -120,10 +121,10 @@ export function inventario(raiz) {
       }
       try {
         const d = dimensoes(lerCabecalho(p));
-        if (!d) { pulados.push({ caminho: p, motivo: 'cabeçalho não reconhecido' }); continue; }
+        if (!d) { pulados.push({ caminho: p, motivo: 'unrecognized header' }); continue; }
         achados.push({ caminho: p, ...d, kb: Math.round(statSync(p).size / 1024) });
       } catch (e) {
-        pulados.push({ caminho: p, motivo: `erro de leitura (${e.code ?? e.message})` });
+        pulados.push({ caminho: p, motivo: `read error (${e.code ?? e.message})` });
       }
     }
   };
@@ -131,10 +132,10 @@ export function inventario(raiz) {
   return { achados, pulados };
 }
 
-/* ── Fontes ─────────────────────────────────────────────────────────
-   A API css2 do Google responde 200 para família existente e 400 para
-   inexistente. Endpoint público, sem chave. Falha de rede vira
-   'indefinido', nunca 'ausente'. */
+/* ── Fonts ──────────────────────────────────────────────────────────
+   Google's css2 API answers 200 for an existing family and 400 for a
+   missing one. Public endpoint, no key. A network failure becomes
+   'indefinido' (undetermined), never 'ausente' (missing). */
 export async function checarFonte(familia, fetchImpl = fetch) {
   const nome = String(familia).trim().replace(/\s+/g, '+');
   const url = `https://fonts.googleapis.com/css2?family=${nome}:wght@400&display=swap`;
@@ -163,27 +164,27 @@ if (flag('--self-test')) {
   const dj = dimensoes(jpg);
   casos.push(['JPEG 3400x1892', dj?.w === 0x0d48 && dj?.h === 0x0764]);
 
-  casos.push(['piso faixa', papelDe(2400) === 'faixa full-bleed']);
-  casos.push(['piso retrato', papelDe(1200) === 'retrato de herói']);
-  casos.push(['piso grade', papelDe(800) === 'célula de grade']);
-  casos.push(['piso reprovado', papelDe(300).startsWith('nada')]);
-  casos.push(['lixo não vira dimensão', dimensoes(Buffer.from('nada disso')) === null]);
+  casos.push(['band floor', papelDe(2400) === 'full-bleed band']);
+  casos.push(['portrait floor', papelDe(1200) === 'hero portrait']);
+  casos.push(['grid floor', papelDe(800) === 'grid cell']);
+  casos.push(['failing floor', papelDe(300).startsWith('nothing')]);
+  casos.push(['garbage is not a dimension', dimensoes(Buffer.from('none of this')) === null]);
 
-  const fake = async (u) => ({ status: String(u).includes('Existe') ? 200 : 400 });
-  casos.push(['fonte presente', (await checarFonte('Existe', fake)) === 'google']);
-  casos.push(['fonte ausente', (await checarFonte('Termina', fake)) === 'ausente']);
-  casos.push(['rede caída = indefinido', (await checarFonte('X', async () => { throw new Error('offline'); })) === 'indefinido']);
+  const fake = async (u) => ({ status: String(u).includes('Exists') ? 200 : 400 });
+  casos.push(['font present', (await checarFonte('Exists', fake)) === 'google']);
+  casos.push(['font missing', (await checarFonte('Missing', fake)) === 'ausente']);
+  casos.push(['network down = undetermined', (await checarFonte('X', async () => { throw new Error('offline'); })) === 'indefinido']);
 
   let ok = true;
   for (const [nome, passou] of casos) {
     if (!passou) ok = false;
-    console.log(`  ${passou ? 'ok  ' : 'FALHA'}  ${nome}`);
+    console.log(`  ${passou ? 'ok  ' : 'FAIL'}  ${nome}`);
   }
   console.log(ok ? '\n✓ preflight-scan self-test' : '\n✗ preflight-scan self-test');
   process.exit(ok ? 0 : 1);
 }
 
-/* ── Execução ───────────────────────────────────────────────────────── */
+/* ── Run ────────────────────────────────────────────────────────────── */
 const linhas = [];
 const diz = (s = '') => { linhas.push(s); console.log(s); };
 let reprovou = false;
@@ -194,9 +195,9 @@ if (dirAssets) {
   const fotos = achados.filter((a) => !a.vetor).sort((a, b) => b.w - a.w);
   const vetores = achados.filter((a) => a.vetor);
 
-  diz(`\n## Fotografia — ${fotos.length} arquivo(s) de bitmap`);
+  diz(`\n## Photography: ${fotos.length} bitmap file(s)`);
   diz('');
-  diz('| Resolução | Peso | Serve para | Arquivo |');
+  diz('| Resolution | Weight | Good for | File |');
   diz('|---|---|---|---|');
   for (const f of fotos) {
     diz(`| ${f.w}×${f.h} | ${f.kb}KB | ${papelDe(f.w)} | ${relative(dirAssets, f.caminho)} |`);
@@ -204,57 +205,57 @@ if (dirAssets) {
 
   const teto = fotos.length ? fotos[0].w : 0;
   diz('');
-  diz(`**Maior arquivo: ${teto}px de largura.** Teto de uso: ${papelDe(teto)}.`);
+  diz(`**Largest file: ${teto}px wide.** Usage ceiling: ${papelDe(teto)}.`);
   if (teto < 2000) {
     reprovou = true;
     diz('');
-    diz('> ⚠ Nenhuma imagem chega a 2000px. **Não desenhe faixa full-bleed** — ela');
-    diz('> vai esticar e chegar mole. Peça ensaio novo ou projete para os pisos acima.');
+    diz('> ⚠ No image reaches 2000px. **Do not design a full-bleed band**: it');
+    diz('> will stretch and arrive soft. Ask for a new shoot or design for the floors above.');
   }
-  if (vetores.length) diz(`\n${vetores.length} vetor(es) SVG — resolução não se aplica.`);
+  if (vetores.length) diz(`\n${vetores.length} SVG vector(s): resolution does not apply.`);
 
   if (pulados.length) {
-    diz('\n### Pulados — leia antes de concluir qualquer coisa');
-    for (const p of pulados) diz(`- ${p.caminho} — ${p.motivo}`);
+    diz('\n### Skipped: read before concluding anything');
+    for (const p of pulados) diz(`- ${p.caminho}: ${p.motivo}`);
   } else {
-    diz('\nNada foi pulado na varredura.');
+    diz('\nNothing was skipped in the scan.');
   }
 }
 
 const fontes = val('--fonts');
 if (fontes) {
-  diz('\n## Fontes');
+  diz('\n## Fonts');
   diz('');
-  diz('| Família | Situação |');
+  diz('| Family | Status |');
   diz('|---|---|');
   for (const fam of fontes.split(',').map((s) => s.trim()).filter(Boolean)) {
     const s = await checarFonte(fam);
     if (s !== 'google') reprovou = true;
     const rotulo = {
-      google: 'Google Fonts — carrega direto',
-      ausente: '**AUSENTE no Google Fonts** — licença própria, ou nome errado no vault',
-      indefinido: 'não deu para checar (rede)',
+      google: 'Google Fonts: loads directly',
+      ausente: '**MISSING from Google Fonts**: own license, or wrong name in the vault',
+      indefinido: 'could not check (network)',
     }[s];
     diz(`| ${fam} | ${rotulo} |`);
   }
   diz('');
-  diz('> Fonte que não carrega não dá erro: o navegador cai em system-ui em');
-  diz('> silêncio e o produto inteiro muda de voz. Se alguma está AUSENTE,');
-  diz('> confirme na pasta de fontes entregue ao cliente antes de aceitar o vault.');
+  diz('> A font that does not load throws no error: the browser silently falls');
+  diz('> back to system-ui and the whole product changes voice. If any is MISSING,');
+  diz('> confirm it in the font folder delivered to the client before accepting the vault.');
 }
 
 if (!dirAssets && !fontes) {
-  console.log('uso: preflight-scan.mjs --assets <dir> --fonts "A,B" [--report arq.md] [--strict]');
+  console.log('usage: preflight-scan.mjs --assets <dir> --fonts "A,B" [--report file.md] [--strict]');
   process.exit(2);
 }
 
 const rel = val('--report');
 if (rel) {
-  writeFileSync(rel, `# Pré-voo\n${linhas.join('\n')}\n`, 'utf8');
-  console.log(`\n✓ relatório em ${rel}`);
+  writeFileSync(rel, `# Preflight\n${linhas.join('\n')}\n`, 'utf8');
+  console.log(`\n✓ report written to ${rel}`);
 }
 
 if (reprovou && flag('--strict')) {
-  console.error('\n✗ pré-voo reprovado');
+  console.error('\n✗ preflight failed');
   process.exit(1);
 }

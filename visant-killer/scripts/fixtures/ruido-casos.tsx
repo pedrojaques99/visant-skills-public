@@ -1,25 +1,25 @@
 /*
- * Fixture do `ruido-scan` — os casos que a regra PRECISA acertar.
+ * `ruido-scan` fixture: the cases the rule MUST get right.
  *
- * Cada bloco abaixo saiu de uma rodada real. Os três falsos positivos foram
- * consertados arrumando a REGRA, nunca com ignore por valor, e ficam travados
- * aqui para que a próxima edição do detector não reabra o buraco.
+ * Each block below came from a real round. The three false positives were
+ * fixed by fixing the RULE, never with an ignore by value, and stay locked
+ * here so the next edit of the detector does not reopen the hole.
  *
- * Rode: node ruido-scan.mjs --self-test
+ * Run: node ruido-scan.mjs --self-test
  *
- * O arquivo não compila como componente de verdade e não deve: é entrada de
- * teste para um detector que lê texto, não árvore.
+ * The file does not compile as a real component and should not: it is test
+ * input for a detector that reads text, not a tree.
  */
 
-/* A sala renderiza a caixa: é o que põe as duas portas na mesma tela (R9). */
+/* The room renders the box: that is what puts both doors on the same screen (R9). */
 import { PortaDaCaixa } from './ruido-porta-b';
 
 /* ============================================================== */
-/* FALSO POSITIVO 1 — genérico de TypeScript lido como tag        */
+/* FALSE POSITIVE 1: TypeScript generic read as a tag             */
 /* ============================================================== */
-/* `React.useState<string | null>` casa com o padrão `>…<` porque genérico usa
- * os mesmos sinais de uma tag. Duas declarações de estado parecidas viravam
- * "duas frases com 50% das palavras em comum". ESPERADO: zero achado. */
+/* `React.useState<string | null>` matches the `>…<` pattern because a generic
+ * uses the same signs as a tag. Two similar state declarations became
+ * "two sentences with 50% shared words". EXPECTED: zero findings. */
 export function FalsoPositivoGenerico() {
   const [dep, setDep] = React.useState<string | null>(null);
   const [tipo, setTipo] = React.useState<TipoFilter>(null);
@@ -28,43 +28,43 @@ export function FalsoPositivoGenerico() {
 }
 
 /* ============================================================== */
-/* FALSO POSITIVO 2 — verbo entre aspas é exemplo, não instrução  */
+/* FALSE POSITIVE 2: a quoted verb is an example, not an order    */
 /* ============================================================== */
-/* O placeholder de uma busca tolerante a acento lista termos de teste. A
- * palavra "arrastar" ali não manda ninguém arrastar nada. ESPERADO: zero. */
+/* The placeholder of an accent-tolerant search lists test terms. The
+ * word "arrastar" there tells nobody to drag anything. EXPECTED: zero. */
 export function FalsoPositivoExemplo() {
   return <input placeholder={'tente "animacao", "vintage", "arrastar"'} />;
 }
 
 /* ============================================================== */
-/* FALSO POSITIVO 3 — oração subordinada descreve, não manda      */
+/* FALSE POSITIVE 3: a subordinate clause describes, not commands */
 /* ============================================================== */
-/* "Ao rolar, a barra encosta" é descrição de comportamento, que é o que uma
- * ficha de componente deve dizer. ESPERADO: zero. */
+/* "Ao rolar, a barra encosta" is a description of behavior, which is what a
+ * component sheet should say. EXPECTED: zero. */
 export function FalsoPositivoSubordinada() {
   return <p>Ao rolar, a barra encosta no cabeçalho e o fio conta quanto já passou.</p>;
 }
 
 /* ============================================================== */
-/* VERDADEIRO 1 — ensina a usar                                   */
+/* TRUE 1: teaches how to use                                     */
 /* ============================================================== */
-/* Imperativo ao lado de um controle que já tem afordância. ESPERADO: 1. */
+/* An imperative next to a control that already has affordance. EXPECTED: 1. */
 export function VerdadeiroInstrucao() {
   return <p>Clique para abrir a ficha da peça no catálogo.</p>;
 }
 
 /* ============================================================== */
-/* VERDADEIRO 2 — legenda do que vem a seguir                     */
+/* TRUE 2: caption of what comes next                             */
 /* ============================================================== */
-/* Narra o conteúdo que aparece dois centímetros depois. ESPERADO: 1. */
+/* Narrates the content that shows up two centimeters later. EXPECTED: 1. */
 export function VerdadeiroLegenda() {
   return <p>As dez peças abaixo cobrem esse intervalo inteiro, na ordem de um job.</p>;
 }
 
 /* ============================================================== */
-/* VERDADEIRO 3 — rótulo gritado, três na mesma tela              */
+/* TRUE 3: shouted label, three on the same screen                */
 /* ============================================================== */
-/* Um é eyebrow legítimo; três é dashboard genérico. ESPERADO: 3. */
+/* One is a legitimate eyebrow; three is a generic dashboard. EXPECTED: 3. */
 export function VerdadeiroRotulos() {
   return (
     <div>
@@ -82,11 +82,11 @@ export function VerdadeiroRotulos() {
 }
 
 /* ============================================================== */
-/* EXCEÇÃO — motivo escrito libera o achado                       */
+/* EXCEPTION: a written reason releases the finding               */
 /* ============================================================== */
-/* O `shift` para ajuste fino é invisível por natureza: não existe pixel que
- * anuncie um modificador de teclado. ESPERADO: zero, porque o motivo está
- * escrito e cita a regra pelo nome.
+/* The `shift` for fine adjustment is invisible by nature: no pixel can
+ * announce a keyboard modifier. EXPECTED: zero, because the reason is
+ * written and cites the rule by name.
  *
  * EXCEÇÃO ao `ruido-scan/ensina-a-usar`: gesto sem afordância nativa. */
 export function ExcecaoComMotivo() {
@@ -94,12 +94,12 @@ export function ExcecaoComMotivo() {
 }
 
 /* ============================================================== */
-/* INGLÊS — o mesmo defeito, outra língua                         */
+/* ENGLISH: the same defect, another language                     */
 /* ============================================================== */
-/* A primeira versão da regra só falava português, e num repo em inglês ela
- * devolvia zero — o que é PIOR que não rodar, porque zero passa por tela limpa.
- * Um repo brasileiro tem as duas: peça de terceiro chega com copy em inglês de
- * fábrica. ESPERADO: 1 em ensina-a-usar, 1 em legenda-do-que-vem. */
+/* The rule's first version only spoke Portuguese, and on an English repo it
+ * returned zero, which is WORSE than not running, because zero passes as clean.
+ * A Brazilian repo has both: a third-party piece arrives with English copy out
+ * of the box. EXPECTED: 1 in ensina-a-usar, 1 in legenda-do-que-vem. */
 export function VerdadeiroIngles() {
   return (
     <div>
@@ -109,18 +109,18 @@ export function VerdadeiroIngles() {
   );
 }
 
-/* FALSO POSITIVO — subordinada em inglês descreve, não manda.
- * ESPERADO: zero. */
+/* FALSE POSITIVE: an English subordinate clause describes, it does not command.
+ * EXPECTED: zero. */
 export function FalsoPositivoSubordinadaIngles() {
   return <p>When you scroll, the bar sticks to the header and the wire fills up.</p>;
 }
 
 /* ============================================================== */
-/* COLISÃO DE LÍNGUA — achados reais de repos de fora             */
+/* LANGUAGE COLLISION: real findings from outside repos           */
 /* ============================================================== */
-/* Os dois vieram de uma validação em três repos alheios, e são o motivo de a
- * regra ter sido estreitada para exigir verbo COLADO ao mecanismo.
- * ESPERADO: zero nos dois. */
+/* Both came from a validation on three outside repos, and they are why the
+ * rule was narrowed to require a verb GLUED to the mechanism.
+ * EXPECTED: zero on both. */
 export function FalsoPositivoColisao() {
   return (
     <div>
@@ -130,8 +130,8 @@ export function FalsoPositivoColisao() {
   );
 }
 
-/* FALSO POSITIVO — rótulo de campo de formulário descreve o campo, e é a função
- * dele. Não é cromo ao lado de um controle que já se explica. ESPERADO: zero. */
+/* FALSE POSITIVE: a form field label describes the field, and that is its job.
+ * It is not chrome next to a control that explains itself. EXPECTED: zero. */
 export function FalsoPositivoRotuloDeCampo() {
   return (
     <div>
@@ -142,14 +142,14 @@ export function FalsoPositivoRotuloDeCampo() {
 }
 
 /* ============================================================== */
-/* ATRIBUIÇÃO NÃO É ATRIBUTO                                      */
+/* AN ASSIGNMENT IS NOT AN ATTRIBUTE                              */
 /* ============================================================== */
-/* Achado real em 2026-08-12 (visant-board, MemberIssuesView): empty states
- * guiados montam a mensagem numa variável, e cada ramo do `if` escreve um
- * `title` diferente. O regex de atributos casava com a ATRIBUIÇÃO, e a R5
- * comparava duas frases que NUNCA aparecem juntas — uma substitui a outra.
+/* Real finding on 2026-08-12 (visant-board, MemberIssuesView): guided empty
+ * states build the message in a variable, and each branch of the `if` writes a
+ * different `title`. The attribute regex matched the ASSIGNMENT, and R5
+ * compared two sentences that NEVER show together: one replaces the other.
  *
- * Variável guarda um valor por vez. ESPERADO: zero, nas quatro frases abaixo. */
+ * A variable holds one value at a time. EXPECTED: zero, on the four sentences below. */
 export function FalsoPositivoAtribuicaoNaoEhAtributo() {
   let title = "Nenhuma tarefa por aqui ainda";
   let hint = "Quando você receber tarefas no Linear, elas aparecem aqui.";
@@ -160,12 +160,12 @@ export function FalsoPositivoAtribuicaoNaoEhAtributo() {
   return <p>{title}</p>;
 }
 
-/* POSITIVO do par: o mesmo texto em DOIS atributos de verdade, no mesmo render,
- * continua sendo a mesma informação em dois tamanhos. Os dois precisam ser
- * atributos que a pessoa ENXERGA (`title` é tooltip, `placeholder` é o texto do
- * campo) — o par com `alt` que morava aqui saiu junto com o conserto de
- * 2026-08-19, ver o bloco "TEXTO ALTERNATIVO" logo abaixo.
- * ESPERADO: 1 achado de mesma-info-dois-tamanhos. */
+/* POSITIVE of the pair: the same text in TWO real attributes, in the same
+ * render, is still the same information in two sizes. Both must be attributes
+ * the person SEES (`title` is a tooltip, `placeholder` is the field's text):
+ * the pair with `alt` that used to live here left with the fix of
+ * 2026-08-19, see the "ALT TEXT" block right below.
+ * EXPECTED: 1 mesma-info-dois-tamanhos finding. */
 export function PositivoAtributoRepetido() {
   return (
     <div>
@@ -176,16 +176,16 @@ export function PositivoAtributoRepetido() {
 }
 
 /* ============================================================== */
-/* TEXTO ALTERNATIVO NÃO É CROMO VISUAL                           */
+/* ALT TEXT IS NOT VISUAL CHROME                                  */
 /* ============================================================== */
-/* Falso positivo confirmado em 2026-08-19 (visant-club,
- * app/(club)/mural/page.tsx:73): a R3 acusou de "legenda do que vem" o `alt` de
- * uma ilustração de estado vazio, porque a descrição termina em "ao lado". O
- * `alt` é obrigação de acessibilidade, é longo por dever, e ninguém o enxerga na
- * tela — encurtá-lo é piorar o produto. `alt`, `aria-*` e `<title>`/`<desc>` de
- * SVG saem do escopo DESTE detector (seguem no do copy-lint).
+/* False positive confirmed on 2026-08-19 (visant-club,
+ * app/(club)/mural/page.tsx:73): R3 flagged as "caption of what comes" the `alt`
+ * of an empty-state illustration, because the description ends in "ao lado".
+ * `alt` is an accessibility duty, long by obligation, and nobody sees it on
+ * screen: shortening it makes the product worse. `alt`, `aria-*` and SVG
+ * `<title>`/`<desc>` leave THIS detector's scope (they stay in copy-lint's).
  *
- * ESPERADO: zero, nas quatro descrições abaixo. */
+ * EXPECTED: zero, on the four descriptions below. */
 export function FalsoPositivoTextoAlternativo() {
   return (
     <div>
@@ -205,16 +205,16 @@ export function FalsoPositivoTextoAlternativo() {
 }
 
 /* ============================================================== */
-/* GENÉRICO DE TS + SETA DE FUNÇÃO NÃO SÃO TEXTO DE TELA          */
+/* A TS GENERIC + FUNCTION ARROW ARE NOT SCREEN TEXT              */
 /* ============================================================== */
-/* Falso positivo confirmado em 2026-08-19 (visant-club,
- * components/club/Rail.tsx:142): a R5 acusou "l.142 e l.145 — 50% das palavras
- * em comum" em cima do `>` de um `=>` fechando no `<` de um genérico. O trecho
- * extraído era `Array.from(ref.current?.querySelectorAll` — código, que ninguém
- * lê na tela. As peneiras novas: `>` precedido de `=` não abre tag, e texto de
- * interface tem parêntese equilibrado.
+/* False positive confirmed on 2026-08-19 (visant-club,
+ * components/club/Rail.tsx:142): R5 flagged "l.142 and l.145, 50% shared
+ * words" on the `>` of a `=>` closing at the `<` of a generic. The extracted
+ * chunk was `Array.from(ref.current?.querySelectorAll`: code, which nobody
+ * reads on screen. The new sieves: a `>` preceded by `=` does not open a tag,
+ * and interface text has balanced parentheses.
  *
- * ESPERADO: zero. */
+ * EXPECTED: zero. */
 export function FalsoPositivoGenericoEmCallback() {
   const itens = useCallback(
     () => Array.from(ref.current?.querySelectorAll<HTMLElement>('[data-item]') ?? []),
@@ -225,9 +225,9 @@ export function FalsoPositivoGenericoEmCallback() {
   return { itens, focaveisDe };
 }
 
-/* O contra-exemplo que impede a peneira de virar covardia: parêntese
- * EQUILIBRADO dentro de frase de tela continua sendo frase de tela, e estas duas
- * dizem a mesma coisa. ESPERADO: 1 achado de mesma-info-dois-tamanhos. */
+/* The counterexample that keeps the sieve from becoming cowardice: BALANCED
+ * parentheses inside a screen sentence are still a screen sentence, and these
+ * two say the same thing. EXPECTED: 1 mesma-info-dois-tamanhos finding. */
 export function PositivoFraseComParenteses() {
   return (
     <div>
@@ -238,11 +238,11 @@ export function PositivoFraseComParenteses() {
 }
 
 /* ============================================================== */
-/* ESTADO VAZIO NÃO REPETE ESTADO VAZIO                           */
+/* AN EMPTY STATE DOES NOT REPEAT ANOTHER EMPTY STATE             */
 /* ============================================================== */
-/* Achados reais em 2026-08-12 (visant-board, TeamAgendaCard e TimeSheetView):
- * ramos de um mesmo `if/else`. Uma frase SUBSTITUI a outra — a tela mostra no
- * máximo uma. ESPERADO: zero. */
+/* Real findings on 2026-08-12 (visant-board, TeamAgendaCard and TimeSheetView):
+ * branches of the same `if/else`. One sentence REPLACES the other: the screen
+ * shows at most one. EXPECTED: zero. */
 export function FalsoPositivoDoisEstadosVazios() {
   const all: unknown[] = [];
   const mine: unknown[] = [];
@@ -251,9 +251,9 @@ export function FalsoPositivoDoisEstadosVazios() {
   return <p>Nenhuma hora apontada nesta semana.</p>;
 }
 
-/* FALSO POSITIVO — `title` e `aria-label` com o mesmo texto é o padrão
- * acessível: mesmo recado, públicos diferentes. Divergir os dois seria o
- * defeito. ESPERADO: zero. */
+/* FALSE POSITIVE: `title` and `aria-label` with the same text is the
+ * accessible pattern: same message, different audiences. Diverging them would
+ * be the defect. EXPECTED: zero. */
 export function FalsoPositivoNomeAcessivel() {
   return (
     <span
@@ -265,13 +265,13 @@ export function FalsoPositivoNomeAcessivel() {
 }
 
 /* ============================================================== */
-/* MENSAGEM DE FALHA COMPARTILHA A FÓRMULA DE PROPÓSITO           */
+/* A FAILURE MESSAGE SHARES THE FORMULA ON PURPOSE                */
 /* ============================================================== */
-/* Achado real em 2026-08-12 (visant-board, CommentSection): "Não foi possível
- * carregar os comentários" contra "Não foi possível carregar os membros". A
- * fórmula é a linguagem consistente da casa para erro; o que distingue as duas
- * é o complemento. Divergir pra escapar do detector pioraria a UI.
- * ESPERADO: zero. */
+/* Real finding on 2026-08-12 (visant-board, CommentSection): "Não foi possível
+ * carregar os comentários" against "Não foi possível carregar os membros". The
+ * formula is the house's consistent language for errors; what tells the two
+ * apart is the complement. Diverging to escape the detector would worsen the UI.
+ * EXPECTED: zero. */
 export function FalsoPositivoDuasMensagensDeFalha() {
   return (
     <div>
@@ -282,14 +282,14 @@ export function FalsoPositivoDuasMensagensDeFalha() {
 }
 
 /* ============================================================== */
-/* DOIS ATRIBUTOS DO MESMO ELEMENTO NÃO SÃO DUAS FRASES DA TELA   */
+/* TWO ATTRIBUTES OF THE SAME ELEMENT ARE NOT TWO SCREEN SENTENCES */
 /* ============================================================== */
-/* Achado real em 2026-08-12 (liminal-stage, Hub.tsx:153): o campo de busca põe a
- * mesma frase no `placeholder` e no `aria-label` — uma vez pra quem vê, uma vez
- * pra quem ouve. É um campo só; a pista era a linha repetida no achado
- * ("l.153 e l.153"). Duas frases de JSX que caibam numa linha só continuam
- * sendo duas frases — por isso a exceção pede que AMBAS venham de atributo.
- * ESPERADO: zero. */
+/* Real finding on 2026-08-12 (liminal-stage, Hub.tsx:153): the search field puts
+ * the same sentence in the `placeholder` and the `aria-label`: once for whoever
+ * sees, once for whoever listens. It is a single field; the clue was the
+ * repeated line in the finding ("l.153 and l.153"). Two JSX sentences that fit
+ * on one line are still two sentences, so the exception asks that BOTH come
+ * from an attribute. EXPECTED: zero. */
 export function FalsoPositivoPlaceholderEAriaLabelDoMesmoCampo() {
   return (
     <input type="text" placeholder="buscar sala, mapa ou o que está tocando" aria-label="buscar sala, mapa ou faixa" />
@@ -297,12 +297,12 @@ export function FalsoPositivoPlaceholderEAriaLabelDoMesmoCampo() {
 }
 
 /* ============================================================== */
-/* R6 · SETA EM CARACTERE — a lei, e o que ela NÃO pega           */
+/* R6 · ARROW AS A CHARACTER: the law, and what it does NOT catch */
 /* ============================================================== */
-/* Ícone é ativo de biblioteca. Glifo de seta herda a métrica da fonte,
- * desalinha da linha de base, não tem peso nem tamanho, e o leitor de tela o lê
- * como texto. Aqui são DOIS achados: a seta do botão e a do link de voltar.
- * ESPERADO seta-glifo: 2. */
+/* An icon is a library asset. An arrow glyph inherits the font metrics,
+ * misaligns with the baseline, has no weight or size, and the screen reader
+ * reads it as text. There are TWO findings here: the button arrow and the back link one.
+ * EXPECTED seta-glifo: 2. */
 export function SetaEmCaractere() {
   return (
     <div>
@@ -314,8 +314,8 @@ export function SetaEmCaractere() {
   );
 }
 
-/* O conserto: ícone importado. Nenhum glifo, nenhum SVG à mão.
- * ESPERADO: zero. */
+/* The fix: an imported icon. No glyph, no hand-drawn SVG.
+ * EXPECTED: zero. */
 export function SetaComoIconeDeBiblioteca({ ArrowRight }: { ArrowRight: React.ComponentType<{ className?: string }> }) {
   return (
     <a href="/x">
@@ -325,11 +325,11 @@ export function SetaComoIconeDeBiblioteca({ ArrowRight }: { ArrowRight: React.Co
 }
 
 /* ============================================================== */
-/* R6b · SVG DE ÍCONE À MÃO vs. GRAFISMO DE MARCA                 */
+/* R6b · HAND-DRAWN ICON SVG vs. BRAND GRAPHIC                    */
 /* ============================================================== */
-/* A grade 24×24 é a caixa universal de ícone: quem desenha nela está
- * redesenhando algo que já existe em qualquer biblioteca.
- * ESPERADO icone-desenhado-a-mao: 1 (só o de baixo). */
+/* The 24×24 grid is the universal icon box: whoever draws on it is
+ * redrawing something that already exists in any library.
+ * EXPECTED icone-desenhado-a-mao: 1 (only the one below). */
 export function IconeDesenhadoAMao() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -338,9 +338,9 @@ export function IconeDesenhadoAMao() {
   );
 }
 
-/* Grafismo de marca tem viewBox próprio e NÃO é substituível por import.
- * A regra não pode acusá-lo, ou vira ruído e o time desliga o detector.
- * ESPERADO: zero. */
+/* A brand graphic has its own viewBox and is NOT replaceable by an import.
+ * The rule cannot flag it, or it becomes noise and the team turns the detector off.
+ * EXPECTED: zero. */
 export function GrafismoDaMarca() {
   return (
     <svg viewBox="0 0 1017 135" aria-hidden="true">
@@ -350,13 +350,13 @@ export function GrafismoDaMarca() {
 }
 
 /* ============================================================== */
-/* R8 · REALCE QUE NÃO DECIDE NADA                                */
+/* R8 · THE HIGHLIGHT THAT DECIDES NOTHING                        */
 /* ============================================================== */
-/* `on: true` escrito à mão na fábrica de um card: o realce roda uma vez POR
- * ITEM, então a lista inteira acende e o destaque deixa de destacar.
- * Caso real: jukebox, 2026-09-11 — três discos na caixa, os três na fila, a
- * grade toda em ciano e "no ar" indistinguível de "3º na fila".
- * ESPERADO realce-que-nao-decide: 1. */
+/* `on: true` written by hand in a card factory: the highlight runs once PER
+ * ITEM, so the whole list lights up and the highlight stops highlighting.
+ * Real case: jukebox, 2026-09-11: three records in the box, all three in the
+ * queue, the whole grid in cyan and "on air" indistinguishable from "3rd in queue".
+ * EXPECTED realce-que-nao-decide: 1. */
 export function GradeToraAcesa({ discos }: { discos: { url: string }[] }) {
   return (
     <ul>
@@ -368,12 +368,12 @@ export function GradeToraAcesa({ discos }: { discos: { url: string }[] }) {
   );
 }
 
-/* ARGUMENTO DE CHAMADA não é descritor de item — falso positivo confirmado na
- * primeira rodada (Director.tsx:823): `{ on: true }` ali é o interruptor de uma
- * tela de vídeo passado pra um setter, e a janela de oito linhas não distingue
- * o `=> {` de um callback do `=> ({` de uma fábrica. Quem distingue é o
- * caractere antes da chave: `nome(` é chamada.
- * ESPERADO: zero. */
+/* A CALL ARGUMENT is not an item descriptor: false positive confirmed in the
+ * first round (Director.tsx:823): `{ on: true }` there is the switch of a
+ * video screen passed to a setter, and the eight-line window cannot tell
+ * a callback's `=> {` from a factory's `=> ({`. What tells them apart is the
+ * character before the brace: `name(` is a call.
+ * EXPECTED: zero. */
 export function InterruptorDaTela({ setScreen }: { setScreen: (v: { on: boolean }) => void }) {
   const itens = [{ key: 'tv' }];
   return itens.map((i) => ({
@@ -385,24 +385,24 @@ export function InterruptorDaTela({ setScreen }: { setScreen: (v: { on: boolean 
 /* EXCEÇÃO ao `ruido-scan/realce-que-nao-decide`: esta peça é UMA na tela — o
    plano que o cliente já assina — e está acesa de propósito, não uma vez por
    item de lista.
- * ESPERADO: zero. */
+ * EXPECTED: zero. */
 export function PlanoAtual() {
   const cartao = { on: true, nome: 'pro' };
   return <div data-on={cartao.on}>{cartao.nome}</div>;
 }
 
 /* ============================================================== */
-/* R9 · DUAS PORTAS PRO MESMO GESTO (entre arquivos)              */
+/* R9 · TWO DOORS FOR THE SAME GESTURE (across files)             */
 /* ============================================================== */
-/* O rótulo da porta daqui é, LITERALMENTE, o placeholder da porta de
- * `ruido-porta-b.tsx`. Caso real: jukebox × caixa de discos, 2026-09-11 —
- * mesma forma, mesmos ícones, bancos diferentes, e nada na tela dizia qual era
- * qual. Nenhuma regra por arquivo enxerga isto.
+/* The label of the door here is, LITERALLY, the placeholder of the door in
+ * `ruido-porta-b.tsx`. Real case: jukebox × record box, 2026-09-11:
+ * same shape, same icons, different stores, and nothing on screen said which
+ * was which. No per-file rule sees this.
  *
- * Desde 2026-10-05 a regra exige a MESMA TELA, e por isso esta sala RENDERIZA a
- * caixa (`<PortaDaCaixa />`, importada no topo do arquivo), como no jukebox:
- * sem o import, as duas pontas seriam telas sem relação e a regra calaria.
- * ESPERADO porta-repetida: 2 (uma ponta aqui, uma ponta lá). */
+ * Since 2026-10-05 the rule requires the SAME SCREEN, so this room RENDERS the
+ * box (`<PortaDaCaixa />`, imported at the top of the file), as in the jukebox:
+ * without the import, the two ends would be unrelated screens and the rule would go quiet.
+ * EXPECTED porta-repetida: 2 (one end here, one end there). */
 export function PortaDaSala({ Group }: { Group: React.ComponentType<{ cap: string; children?: React.ReactNode }> }) {
   return (
     <>
@@ -413,14 +413,14 @@ export function PortaDaSala({ Group }: { Group: React.ComponentType<{ cap: strin
 }
 
 /* ============================================================== */
-/* NEGATIVOS TRAVADOS EM 2026-09-21 (repo liminal-stage)          */
+/* NEGATIVES LOCKED ON 2026-09-21 (liminal-stage repo)            */
 /* ============================================================== */
 
-/* GLIFO DE TECLA não é seta de navegação. O símbolo impresso na tecla é a única
- * grafia que casa com o objeto físico — nenhum ícone de biblioteca substitui "a
- * tecla Enter" sem virar uma seta genérica. Vale dentro de `<kbd>` e em
- * propriedade que nomeia atalho.
- * ESPERADO seta-glifo: zero destas. */
+/* A KEY GLYPH is not a navigation arrow. The symbol printed on the key is the
+ * only spelling that matches the physical object: no library icon replaces "the
+ * Enter key" without becoming a generic arrow. It holds inside `<kbd>` and in a
+ * prop that names a shortcut.
+ * EXPECTED seta-glifo: zero of these. */
 export function TeclaDeAtalho({ Btn }: { Btn: React.ComponentType<{ hint: string }> }) {
   return (
     <>
@@ -430,22 +430,22 @@ export function TeclaDeAtalho({ Btn }: { Btn: React.ComponentType<{ hint: string
   );
 }
 
-/* OBJETO ANINHADO DENTRO DE ARGUMENTO continua sendo argumento. Antes do conserto
- * de 21/09/2026 a regra subia UM nível e parava: a chave que contém `on: true` é
- * precedida por `? `, não por `nome(`, e um setter de config de sala virava
- * "fábrica de card acesa".
- * ESPERADO realce-que-nao-decide: zero. */
+/* AN OBJECT NESTED INSIDE AN ARGUMENT is still an argument. Before the fix of
+ * 2026-09-21 the rule climbed ONE level and stopped: the brace containing `on: true`
+ * is preceded by `? `, not by `name(`, and a room config setter became
+ * "lit card factory".
+ * EXPECTED realce-que-nao-decide: zero. */
 export function LigaJogo({ struct }: { struct: (p: Record<string, unknown>) => void }) {
   const setJogo = (id: string) =>
     struct({ game: id ? { on: true, minigame: id, tempo: 80 } : null });
   return <button onClick={() => setJogo('gartic')}>jogo</button>;
 }
 
-/* GENÉRICO DE TS fecha com `>` e abre com `<` igual a uma tag: dois genéricos em
- * linhas vizinhas fazem o extrator ler o CÓDIGO entre eles como frase de tela.
- * O trecho tem parênteses equilibrados e nenhuma palavra reservada — passava por
- * todas as peneiras.
- * ESPERADO mesma-info-dois-tamanhos: zero. */
+/* A TS GENERIC closes with `>` and opens with `<` just like a tag: two generics
+ * on neighboring lines make the extractor read the CODE between them as a screen
+ * sentence. The chunk has balanced parentheses and no reserved word: it got past
+ * every sieve.
+ * EXPECTED mesma-info-dois-tamanhos: zero. */
 export function LampadasFalsas({ N }: { N: number }) {
   const falsa = {
     ids: Array<string | null>(N).fill(null),
@@ -454,9 +454,9 @@ export function LampadasFalsas({ N }: { N: number }) {
   return <span>{falsa.ids.length}</span>;
 }
 
-/* NOME ACESSÍVEL IDÊNTICO em controles irmãos é simetria, não repetição: dois
- * botões que fazem a mesma coisa em sentidos opostos precisam do mesmo nome.
- * ESPERADO mesma-info-dois-tamanhos: zero. */
+/* AN IDENTICAL ACCESSIBLE NAME on sibling controls is symmetry, not repetition:
+ * two buttons that do the same thing in opposite directions need the same name.
+ * EXPECTED mesma-info-dois-tamanhos: zero. */
 export function MoverNaFileira({ Btn, slot }: { Btn: React.ComponentType<{ label: string }>; slot: number }) {
   return (
     <>

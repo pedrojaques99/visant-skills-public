@@ -1,4 +1,4 @@
-/* Ver ternario-pai.tsx. ESPERADO: zero. */
+/* See ternario-pai.tsx. EXPECTED: zero. */
 export function PassoDois() {
   return <textarea placeholder="instruções da cena" />;
 }

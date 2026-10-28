@@ -71,7 +71,7 @@ a control that already has affordance, the same information said in three sizes,
 the word "add" repeated once per list item. Each line alone is defensible, which
 is why it passes everything. Catalog entry: [slop-catalog.md](slop-catalog.md)
 item 20 ("the page that explains itself"); procedure in any repo, English or
-not, no house tokens: [despoluir.md](despoluir.md).
+not, no house tokens: [declutter.md](declutter.md).
 
 **Of its fifteen rules, nine are not about text.** Three came from a panel that
 passed the four detectors, `tsc`, a UI audit and 2347 tests:
@@ -117,8 +117,8 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
-| `ruido-scan` (this skill) | `EXCEÇÃO ao ruido-scan/<rule>: reason` | `// ruido-ignore-file: <rule>, reason` | the 15 in the script (`ensina-a-usar`, `porta-repetida`, `blur-em-card`...) |
-| token fallback (this skill) | `EXCEÇÃO ao token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` |
+| `ruido-scan` (this skill) | `EXCEPTION to ruido-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 15 in the script (`ensina-a-usar`, `porta-repetida`, `blur-em-card`...) |
+| token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
 | repo `scan-ui-scale` | `EXCEÇÃO ao ui-scale/<rule>: reason` | `// ui-scale-ignore-file: <rule> — reason` | `micro-label`, `px-cru`, `peso-pesado`, `raio-sortido`, `accent-repouso`, `matiz-cru`, `opacidade-cru` |
 | repo `scan-design-violations` | `EXCEÇÃO ao audit:design/<rule>: reason` | `// audit:design-ignore-file: <rule> — reason` | the rule `id` in the script |
@@ -127,8 +127,11 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 In the repo scanners' whole-file form the dash is literal syntax those scripts
 parse; keep it as written.
 
-The `EXCEÇÃO ao` prefix is the literal token the scanners match (`EXCECAO`
-without accents also counts), so it stays in Portuguese in any repo.
+This skill's own scanners (`ruido-scan`, token fallback) accept `EXCEPTION to`
+and the original Portuguese `EXCEÇÃO ao` (`EXCECAO` without accents also
+counts), and `ruido-ignore-file:` as well as `noise-ignore-file:`, so markers
+already written keep working. The repo scanners in the last four rows match only
+`EXCEÇÃO ao`, so there it stays in Portuguese.
 
 ```tsx
 {/* EXCEÇÃO ao ui-scale/opacidade-cru: scrim over the customer photo */}
@@ -188,5 +191,6 @@ a redirect leaves the table and becomes a note), with the **Shell** column
 suggested from `navConfig` (whoever mentions the path). Shell is a hint, not a
 classification: confirm it. A repo without a readable router falls back to one
 row per UI file. The table header is read by name (`surface`/`superfície`,
-`variable`/`variável`), and the seen-screens section must keep the heading
-`## Tela vista`, which the script parses.
+`variable`/`variável`, `route`/`rota`, `file`/`arquivo`), and the seen-screens
+section must keep the heading `## Screen seen` (or the older `## Tela vista`),
+which the script parses.

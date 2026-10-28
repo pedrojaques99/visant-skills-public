@@ -22,7 +22,7 @@ The decision that most affects quality, and the wrong one is the naive default.
 **One pass** (`LOUD=1`): `loudnorm=I=-16` in a single pass. The filter does not know the future,
 so it chases the target by **compressing** in real time.
 
-Measured on a moderate-dynamics fixture (the gate case `LOUD=2 preserva dinamica`):
+Measured on a moderate-dynamics fixture (the gate case `LOUD=2 preserves dynamics`):
 
 | | I | LRA |
 |---|---|---|

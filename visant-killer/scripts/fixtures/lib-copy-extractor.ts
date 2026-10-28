@@ -1,22 +1,22 @@
-/* Fixture do extrator de copy em `.ts` (`extractLibCopy`). NÃO é lib de verdade.
+/* Fixture of the `.ts` copy extractor (`extractLibCopy`). NOT a real lib.
  *
- * Mesmo contrato do fixture de `.tsx`:
- *   toda linha cuja copy DEVE ser extraída contém a palavra EXTRAI, DENTRO da string;
- *   toda linha que NÃO deve ser extraída contém a palavra IGNORA.
+ * Same contract as the `.tsx` fixture:
+ *   every line whose copy MUST be extracted contains the word EXTRAI, INSIDE the string;
+ *   every line that must NOT be extracted contains the word IGNORA.
  *
- * Este arquivo existe por um falso NEGATIVO real, que é o grave: o extrator só olhava
- * `.tsx`, então frase escrita numa lib e RENDERIZADA pela tela nunca era varrida. No
- * mockup-store (2026-08-05) o `art-classify.ts` devolvia
- * `reason: "proporção casa com a superfície <travessão> preenche sem cortar"`, e o
- * painel de render mandava essa string direto pro olho do usuário. O portão dizia
- * "copy zero" com vício de linguagem na tela.
+ * This file exists because of a real false NEGATIVE, the serious kind: the
+ * extractor only looked at `.tsx`, so a sentence written in a lib and RENDERED
+ * by the screen was never scanned. In mockup-store (2026-08-05) `art-classify.ts`
+ * returned a `reason:` string with a dash (written here as <dash>), and the
+ * render panel sent that string straight to the user's eye. The gate said
+ * "copy zero" with a language tic on screen.
  *
- * A regra é o CONTRATO, não a extensão: `.ts` entra pela propriedade que existe para
- * virar texto de tela (`label`, `title`, `reason`, `message`…). Log, chave, id e
- * mensagem de servidor ficam de fora de propósito — varrer `.ts` inteiro faria o portão
- * gritar em código, e portão que grita em código é portão que se desliga.
+ * The rule is the CONTRACT, not the extension: `.ts` gets in through the property
+ * that exists to become screen text (`label`, `title`, `reason`, `message`...).
+ * Logs, keys, ids and server messages stay out on purpose: scanning all of `.ts`
+ * would make the gate shout at code, and a gate that shouts at code gets turned off.
  *
- * Cada caso abaixo já mordeu ou delimita a regra. Não apague nenhum: acrescente.
+ * Every case below has bitten or bounds the rule. Do not delete any: add.
  */
 
 export type Decision = { mode: string; reason: string };
@@ -35,22 +35,22 @@ export const PASSO = {
   description: "EXTRAI cada face do PSD vira um destino possível para a sua arte",
 };
 
-// Template com interpolação: o `${}` sai e o que sobra continua sendo copy.
+// Template with interpolation: the `${}` goes and what is left is still copy.
 export const AVISO = {
   message: `EXTRAI a fonte é ampliada ${1.9} vezes para caber na superfície`,
 };
 
-// IGNORA: caminho de arquivo não é copy, mesmo em propriedade de rótulo.
+// IGNORA: a file path is not copy, even in a label property.
 export const ORIGEM = { title: "src/lib/art-classify.ts" };
 
-// IGNORA: `url` não é propriedade que vira texto de tela.
+// IGNORA: `url` is not a property that becomes screen text.
 export const ENDPOINT = { url: "https://api.visantlabs.com/v1/render" };
 
-// IGNORA: sem espaço, é identificador e não frase.
+// IGNORA: no space, it is an identifier and not a sentence.
 export const CHAVE = { label: "cover_mode" };
 
-// IGNORA: constante de controle, não propriedade de copy.
+// IGNORA: a control constant, not a copy property.
 export const DELAY = 4000;
 
-// IGNORA: className é string, e string de classe não é copy.
+// IGNORA: className is a string, and a class string is not copy.
 export const ESTILO = { label: "flex items-center gap-2 text-xs" };

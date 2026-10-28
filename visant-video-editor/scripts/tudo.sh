@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Ponta a ponta: le a midia -> propoe o roteiro -> monta -> decupa.
+# End to end: reads the media -> proposes the cut list -> assembles -> breaks down.
 #
-# Uso:
-#   SRC=/pasta/da/midia PROJ=/pasta/do/projeto bash tudo.sh
-#   SRC=... TETO_MIN=8 bash tudo.sh          # vlog de ~8 min
-#   SRC=... PERFIL=youtube bash tudo.sh      # take de fala inteiro, sem teto
-#   SRC=... PERFIL=reels bash tudo.sh        # 9:16, enxuto
+# Usage:
+#   SRC=/media/folder PROJ=/project/folder bash tudo.sh
+#   SRC=... TETO_MIN=8 bash tudo.sh          # ~8 min vlog
+#   SRC=... PERFIL=youtube bash tudo.sh      # whole speech take, no ceiling
+#   SRC=... PERFIL=reels bash tudo.sh        # 9:16, lean
 #
-# Roda em background quando a midia esta no Google Drive: cada arquivo e virtual
-# e cada leitura forca download. Ver references/pitfalls.md #10.
+# Run it in the background when the media is on Google Drive: every file is virtual
+# and every read forces a download. See references/pitfalls.md #10.
 set -euo pipefail
 
 AQUI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,16 +23,16 @@ case "${PERFIL:-youtube}" in
             export MAX_LONG="${MAX_LONG:-8}"; export MAX_MED="${MAX_MED:-4}" ;;
   registro) export AR="${AR:-16:9}"; export TETO_MIN="${TETO_MIN:-0}"
             export MAX_LONG="${MAX_LONG:-0}"; export MAX_MED="${MAX_MED:-0}" ;;
-  *) echo "PERFIL invalido: use youtube, reels ou registro"; exit 1 ;;
+  *) echo "invalid PERFIL: use youtube, reels or registro"; exit 1 ;;
 esac
 export OUT="${OUT:-vlog}"
 
-echo "### 1/4 ingest   (midia: $SRC)"
+echo "### 1/4 ingest   (media: $SRC)"
 bash "$AQUI/ingest.sh" > /dev/null
-awk -F'\t' 'NR>1{n++; t+=$3} END{printf "     %d midias, %.1f min de bruto\n", n, t/60}' \
+awk -F'\t' 'NR>1{n++; t+=$3} END{printf "     %d media files, %.1f min of raw footage\n", n, t/60}' \
   "$PROJ/_build/manifest.tsv"
 
-echo "### 2/4 roteiro  (perfil=${PERFIL:-youtube} AR=$AR TETO_MIN=$TETO_MIN)"
+echo "### 2/4 roteiro  (profile=${PERFIL:-youtube} AR=$AR TETO_MIN=$TETO_MIN)"
 bash "$AQUI/roteiro.sh" | sed 's/^/     /'
 
 echo "### 3/4 build"

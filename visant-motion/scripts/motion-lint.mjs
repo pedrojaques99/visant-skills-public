@@ -2,7 +2,7 @@
 /**
  * motion-lint — the severity table in references/motion-rules.md, executable.
  *
- * A tabela de severidade só vale se alguém ler com atenção. Isso aqui roda.
+ * A severity table only counts if someone reads it carefully. This one runs.
  * Zero dependencies, zero config: point it at a repo and it reports every
  * feel-breaking pattern with file:line, the reason, and the fix.
  *
@@ -211,13 +211,13 @@ const isBuildDir = (name) => IGNORED_DIRS.has(name) || /^\.next-/.test(name);
  * a marker cannot leak down onto something it was never written about, and the
  * climb is capped so it cannot reach across a whole file.
  */
-const TETO_SUPRESSAO = 25;
+const SUPPRESSION_CEILING = 25;
 
-function suprimido(rawLines, blankLines, line, ruleId) {
-  const marca = new RegExp(`motion-lint-disable-next-line\\s+${ruleId}\\b`);
-  const chao = Math.max(0, line - 2 - TETO_SUPRESSAO);
-  for (let i = line - 2; i >= chao; i--) {
-    if (marca.test(rawLines[i] ?? "")) return true;
+function isSuppressed(rawLines, blankLines, line, ruleId) {
+  const marker = new RegExp(`motion-lint-disable-next-line\\s+${ruleId}\\b`);
+  const floor = Math.max(0, line - 2 - SUPPRESSION_CEILING);
+  for (let i = line - 2; i >= floor; i--) {
+    if (marker.test(rawLines[i] ?? "")) return true;
     /* "Is this line a comment?" is decided by `blankComments`, not guessed from
        how it starts. Guessing failed on the continuation lines of a block
        comment — the ones that carry no leading `*`, which is most reasons
@@ -230,8 +230,8 @@ function suprimido(rawLines, blankLines, line, ruleId) {
        sibling meant the marker covered only a rule whose very first property
        was the offending one, which is nobody's file. Ending at `}` scopes the
        marker to its own block: it cannot reach the rule above. */
-    const vazio = (blankLines[i] ?? "").trim();
-    if (vazio.includes("}")) return false;
+    const blanked = (blankLines[i] ?? "").trim();
+    if (blanked.includes("}")) return false;
   }
   return false;
 }
@@ -281,11 +281,11 @@ function lineAt(src, index) {
 }
 
 /**
- * Base pra encurtar o caminho na impressão. Só encurta quando o arquivo está
- * MESMO dentro da base — senão devolve a base absoluta do próprio alvo. Sem
- * isso, um alvo fora do cwd vira `../../../app/x.tsx` ou, entre drives, um
- * caminho que não abre em lugar nenhum. Caminho impresso que não dá pra colar
- * de volta é caminho que custa uma ida ao terminal por achado.
+ * Base used to shorten paths when printing. It only shortens when the file is
+ * REALLY inside the base; otherwise it returns the target's own absolute base.
+ * Without this, a target outside the cwd prints as `../../../app/x.tsx` or,
+ * across drives, as a path that opens nowhere. A printed path you cannot paste
+ * back costs a trip to the terminal per finding.
  */
 function displayBase(absTarget, cwd) {
   const r = relative(cwd, absTarget);
@@ -295,7 +295,7 @@ function displayBase(absTarget, cwd) {
 /**
  * A test/spec file. No rendered surface, so no motion rule applies to it.
  *
- * These files quote the very strings the rules hunt for — `it('sem
+ * These files quote the very strings the rules hunt for — `it('no
  * transition-all')`, `expect(src).not.toMatch(/ease-in/)` — so the repos that
  * were disciplined enough to GUARD a rule got reported for it. The detector was
  * punishing the guard and rewarding its absence, which is the worst incentive a
@@ -325,7 +325,7 @@ async function lintFile(path, root) {
       const prev = rawLines[line - 2] ?? "";
 
       // Per-line suppression, with the rule named explicitly.
-      if (suprimido(rawLines, blankLines, line, rule.id)) continue;
+      if (isSuppressed(rawLines, blankLines, line, rule.id)) continue;
       if (rule.skip && rule.skip({ rel, line: text, src: raw })) continue;
 
       findings.push({
@@ -424,14 +424,14 @@ if (argv.includes("--self-test")) {
 }
 
 /**
- * --fix: delega aos codemods. O lint não reescreve nada por conta própria — a
- * decisão de o que é seguro trocar mora no codemod, que sabe distinguir troca
- * mecânica de mudança de comportamento. Aqui é só a porta única, porque
- * `--fix` é o que a mão procura depois de ler 55 achados.
+ * --fix: delegates to the codemods. The lint rewrites nothing on its own: the
+ * decision of what is safe to swap lives in the codemod, which can tell a
+ * mechanical swap from a behaviour change. This is just the single door,
+ * because `--fix` is what the hand reaches for after reading 55 findings.
  *
- * O que sai daqui é o que é REALMENTE mecânico. O que muda comportamento
- * (duração acima de 300ms, transition-all com transform vivo) o codemod segura
- * e explica, em vez de aplicar calado.
+ * What comes out of here is what is REALLY mechanical. What changes behaviour
+ * (duration above 300ms, transition-all with a live transform) the codemod
+ * holds back and explains, instead of applying silently.
  */
 if (argv.includes("--fix")) {
   const { spawnSync } = await import("node:child_process");
@@ -441,19 +441,19 @@ if (argv.includes("--fix")) {
   const passthru = argv.filter((a) => !["--fix", "--json", "--strict", "--self-test"].includes(a));
 
   const codemods = [
-    { name: "duração inline → DUR.*", script: join(here, "codemod-duration.mjs") },
-    { name: "transition-all → lista explícita", script: join(here, "codemod-transition-all.mjs") },
+    { name: "inline duration → DUR.*", script: join(here, "codemod-duration.mjs") },
+    { name: "transition-all → explicit list", script: join(here, "codemod-transition-all.mjs") },
   ];
   for (const c of codemods) {
     console.log(`\n=== ${c.name} ===`);
     const r = spawnSync(process.execPath, [c.script, ...passthru], { stdio: "inherit" });
-    if (r.error) console.error(`  (não rodou: ${r.error.message})`);
+    if (r.error) console.error(`  (did not run: ${r.error.message})`);
   }
   console.log(
     "\n" + "─".repeat(64) + "\n" +
-      "--fix cobre só o mecânico. Rode `motion-lint` de novo pro que sobrou:\n" +
-      "ease-in em UI, scale(0), popover sem origem, loader piscando e espera sem\n" +
-      "superfície são decisão de desenho, não substituição de texto.",
+      "--fix covers only the mechanical part. Run `motion-lint` again for the rest:\n" +
+      "ease-in on UI, scale(0), popovers without an origin, blinking loaders and\n" +
+      "undesigned waits are design decisions, not text substitution.",
   );
   process.exit(0);
 }
@@ -470,19 +470,19 @@ const targets = roots.length ? roots : ["."];
 
 const findings = [];
 for (const t of targets) {
-  /* `resolve`, nunca `join`. `join(cwd, "Z:/app")` devolve "C:/x/Z:/app", que
-     não existe — e o script morre com "no such path" num alvo que existe. Foi
-     assim que uma auditoria devolveu zero em 62 rotas que ela nunca abriu:
-     todo agente que chama o lint de fora passa caminho absoluto. `resolve`
-     trata absoluto como absoluto e relativo como relativo, que é o contrato
-     que qualquer chamador espera. */
+  /* `resolve`, never `join`. `join(cwd, "Z:/app")` returns "C:/x/Z:/app", which
+     does not exist, and the script dies with "no such path" on a target that
+     does. That is how an audit returned zero on 62 routes it never opened:
+     every agent calling the lint from outside passes an absolute path.
+     `resolve` treats absolute as absolute and relative as relative, which is
+     the contract any caller expects. */
   const abs = resolve(cwd, t);
   let s;
   try {
     s = await stat(abs);
   } catch {
     console.error(`motion-lint: no such path: ${t}`);
-    console.error(`  (resolvido para ${abs})`);
+    console.error(`  (resolved to ${abs})`);
     process.exit(2);
   }
   const base = displayBase(abs, cwd);
@@ -520,15 +520,16 @@ if (json) {
   console.log("Mechanical fixes: motion-lint --fix (duration tokens, transition-all).");
 }
 
-/* Rodapé sempre, inclusive no zero — principalmente no zero.
-   Um zero daqui já foi lido como "passada completa" e a rodada pulou a
-   classificação de superfícies inteira. Script termina em exit code, e exit
-   code parece acabamento. Este linter vê regex; ele não vê tela aberta. */
+/* Footer always, including on zero, especially on zero.
+   A zero from here was once read as "full pass" and the round skipped the
+   whole surface classification. A script ends in an exit code, and an exit
+   code feels like being done. This linter sees regex; it does not see an open
+   screen. */
 if (!json) {
   console.log(
-    "\nEste é UM detector, não a auditoria. Ele não vê a tela aberta —\n" +
-      "um AnimatePresence travado passa por ele e por todos os outros.\n" +
-      "Portão de verdade: killer-scan --report AUDIT.md <alvo>",
+    "\nThis is ONE detector, not the audit. It does not see the open screen:\n" +
+      "a stuck AnimatePresence slips past it and past every other one.\n" +
+      "The real gate: killer-scan --report AUDIT.md <target>",
   );
 }
 

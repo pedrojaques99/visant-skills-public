@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Varre a pasta feira/, le metadado de cada midia e gera:
-#   _build/manifest.tsv  -> tabela completa (ordenada por data de captura)
-#   _build/edl.txt       -> roteiro editavel:  arquivo <TAB> in <TAB> out
-# Uso: bash _tools/ingest.sh
+# Scans the media folder, reads each file's metadata and writes:
+#   _build/manifest.tsv  -> full table (sorted by capture date)
+#   _build/edl.txt       -> editable cut list:  file <TAB> in <TAB> out
+# Usage: bash _tools/ingest.sh
 set -euo pipefail
 
-BASE="${PROJ:-$PWD}"      # raiz do projeto (_build/ e _out/ moram aqui)
-ROOT="${SRC:-$BASE}"          # pasta com as midias (SRC= aponta pra fora)
+BASE="${PROJ:-$PWD}"      # project root (_build/ and _out/ live here)
+ROOT="${SRC:-$BASE}"          # media folder (SRC= points outside)
 BUILD="$BASE/_build"
 mkdir -p "$BUILD"
 
@@ -21,7 +21,7 @@ for f in "$ROOT"/*.{mov,mp4,m4v,avi,mkv,jpg,jpeg,png,heic}; do files+=("$f"); do
 shopt -u nocaseglob
 
 if [ ${#files[@]} -eq 0 ]; then
-  echo "Nenhuma midia em $ROOT ainda. Sobe os videos e roda de novo."
+  echo "No media in $ROOT yet. Add the videos and run again."
   exit 0
 fi
 
@@ -58,15 +58,15 @@ done
 sort -t$'\t' -k9,9 "$tmp" >> "$MAN"
 rm -f "$tmp"
 
-# EDL inicial: tudo na ordem cronologica, corte cheio (in=0, out=dur)
+# Initial EDL: everything in chronological order, full cut (in=0, out=dur)
 {
-  echo "# Roteiro do vlog - edite a vontade."
-  echo "# formato:  arquivo <TAB> in(s) <TAB> out(s)   |  linha com # = ignorada"
-  echo "# reordene as linhas pra mudar a ordem dos cortes."
+  echo "# Vlog cut list: edit freely."
+  echo "# format:  file <TAB> in(s) <TAB> out(s)   |  line starting with # = ignored"
+  echo "# reorder the lines to change the order of the cuts."
   awk -F'\t' 'NR>1 { printf "%s\t0\t%s\n", $1, $3 }' "$MAN"
 } > "$EDL"
 
 echo "== manifest: $MAN"
 column -t -s$'\t' "$MAN" 2>/dev/null || cat "$MAN"
 echo
-echo "== EDL inicial: $EDL  ($(grep -vc '^#' "$EDL") cortes)"
+echo "== initial EDL: $EDL  ($(grep -vc '^#' "$EDL") cuts)"

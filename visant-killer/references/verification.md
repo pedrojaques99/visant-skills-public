@@ -1,7 +1,7 @@
 # Verification tools: `verify-screens`, `corta-scan`, `corta-url`
 
 Detail behind Step 5 of [SKILL.md](../SKILL.md). Before any measurement, the four
-signals in [ambiente.md](ambiente.md).
+signals in [environment.md](environment.md).
 
 ## `verify-screens.mjs`: the app behind login
 
@@ -24,11 +24,11 @@ node $V --self-check                           # parsing only, no browser
   and `MSYS_NO_PATHCONV=1` breaks the script's own path.
 - **Paid-route lock, two layers.** A route in `--skip-paid` (default `/naming`)
   is never opened, and on **every** route a POST to a paid endpoint is aborted in
-  the browser and reported as `PAGO-BLOQUEADO`. The second layer catches the paid
+  the browser and reported as `PAID-BLOCKED`. The second layer catches the paid
   route nobody listed. `--allow-paid` turns both off, and is used only knowing
   who pays. Found a new route that spends on load: add it to
   `DEFAULT_SKIP_PAID`. Why: [cases.md](cases.md#the-paid-route).
-- `TELA-VAZIA` is re-measured once before becoming a finding (it is almost
+- `BLANK-SCREEN` is re-measured once before becoming a finding (it is almost
   always the dev server recompiling), and `api4xx5xx` does not fail on its own:
   a local backend has broken routes that are not the screen's.
 
@@ -56,7 +56,7 @@ node ~/.claude/skills/visant-killer/scripts/corta-self-test.mjs
 ```
 
 Run it from the target repo (it resolves `playwright-core`/`playwright` from the
-cwd, with the npx cache as backup). Without either it says `NÃO TESTADO`, which
+cwd, with the npx cache as backup). Without either it says `NOT TESTED`, which
 is not a pass.
 
 Per-check detail lives in `visant-frontend/references/verification.md`.

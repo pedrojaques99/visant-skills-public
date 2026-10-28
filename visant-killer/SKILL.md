@@ -83,7 +83,7 @@ listing screen is T3 inside a T2).
 
 **Complaint only about excess** ("too much text", "cluttered", "template look",
 "tá poluído", "muita label"): go straight to
-[despoluir.md](references/despoluir.md), the path that needs nothing of the
+[declutter.md](references/declutter.md), the path that needs nothing of the
 house (any repo, any language, no linter).
 
 ## Step 2: Gate (runs before reading the code)
@@ -96,7 +96,7 @@ node $K --init-report AUDIT.md <target>    # skeleton, one row per route (Shell 
 node $K --report AUDIT.md <target>
 ```
 
-Without a complete `--report` it prints **PORTÃO INCOMPLETO** and exits 1
+Without a complete `--report` it prints **GATE INCOMPLETE** and exits 1
 ([details](references/gates.md#what---init-report-writes)). Two required columns:
 
 - **surface**: A acquisition (not yet a customer), B work (uses it every day),
@@ -105,9 +105,9 @@ Without a complete `--report` it prints **PORTÃO INCOMPLETO** and exits 1
 - **business variable**: what this element moves. Dash, "TBD" or empty is
   rejected: filling it with nothing is skipping the step.
 
-The `## Tela vista` section (exact heading, the script parses it) is the other
-half: one row per screen **opened**, with route, width, data state and what
-happened. Read [ambiente.md](references/ambiente.md) first: the dev server lies.
+The `## Screen seen` section (exact heading; `## Tela vista` also parses) is the
+other half: one row per screen **opened**, with route, width, data state and
+what happened. Read [environment.md](references/environment.md) first: the dev server lies.
 
 `killer-scan` runs four detectors, prints one scoreboard and ends with a
 `gates: N/4 ran [...]` line naming anything skipped: **impeccable** (AI tells);
@@ -126,22 +126,22 @@ ran and what was skipped, and why
 Side gates: `node $R <target>` when there is a chart, gauge or animation;
 `node $D <app-root>` on surface A, **before** polish, because a page that shares
 without a card or converts without an event is not fixable by tokens and no UI
-detector lights up ([distribuicao.md](references/distribuicao.md)).
+detector lights up ([distribution.md](references/distribution.md)).
 
 **A failed gate becomes a fix, not a proposal, after confirming each finding at
 `file:line`** (legacy code is noisy; fixing unread lines writes bugs).
 
 - A confirmed false positive has ONE right fix: **repair the rule and lock the
   case in the fixture**, never an `audit-ignore` in the file (it hides the next one).
-- **Written exception:** `EXCEÇÃO ao <scanner>/<rule>: reason` on the line or up
-  to 8 above; mute allowlists are forbidden
+- **Written exception:** `EXCEPTION to <scanner>/<rule>: reason` (or `EXCEÇÃO
+  ao`) on the line or up to 8 above; mute allowlists are forbidden
   ([contract](references/gates.md#written-exception-one-contract-every-scanner)).
 - **CI ratchet:** re-record a baseline only when the total dropped, never to
   absorb a rise, always over the whole app ([gates.md](references/gates.md#ci-ratchet)).
 - **Rule before finding:** many findings, almost none real, means the defect is
   in the RULE. Group by folder, read the rule's intent, scope it with a **reason
   written inside the rule**, then fix what is left
-  ([falso-positivo.md](references/falso-positivo.md)).
+  ([false-positives.md](references/false-positives.md)).
 
 ## Step 3: Judgment (load by tier, not everything always)
 
@@ -184,11 +184,11 @@ Question bank per tier: [devils-advocate.md](references/devils-advocate.md).
 
 ## Step 5: Verification (what compiles is not what someone saw)
 
-**First, open the screen** (it fills `## Tela vista`). App behind login: `node $V` from the target repo (overflow, cut text, raw i18n
+**First, open the screen** (it fills `## Screen seen`). App behind login: `node $V` from the target repo (overflow, cut text, raw i18n
 keys, console, `/api` 4xx/5xx, empty screen, theme; paid routes locked).
 Published URL: `corta-url.mjs <base> route`. Open by hand: `$T` in the console.
 Flags and the paid-route lock: [verification.md](references/verification.md).
-Before measuring, the four signals in [ambiente.md](references/ambiente.md): route
+Before measuring, the four signals in [environment.md](references/environment.md): route
 warmed up, hydration confirmed by a DOM mark (not `readyState`), real data
 including the worst record, node count matching the page opened by hand.
 
@@ -199,7 +199,7 @@ Then, and only then (whatever did not run goes in the report):
 | types and lint | `npx tsc --noEmit` and the repo's lint. **Never `next build` with dev running** (it breaks `.next`) |
 | horizontal overflow | `$V` (`estouro` column): `scrollWidth - clientWidth` **of the document** at 390px, re-measured after each fix. Not on an element: a decorative blob under `overflow-hidden` once became 64px of overflow that did not exist |
 | **cut text and stacked overlay** | `$V` (`corta` column) or `$T` in the console: a word eaten by a clipping parent, an overlay covering another in the same corner, a piece that left its box |
-| distribution | does the page exist outside itself? `title`, `description`, share card, conversion event, `sitemap`, `robots` ([distribuicao.md](references/distribuicao.md)) |
+| distribution | does the page exist outside itself? `title`, `description`, share card, conversion event, `sitemap`, `robots` ([distribution.md](references/distribution.md)) |
 | real data | the screen with the best record and the worst; empty hides every overflow |
 | light theme | `$V --theme both`. A dark-first app breaks in light where nobody looks |
 | backend failure | run with the backend down. Silent zero is the dominant lie: a failed fetch that paints "0" is indistinguishable from a real zero |

@@ -1,21 +1,21 @@
-"""Plano de corte (json) -> FCP7 XML que o Premiere importa exato, e o conferidor.
+"""Cut plan (json) -> FCP7 XML that Premiere imports frame-exact, plus the checker.
 
-    python premiere_xml.py <plano.json> [...]            escreve <plano>.xml ao lado (ou --saida DIR)
-    python premiere_xml.py --motion <plano.json>         tabela Escala/Posicao pra aplicar pelo MCP
-    python premiere_xml.py --conferir <plano.json> <leitura.json>
-                                                         bate get_full_sequence_info salvo contra o plano
+    python premiere_xml.py <plan.json> [...]             writes <plan>.xml next to it (or --saida DIR)
+    python premiere_xml.py --motion <plan.json>          Scale/Position table to apply through the MCP
+    python premiere_xml.py --conferir <plan.json> <readback.json>
+                                                         checks a saved get_full_sequence_info against the plan
 
-Formato do plano (o mesmo do aula_tela.py e do premiere_plano.py):
-  sequencia: {nome, w, h[, fps]}   fps: aqui ou na raiz
+Plan format (same as aula_tela.py and premiere_plano.py; keys stay as they are):
+  sequencia: {nome, w, h[, fps]}   fps: here or at the root
   cortes[]:  tipo "clip" (default) -> arquivo, fonte_in_f, fonte_out_f
              tipo "still"          -> arquivo (png), duracao_s
-             motion opcional       -> {scale %, position [x, y] px}
-  marcadores[] opcional: {s, tipo "plano"|"fala", texto}  (s no relogio do json)
+             optional motion       -> {scale %, position [x, y] px}
+  optional marcadores[]: {s, tipo "plano"|"fala", texto}  (s on the json clock)
 
-Por que XML e nao corte a corte pelo MCP: o Premiere arredonda in/out em segundos
-pra baixo (9.2083 x 24 = 220.999 -> quadro 220) e subclip de PNG ignora a
-duracao. No XML tudo e quadro inteiro. Motion NAO vai no XML (nao testado): e
-aplicado depois pelo MCP com a tabela do --motion.
+Why XML and not cut by cut through the MCP: Premiere rounds in/out in seconds
+down (9.2083 x 24 = 220.999 -> frame 220) and a PNG subclip ignores the
+duration. In XML everything is a whole frame. Motion does NOT go in the XML
+(untested): it is applied afterwards through the MCP with the --motion table.
 """
 
 from __future__ import annotations
@@ -39,10 +39,10 @@ def fps_de(d: dict) -> float:
 
 
 def url_premiere(arq: str) -> str:
-    # file:///Z:/ o Premiere le como \\\Z:\ -> midia offline e janela modal que
-    # trava o MCP. Este e o formato que ele mesmo exporta:
+    # file:///Z:/ is read by Premiere as \\\Z:\ -> offline media and a modal window
+    # that locks the MCP. This is the format Premiere itself exports:
     #   Windows  Z:/x/a.mov     -> file://localhost/Z%3A/x/a.mov
-    #   macOS    /Users/x/a.mov -> file://localhost/Users/x/a.mov (sem barra dupla)
+    #   macOS    /Users/x/a.mov -> file://localhost/Users/x/a.mov (no double slash)
     p = arq.replace("\\", "/")
     if p.startswith("/") and not p.startswith("//"):
         p = p[1:]
@@ -80,7 +80,7 @@ def montar(plano: str, saida: str | None = None) -> str:
     seq = d["sequencia"]
     pre = prefixo(plano)
     tl = otio.schema.Timeline(name=seq["nome"], global_start_time=otio.opentime.RationalTime(0, fps))
-    # sem <format> o Premiere abre 720x480 NTSC e a tela fica com 90,9% de largura
+    # without <format> Premiere opens 720x480 NTSC and the screen ends up at 90.9% width
     tl.metadata["fcp_xml"] = {"media": {"video": {"format": {"samplecharacteristics": {
         "rate": {"timebase": round(fps), "ntsc": "FALSE"},
         "width": seq["w"], "height": seq["h"],
@@ -101,9 +101,9 @@ def montar(plano: str, saida: str | None = None) -> str:
         inicio.append((c.get("timeline_in_s", t / fps), t, dur))
         t += dur
 
-    # o json marca em segundos quebrados; a timeline e em quadro inteiro. Cada
-    # marcador volta pro corte onde caia. O Premiere as vezes descarta um de dois
-    # marcadores no mesmo quadro: o plano fica, a fala vai +1 quadro.
+    # the json marks in fractional seconds; the timeline is in whole frames. Each
+    # marker goes back to the cut it fell in. Premiere sometimes drops one of two
+    # markers on the same frame: the shot marker stays, the speech one moves +1 frame.
     ocupado = set()
     for m in sorted(d.get("marcadores", []), key=lambda m: (m["s"], m["tipo"] != "plano")):
         j = max(i for i, (s, _, _) in enumerate(inicio) if s <= m["s"] + 1e-6)
@@ -121,16 +121,16 @@ def montar(plano: str, saida: str | None = None) -> str:
     dst = os.path.join(saida or os.path.dirname(os.path.abspath(plano)), base + ".xml")
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     otio.adapters.write_to_file(tl, dst, adapter_name="fcp_xml")
-    print(f"{base}: {len(d['cortes'])} cortes, {t} quadros ({t / fps:.3f}s"
+    print(f"{base}: {len(d['cortes'])} cuts, {t} frames ({t / fps:.3f}s"
           + (f", json {d['duracao_s']}s" if "duracao_s" in d else "")
-          + f"), {len(d.get('marcadores', []))} marcadores -> {dst}")
+          + f"), {len(d.get('marcadores', []))} markers -> {dst}")
     return dst
 
 
 def tabela_motion(plano: str):
-    """Uma linha por corte com punch-in: nome, Escala, Posicao normalizada.
-    Em Premiere PT-BR: efeito "Movimento", propriedades "Escala" e "Posicao";
-    Posicao e [x/w, y/h], nao pixel."""
+    """One row per cut with a punch-in: name, Scale, normalized Position.
+    In PT-BR Premiere: effect "Movimento", properties "Escala" and "Posicao";
+    Position is [x/w, y/h], not pixels. Output keys stay corte/escala/posicao."""
     d = ler(plano)
     w, h = d["sequencia"]["w"], d["sequencia"]["h"]
     pre = prefixo(plano)
@@ -155,27 +155,27 @@ def conferir(plano: str, leitura: str) -> bool:
     erros = []
     clips = s["videoTracks"][0]["clips"]
     if len(clips) != len(d["cortes"]):
-        erros.append(f"{len(clips)} clipes na V1, plano tem {len(d['cortes'])}")
+        erros.append(f"{len(clips)} clips on V1, plan has {len(d['cortes'])}")
     t = 0
     for c, cl in zip(d["cortes"], clips):
         ini, dur = ini_dur(c, fps)
-        if c.get("tipo", "clip") == "still":  # o Premiere guarda still com in em 3600 s
+        if c.get("tipo", "clip") == "still":  # Premiere stores a still with in at 3600 s
             ini = q(cl["inPointSeconds"])
         got = (q(cl["startSeconds"]), q(cl["inPointSeconds"]), q(cl["durationSeconds"]))
         if got != (t, ini, dur):
-            erros.append(f"corte {c['n']}: timeline/in/dur {got}, esperado {(t, ini, dur)}")
+            erros.append(f"cut {c['n']}: timeline/in/dur {got}, expected {(t, ini, dur)}")
         t += dur
     if q(s["durationSeconds"]) != t:
-        erros.append(f"duracao {q(s['durationSeconds'])} quadros, esperado {t}")
+        erros.append(f"duration {q(s['durationSeconds'])} frames, expected {t}")
     if (s["width"], s["height"]) != (d["sequencia"]["w"], d["sequencia"]["h"]):
-        erros.append(f"quadro {s['width']}x{s['height']}")
+        erros.append(f"frame size {s['width']}x{s['height']}")
     if any(v["clips"] for v in s["videoTracks"][1:]):
-        erros.append("tem clipe fora da V1")
+        erros.append("there is a clip outside V1")
     n_m = len(d.get("marcadores", []))
     if s.get("markerCount", 0) != n_m:
-        erros.append(f"{s.get('markerCount', 0)} marcadores, plano tem {n_m}")
-    print(f"{len(clips)} cortes, {t} quadros ({t / fps:.3f}s), {s.get('markerCount', 0)} marcadores -> "
-          + ("OK" if not erros else "FALHOU"))
+        erros.append(f"{s.get('markerCount', 0)} markers, plan has {n_m}")
+    print(f"{len(clips)} cuts, {t} frames ({t / fps:.3f}s), {s.get('markerCount', 0)} markers -> "
+          + ("OK" if not erros else "FAILED"))
     for e in erros:
         print("   ", e)
     return not erros

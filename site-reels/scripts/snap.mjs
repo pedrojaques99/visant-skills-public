@@ -1,13 +1,13 @@
-// Gravação determinística quadro a quadro: timeweb (o relógio virtual do timesnap) congela
-// rAF, performance.now, setTimeout e vídeo; cada quadro é renderizado e fotografado sem pressa.
-// 60fps cravados mesmo com WebGL pesado ou máquina ocupada.
-// Uso: node snap.mjs <scenes.mjs> [cena ...]   Env: OUT, FPS (60), CHROME, FFMPEG, BASE.
-// Cena: { name, path, theme?, css?, dur (s), wait? (ms reais pra carregar), pre? (ms virtuais de
-//         assentamento antes da rolagem, 2000), start? (s virtuais pulados antes de gravar),
-//         scroll?: { sel|null, from, to, at, len } (rolagem em função do tempo virtual de gravação),
-//         scroll.bottom?: [de, até] em alturas de tela acima do fim da página,
-//         frame?(page, t) (a cada quadro), preserve? (preserveDrawingBuffer, true), crf? }
-// Requer scripts/patch-timeweb.mjs aplicado (postinstall).
+// Deterministic frame-by-frame recording: timeweb (timesnap's virtual clock) freezes
+// rAF, performance.now, setTimeout and video; each frame is rendered and captured without hurry.
+// A locked 60fps even with heavy WebGL or a busy machine.
+// Usage: node snap.mjs <scenes.mjs> [scene ...]   Env: OUT, FPS (60), CHROME, FFMPEG, BASE.
+// Scene: { name, path, theme?, css?, dur (s), wait? (real ms to load), pre? (virtual ms of
+//          settling before the scroll, 2000), start? (virtual s skipped before recording),
+//          scroll?: { sel|null, from, to, at, len } (scroll as a function of virtual recording time),
+//          scroll.bottom?: [from, to] in screen heights above the end of the page,
+//          frame?(page, t) (every frame), preserve? (preserveDrawingBuffer, true), crf? }
+// Requires scripts/patch-timeweb.mjs applied (postinstall).
 import puppeteer from 'puppeteer-core'
 import { findChrome, angleArgs } from './find-chrome.mjs'
 import { mkdirSync, readFileSync, rmSync } from 'node:fs'
@@ -24,7 +24,7 @@ const CHROME = findChrome() // CHROME env, else installed Chrome/Edge, else Play
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg' // on PATH, or full path in FFMPEG
 const W = 1920, H = 1080
 const TIMEWEB = readFileSync(createRequire(import.meta.url).resolve('timeweb/dist/timeweb.js'), 'utf8')
-if (!TIMEWEB.includes('patch-timeweb')) throw new Error('rode: node scripts/patch-timeweb.mjs')
+if (!TIMEWEB.includes('patch-timeweb')) throw new Error('run: node scripts/patch-timeweb.mjs')
 
 const HIDE_UI = `
   header, nav { display: none !important; }
@@ -50,7 +50,7 @@ async function snap(scene, browser) {
         st.textContent = css
         document.body.appendChild(st)
       }, 100)
-      // WebGL sem preserveDrawingBuffer: a foto às vezes pega o canvas já limpo
+      // WebGL without preserveDrawingBuffer: the capture sometimes gets an already cleared canvas
       const getContext = HTMLCanvasElement.prototype.getContext
       if (pdb)
         HTMLCanvasElement.prototype.getContext = function (type, attrs) {
@@ -65,16 +65,16 @@ async function snap(scene, browser) {
   await page.goto(/^https?:/.test(scene.path) ? scene.path : BASE + scene.path, { waitUntil: 'networkidle2', timeout: 60000 })
   await page.mouse.move(-10, -10)
 
-  let now = 0 // relógio virtual (ms)
+  let now = 0 // virtual clock (ms)
   const goTo = (x) => page.evaluate((x) => window.timeweb.goTo(x), x)
-  // rolagem como função do tempo de gravação (s), com easing
+  // scroll as a function of recording time (s), with easing
   const scrollAt = async (t) => {
     if (!scene.scroll) return
     const { sel, from, to, at = 0, len = 1, bottom } = scene.scroll
     const k = ease(Math.min(1, Math.max(0, (t - at) / len)))
     await page.evaluate(
       ({ sel, f, bottom }) => {
-        // bottom: [de, até] em alturas de tela acima do fim da página
+        // bottom: [from, to] in screen heights above the end of the page
         if (bottom) return window.scrollTo(0, document.documentElement.scrollHeight - innerHeight * (1 + f))
         const el = sel ? document.querySelector(sel) : document.documentElement
         const top = sel ? el.getBoundingClientRect().top + scrollY : 0
@@ -85,10 +85,10 @@ async function snap(scene, browser) {
   }
 
   await wait(1500)
-  for (const end = scene.pre ?? 2000; now < end; ) await goTo((now += 1000 / FPS)) // hidratação, intro, timers
+  for (const end = scene.pre ?? 2000; now < end; ) await goTo((now += 1000 / FPS)) // hydration, intro, timers
   if (scene.prepare) await scene.prepare(page)
   await scrollAt(0)
-  await wait(scene.wait ?? 3000) // 3D sob demanda carrega em tempo real
+  await wait(scene.wait ?? 3000) // on-demand 3D loads in real time
   const skip = (scene.start ?? 0) * 1000
   for (const t0 = now; now < t0 + skip; ) {
     now += 1000 / FPS
@@ -96,7 +96,7 @@ async function snap(scene, browser) {
     await goTo(now)
   }
 
-  const frames = join(tmpdir(), `snap-frames-${scene.name}`) // fora do Drive: milhares de jpg não sincronizam
+  const frames = join(tmpdir(), `snap-frames-${scene.name}`) // outside Drive: thousands of jpgs do not sync
   rmSync(frames, { recursive: true, force: true })
   mkdirSync(frames, { recursive: true })
   const n = Math.round(scene.dur * FPS)
@@ -104,7 +104,7 @@ async function snap(scene, browser) {
   for (let i = 0; i < n; i++) {
     now = rec0 + (i * 1000) / FPS
     await scrollAt((now - rec0) / 1000)
-    if (scene.frame) await scene.frame(page, (now - rec0) / 1000) // ex.: mouse em função do tempo
+    if (scene.frame) await scene.frame(page, (now - rec0) / 1000) // e.g. mouse as a function of time
     await goTo(now)
     await page.screenshot({ path: join(frames, `f${String(i).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 95 })
   }
@@ -116,10 +116,10 @@ async function snap(scene, browser) {
   const r = spawnSync(FFMPEG, ['-hide_banner', '-i', file, '-vf', 'mpdecimate=hi=64:lo=24:frac=0.05', '-an', '-f', 'null', '-'], { encoding: 'utf8' })
   const uniq = +([...r.stderr.matchAll(/frame=\s*(\d+)/g)].pop()?.[1] ?? 0)
   const flash = flashes(file)
-  console.log(flash.length ? 'FLASH' : 'ok', file, `${(uniq / scene.dur).toFixed(1)} quadros únicos/s de ${FPS}`, flash.length ? `quadros piscando: ${flash.slice(0, 10).join(' ')}` : '')
+  console.log(flash.length ? 'FLASH' : 'ok', file, `${(uniq / scene.dur).toFixed(1)} unique frames/s of ${FPS}`, flash.length ? `flashing frames: ${flash.slice(0, 10).join(' ')}` : '')
 }
 
-// Quadro piscando = luminância média que foge dos dois vizinhos na mesma direção
+// Flashing frame = mean luminance that departs from both neighbors in the same direction
 function flashes(file, tol = 6) {
   const r = spawnSync(FFMPEG, ['-hide_banner', '-i', file, '-vf', 'scale=64:-1,signalstats,metadata=print:key=lavfi.signalstats.YAVG', '-an', '-f', 'null', '-'], { encoding: 'utf8' })
   const y = [...r.stderr.matchAll(/YAVG=([\d.]+)/g)].map((m) => +m[1])
@@ -137,7 +137,7 @@ const pick = process.argv.slice(3)
 const list = pick.length ? SCENES.filter((s) => pick.includes(s.name)) : SCENES
 const browser = await puppeteer.launch({
   executablePath: CHROME,
-  headless: false, // GPU real (headless cai no SwiftShader)
+  headless: false, // real GPU (headless falls back to SwiftShader)
   defaultViewport: null,
   args: [`--window-size=${W},${H + 140}`, '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', ...angleArgs, '--ignore-gpu-blocklist', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--disable-features=CalculateNativeWinOcclusion'],
 })

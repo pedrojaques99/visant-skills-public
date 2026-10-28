@@ -1,112 +1,115 @@
 #!/usr/bin/env node
-/* copy-lint — caça os vícios de linguagem na copy Visant.
+/* copy-lint: hunts language tics in Visant copy (Brazilian Portuguese).
  *
  *   node copy-lint.mjs copy.json copy.ebook.json
  *   node copy-lint.mjs docs/COPY.md src/app/page.tsx
- *   node copy-lint.mjs --quiet copy.json          (só o exit code, pra CI)
- *   node copy-lint.mjs --include-comments a.tsx   (linta comentário também)
+ *   node copy-lint.mjs --quiet copy.json          (exit code only, for CI)
+ *   node copy-lint.mjs --include-comments a.tsx   (lints comments too)
  *
- * Em .json, lê cada valor string e reporta a CHAVE (que é o data-copy do HTML).
- * Em qualquer outro arquivo, lê linha a linha e reporta o nº da linha.
- * Exit 1 se achar qualquer coisa, então serve de gate junto do copy:check.
+ * In .json, reads every string value and reports the KEY (which is the HTML's
+ * data-copy). In any other file, reads line by line and reports the line number.
+ * Exit 1 if it finds anything, so it works as a gate next to copy:check.
  *
- * Em arquivo de código (.ts/.tsx/.js/.mjs/.vue/.svelte/.astro), COMENTÁRIO É
- * MASCARADO antes de lintar. O motivo é concreto: numa LP com a copy dentro do
- * componente, o único achado do linter eram os JSDoc que explicam a decisão de
- * design pro próximo dev. Comentário não é lido por cliente nenhum, e vício
- * apontado ali treina a pessoa a ignorar o linter. `--include-comments` volta ao
- * comportamento antigo quando você quer auditar a prosa interna de propósito.
+ * In code files (.ts/.tsx/.js/.mjs/.vue/.svelte/.astro), COMMENTS ARE MASKED
+ * before linting. The reason is concrete: in an LP with the copy inside the
+ * component, the linter's only findings were the JSDoc blocks explaining the
+ * design decision to the next dev. No client ever reads a comment, and a tic
+ * flagged there trains people to ignore the linter. `--include-comments`
+ * restores the old behaviour when you want to audit internal prose on purpose.
  *
- * Sem dependência: roda com node puro em qualquer repo.
+ * No dependencies: runs with plain node in any repo.
  *
- * ATENÇÃO ao mexer nas regex: \b do JS é ASCII, então NÃO funciona ao lado de
- * "é"/"são"/"não". Use os boundaries L/R abaixo (lookaround unicode) sempre que
- * a borda encostar em letra acentuada, senão a regra passa batido em silêncio.
+ * CAREFUL when touching the regexes: JS \b is ASCII, so it does NOT work next to
+ * "é"/"são"/"não". Use the L/R boundaries below (unicode lookaround) whenever
+ * the edge touches an accented letter, or the rule silently misses.
+ *
+ * The regexes, the self-test samples and the quoted patterns are Brazilian
+ * Portuguese on purpose: that is the language of the copy this lints.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
-const L = '(?<![\\p{L}\\p{N}])'; // início de palavra, unicode
-const R = '(?![\\p{L}\\p{N}])'; // fim de palavra, unicode
+const L = '(?<![\\p{L}\\p{N}])'; // word start, unicode
+const R = '(?![\\p{L}\\p{N}])'; // word end, unicode
 const rx = (src) => new RegExp(src, 'giu');
 
-/* Cada regra: id, o que casa, e o conserto que quase sempre funciona.
-   `hint` é lido pelo humano E pelo agente que vai reescrever a linha.
-   `family`: só a primeira regra da família reporta por trecho, pra não
-   empilhar três avisos na mesma frase. */
+/* Each rule: id, what it matches, and the fix that almost always works.
+   `hint` is read by the human AND by the agent that will rewrite the line.
+   `family`: only the first rule of a family reports per excerpt, so three
+   warnings do not pile up on the same sentence. */
 const RULES = [
   {
     id: 'travessao',
     re: /[—–]/gu,
-    hint: 'Travessão é proibido. Troque por ponto, vírgula, dois-pontos ou parênteses.',
+    hint: 'Dashes (travessão) are forbidden. Replace with a period, comma, colon or parentheses.',
   },
   {
     id: 'bolinha',
     /*
-     * Só conta como SEPARADOR quando tem espaço de pelo menos um lado.
+     * Only counts as a SEPARATOR when there is a space on at least one side.
      *
-     * Falso positivo confirmado em 2026-08-12 (visant-board): `DALL·E` é o nome
-     * do produto, com a bolinha COLADA entre letras — nome próprio não é
-     * pontuação, e acusar isso ensina o time a ignorar a regra justamente onde
-     * ela está certa. Separador de metadado sempre respira: `a · b`.
+     * False positive confirmed on 2026-08-12 (visant-board): `DALL·E` is the
+     * product name, with the dot GLUED between letters. A proper name is not
+     * punctuation, and flagging it teaches the team to ignore the rule exactly
+     * where it is right. A metadata separator always breathes: `a · b`.
      */
     /*
-     * E uma SEQUENCIA de bolinhas nao e separador: e mascara de senha
-     * (`••••••• (ja configurada)`), medida em 2026-08-12 no byok-panel. Duas ou
-     * mais coladas nunca separam nada — separador e sempre uma so.
+     * And a SEQUENCE of dots is not a separator: it is a password mask
+     * (`••••••• (ja configurada)`), measured on 2026-08-12 in byok-panel. Two
+     * or more glued together never separate anything: a separator is always one.
      */
     re: /(?:\s[·•∙‧](?![·•∙‧])|(?<![·•∙‧])[·•∙‧]\s)/gu,
-    hint: 'Bolinha separadora (alt+7) é proibida. Em lista de metadado, vira ponto e vírgula ("34 páginas. 9 etapas, 1 case"). Em rótulo, dois-pontos ("Fase 1: A Estratégia"). Em CTA com preço, preposição ("Quero o e-book por R$ 47").',
+    hint: 'The bullet separator (alt+7) is forbidden. In a metadata list, use periods and commas ("34 páginas. 9 etapas, 1 case"). In a label, a colon ("Fase 1: A Estratégia"). In a CTA with a price, a preposition ("Quero o e-book por R$ 47").',
   },
   {
     id: 'hifen-como-travessao',
     re: / -{1,2} /gu,
-    hint: 'Hífen solto virou travessão. Vira ponto ou vírgula.',
+    hint: 'A loose hyphen became a dash. Make it a period or a comma.',
   },
   {
     id: 'nao-e-x-e-y',
     family: 'negacao',
     re: rx(`${L}n[ãa]o\\s+(?:é|s[ãa]o|era|eram|foi|foram)${R}[^.!?;]{0,80}[.,;:]\\s*(?:é|s[ãa]o|era|foi|isso\\s+é)${R}`),
-    hint: 'Construção "não é X, é Y". Corte a metade negativa e afirme só o Y. Se o X importa, mostre a consequência dele em vez de negá-lo.',
+    hint: 'The "não é X, é Y" construction. Cut the negative half and state only the Y. If the X matters, show its consequence instead of denying it.',
   },
   {
     id: 'nao-e-apenas',
     family: 'negacao',
     re: rx(`${L}n[ãa]o\\s+(?:é|s[ãa]o|foi)\\s+(?:apenas|s[óo]|somente)${R}`),
-    hint: '"não é apenas X, é Y" promete profundidade sem entregar. Diga o Y direto.',
+    hint: '"não é apenas X, é Y" promises depth without delivering. Say the Y directly.',
   },
   {
     id: 'nao-e-definicao',
     family: 'negacao',
     re: rx(`${L}n[ãa]o\\s+(?:é|s[ãa]o)\\s+(?:um|uma|o|a|os|as)?\\s*[^.!?]{2,40}[.!]`),
-    hint: 'Frase que define pela negativa ("Não é um teaser."). Apague a frase inteira e deixe a afirmação seguinte carregar o peso.',
+    hint: 'A sentence that defines by negation ("Não é um teaser."). Delete the whole sentence and let the next statement carry the weight.',
   },
   {
     id: 'nao-se-trata',
     family: 'negacao',
     re: rx(`${L}n[ãa]o\\s+se\\s+trata\\s+de${R}`),
-    hint: 'Mesma família do "não é X, é Y". Afirme direto.',
+    hint: 'Same family as "não é X, é Y". State it directly.',
   },
   {
     id: 'x-virgula-nao-y',
     family: 'negacao',
     re: rx(`,\\s*n[ãa]o\\s+(?:é|foi|s[óo]|apenas|somente|o|a|um|uma|de|pra|para|que)${R}`),
-    hint: 'Negação pendurada no fim ("feito pra ler, não pra arquivar"). Apague o rabo negativo. A frase quase sempre fica mais forte.',
+    hint: 'A negation hanging at the end ("feito pra ler, não pra arquivar"). Delete the negative tail. The sentence almost always gets stronger.',
   },
   {
     id: 'e-sobre',
     re: rx(`${L}(?:é|era|s[ãa]o|eram)\\s+sobre${R}`),
-    hint: '"é sobre X" não afirma nada. Troque por um verbo concreto: o que a coisa FAZ.',
+    hint: '"é sobre X" asserts nothing. Replace it with a concrete verb: what the thing DOES.',
   },
   {
     id: 'menos-x-mais-y',
     re: rx(`${L}menos\\s+[^.!?]{1,40}${L}e\\s+mais${R}`),
-    hint: 'Fórmula "menos X e mais Y". Diga só o Y.',
+    hint: 'The "menos X e mais Y" formula. Say only the Y.',
   },
   {
     id: 'mais-que-apenas',
     re: rx(`${L}mais\\s+(?:do\\s+)?que\\s+(?:apenas|s[óo]|um\\s+simples|uma\\s+simples)${R}`),
-    hint: 'Variante disfarçada do "não é apenas". Corte.',
+    hint: 'A disguised variant of "não é apenas". Cut it.',
   },
   {
     id: 'hype',
@@ -116,7 +119,7 @@ const RULES = [
         `cada\\s+vez\\s+mais\\s+competitivo|game\\s*changer|` +
         `jornada\\s+de\\s+(?:sucesso|transforma\\w+)|descubra\\s+o\\s+(?:poder|segredo))${R}`
     ),
-    hint: 'Palavra de folder. Substitua por um fato verificável ou um número.',
+    hint: 'Brochure word. Replace it with a verifiable fact or a number.',
   },
   {
     id: 'abertura-de-guru',
@@ -125,7 +128,7 @@ const RULES = [
         `prepare-se|chegou\\s+a\\s+hora|j[áa]\\s+parou\\s+pra\\s+pensar|` +
         `deixa\\s+eu\\s+te\\s+contar)${R}`
     ),
-    hint: 'Abertura de guru. Comece pelo fato ou pela cena, sem aquecimento.',
+    hint: 'Guru opening ("Imagine que...", "Prepare-se"). Start with the fact or the scene, no warm-up.',
   },
   {
     id: 'urgencia-cliche',
@@ -134,28 +137,28 @@ const RULES = [
         `corre\\s+que\\s+(?:acaba|t[áa]\\s+acabando)|n[ãa]o\\s+perca\\s+(?:essa|a)\\s+chance|` +
         `por\\s+tempo\\s+limitado|s[óo]\\s+hoje)${R}`
     ),
-    hint: 'Urgência genérica. A escassez do Club é real e contável: diga o número ("este lote tem 30 vagas", "a cota sobe a cada compra").',
+    hint: 'Generic urgency. The Club\'s scarcity is real and countable: say the number ("este lote tem 30 vagas", "a cota sobe a cada compra").',
   },
   {
     id: 'pipe-separador',
-    jsonOnly: true, // em .md o pipe é tabela, não separador de copy
+    jsonOnly: true, // in .md the pipe is a table, not a copy separator
     re: /\|/gu,
-    hint: 'Pipe separador é a bolinha de outro jeito. Escolha a pontuação: ponto, vírgula ou dois-pontos.',
+    hint: 'A pipe separator is the bullet in disguise. Pick the punctuation: period, comma or colon.',
   },
   {
     id: 'emoji',
-    /* Vale em todo arquivo: emoji em .tsx/.md visível é o mesmo defeito que no
-       .json. Comentário de código já sai mascarado antes. */
-    /* Emoji_Presentation em vez de Extended_Pictographic: o segundo inclui
-       © ® ™, que são marca registrada e ficam (Visionário®, Visant Club®). */
+    /* Applies to every file: an emoji in visible .tsx/.md is the same defect as
+       in .json. Code comments are already masked before this. */
+    /* Emoji_Presentation instead of Extended_Pictographic: the latter includes
+       © ® ™, which are trademarks and stay (Visionário®, Visant Club®). */
     re: /[\p{Emoji_Presentation}\u{1F300}-\u{1FAFF}]/gu,
-    hint: 'Zero emoji em copy de página.',
+    hint: 'Zero emoji in page copy.',
   },
   {
     id: 'ponto-e-virgula',
     jsonOnly: true,
     re: /;/gu,
-    hint: 'Ponto-e-vírgula trava a leitura em copy de venda. Vira ponto.',
+    hint: 'A semicolon stalls the read in sales copy. Make it a period.',
   },
   {
     id: 'conector-de-llm',
@@ -163,50 +166,51 @@ const RULES = [
       `(?:^|\\n)\\s*(?:Al[ée]m\\s+disso|Por\\s+fim|Em\\s+resumo|` +
         `Vale\\s+(?:a\\s+pena\\s+)?(?:lembrar|ressaltar|destacar)|Em\\s+outras\\s+palavras)${R}`
     ),
-    hint: 'Conector de redação de IA. Comece a frase pelo assunto.',
+    hint: 'AI-essay connector ("Além disso", "Em resumo"). Start the sentence with the subject.',
   },
 ];
 
-/* Muletas que passam despercebidas uma vez e denunciam IA na segunda. São
-   contadas no ARQUIVO INTEIRO, não na frase: o problema é a repetição.
-   Origem: leitor pegou "trajetória real / projeto real / técnica real /
-   processo real" numa peça só e postou print. Adjetivo de credibilidade não
-   prova nada; quem prova é o número ou a cena. */
+/* Crutches that go unnoticed once and give away AI the second time. They are
+   counted over the WHOLE FILE, not the sentence: the problem is repetition.
+   Origin: a reader caught "trajetória real / projeto real / técnica real /
+   processo real" in a single piece and posted a screenshot. A credibility
+   adjective proves nothing; the number or the scene does. */
 const REPEATS = [
   {
     id: 'selo-de-credibilidade',
     max: 1,
-    /* Duas exceções, e as duas vieram de falso positivo medido em produção:
+    /* Two exceptions, both from false positives measured in production:
 
-       "tempo real" é locução, não selo. Ela diz QUANDO a coisa acontece, e o
-       lookbehind mata só ela sem enfraquecer "projeto real".
+       "tempo real" ("real time") is an idiom, not a seal. It says WHEN the thing
+       happens, and the lookbehind kills only it without weakening "projeto real".
 
-       "autenticado", "autenticar" e "autenticação" são login, e nada têm a ver
-       com "autêntico". O `aut[êe]ntic\\w+` casava com as três porque o `[êe]`
-       aceita a forma sem acento. Agora a regra lista as terminações do
-       ADJETIVO e da qualidade, e deixa o verbo de fora. */
-    /* Terceira exceção, e a mais óbvia depois de medida: em produto brasileiro
-       "real"/"reais" é DINHEIRO antes de ser selo. `R$ 47`, "Real brasileiro",
-       "1200 reais" — nenhum deles é defesa de argumento. O lookbehind cobre o
-       número colado ("47 reais") e o nome da moeda; `R$` na mesma unidade é
-       tratado fora do regex, no filtro de moeda abaixo. */
+       "autenticado", "autenticar" and "autenticação" are about login, and have
+       nothing to do with "autêntico". `aut[êe]ntic\\w+` matched all three because
+       `[êe]` accepts the unaccented form. Now the rule lists the endings of the
+       ADJECTIVE and the quality, and leaves the verb out. */
+    /* Third exception, and the most obvious one once measured: in a Brazilian
+       product "real"/"reais" is MONEY before it is a seal. `R$ 47`, "Real
+       brasileiro", "1200 reais": none of them defends an argument. The
+       lookbehind covers the attached number ("47 reais") and the currency
+       name; `R$` in the same unit is handled outside the regex, in the
+       currency filter below. */
     re: rx(
       `${L}(?:(?<!tempo\\s)(?<!\\d\\s)(?<!brasileiro\\s)(?:real|reais)|de\\s+verdade|` +
         `na\\s+pr[áa]tica|de\\s+fato|genu[íi]n\\w+|aut[êe]ntic(?:o|a|os|as|idade)|` +
         `honest\\w+)${R}`
     ),
-    /* Unidade que fala de dinheiro não entra na conta do selo. */
+    /* A unit that talks about money does not count toward the seal. */
     ignoraUnidade: (text) => /R\$|\bBRL\b|\breal brasileiro\b/i.test(text),
-    hint: 'Apague o selo. "Projeto real" é só "projeto"; "de verdade" no fim da frase é defesa de quem não confia no próprio argumento. Se precisa provar, use número ou cena.',
+    hint: 'Delete the seal. "Projeto real" is just "projeto"; "de verdade" at the end of a sentence is the defense of someone who does not trust their own argument. If it needs proof, use a number or a scene.',
   },
 ];
 
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const comentarios = args.includes('--include-comments');
-/* --self-test: prova os dois sentidos, como os outros detectores do repo. Cada
-   regra de RULES tem que disparar no seu exemplo ruim, e a frase limpa tem que
-   passar em todas. Regra que virou inerte aparece aqui, não em produção. */
+/* --self-test: proves both directions, like the repo's other detectors. Every
+   rule in RULES must fire on its bad example, and the clean sentence must pass
+   all of them. A rule that went inert shows up here, not in production. */
 if (args.includes('--self-test')) {
   const RUIM = {
     travessao: 'Rápido — e bonito.',
@@ -232,20 +236,20 @@ if (args.includes('--self-test')) {
   const falhas = [];
   for (const rule of RULES) {
     rule.re.lastIndex = 0;
-    if (rule.re.test(LIMPA)) falhas.push(`${rule.id} disparou na frase limpa`);
+    if (rule.re.test(LIMPA)) falhas.push(`${rule.id} fired on the clean sentence`);
     const ruim = RUIM[rule.id];
     if (ruim === undefined) continue;
     rule.re.lastIndex = 0;
-    if (!rule.re.test(ruim)) falhas.push(`${rule.id} não disparou em "${ruim}"`);
+    if (!rule.re.test(ruim)) falhas.push(`${rule.id} did not fire on "${ruim}"`);
   }
   for (const id of Object.keys(RUIM)) {
-    if (!RULES.some((r) => r.id === id)) falhas.push(`regra ${id} sumiu de RULES`);
+    if (!RULES.some((r) => r.id === id)) falhas.push(`rule ${id} is gone from RULES`);
   }
   if (falhas.length) {
     console.error(`✗ copy-lint --self-test\n  ${falhas.join('\n  ')}`);
     process.exit(1);
   }
-  console.log(`✓ copy-lint --self-test: ${Object.keys(RUIM).length} regras disparam, frase limpa passa nas ${RULES.length}`);
+  console.log(`✓ copy-lint --self-test: ${Object.keys(RUIM).length} rules fire, the clean sentence passes all ${RULES.length}`);
   process.exit(0);
 }
 
@@ -253,7 +257,7 @@ const CODIGO = /\.(?:[cm]?[jt]sx?|vue|svelte|astro)$/i;
 const TEXTO = /\.(?:json|md|mdx|html?|txt)$/i;
 const PULA = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', 'coverage']);
 
-/* Pasta vira a lista dos arquivos de copy dentro dela; arquivo passa direto. */
+/* A folder becomes the list of copy files inside it; a file passes straight through. */
 function expande(alvo) {
   if (!statSync(alvo).isDirectory()) return [alvo];
   return readdirSync(alvo, { withFileTypes: true }).flatMap((e) => {
@@ -266,26 +270,26 @@ function expande(alvo) {
 
 const alvos = args.filter((a) => !a.startsWith('--'));
 if (!alvos.length) {
-  console.log('uso: copy-lint.mjs [--quiet] [--include-comments] <arquivo ou pasta...>');
+  console.log('usage: copy-lint.mjs [--quiet] [--include-comments] <file or folder...>');
   process.exit(1);
 }
 const faltando = alvos.filter((a) => !existsSync(a));
 if (faltando.length) {
-  console.error(`copy-lint: não existe: ${faltando.join(', ')}`);
+  console.error(`copy-lint: does not exist: ${faltando.join(', ')}`);
   process.exit(1);
 }
 const files = alvos.flatMap(expande);
 
-/* Chave cujo valor é fala de outra pessoa. Ver a nota no laço principal. */
+/* A key whose value is someone else's speech. See the note in the main loop. */
 const CHAVE_DE_CITACAO = /(^|\.)(?:quote|quote_by|depoimento)$/;
 
-/* Apaga comentário de código trocando por espaço, preservando \n pro nº da
-   linha continuar batendo com o arquivo.
-   Varre caractere a caractere porque regex não sabe a diferença entre o `//` de
-   um comentário e o de `https://`. Se a varredura terminar dentro de string ou
-   bloco aberto, o arquivo tem sintaxe que a gente não entendeu (ou uma
-   apóstrofe solta em texto JSX): devolve o original e linta tudo, que errar
-   pra mais é melhor que apagar copy em silêncio. */
+/* Erases code comments by replacing them with spaces, keeping \n so line
+   numbers still match the file.
+   Walks character by character because a regex cannot tell the `//` of a
+   comment from the one in `https://`. If the walk ends inside an open string
+   or block, the file has syntax we did not understand (or a stray apostrophe
+   in JSX text): it returns the original and lints everything, because erring
+   on the side of more is better than silently erasing copy. */
 function mascaraComentarios(raw) {
   let out = '';
   let i = 0;
@@ -313,10 +317,10 @@ function mascaraComentarios(raw) {
       out += vazio(c); i++; continue;
     }
 
-    /* Dentro de string: só a barra invertida e a mesma quote importam.
-       Quebra de linha fecha ' e " porque em JS elas não atravessam linha. Sem
-       isso, uma apóstrofe em texto JSX ("d'água") abriria uma string falsa e
-       levaria o resto do arquivo com ela. */
+    /* Inside a string: only the backslash and the same quote matter.
+       A line break closes ' and " because in JS they do not cross lines.
+       Without this, an apostrophe in JSX text ("d'água") would open a fake
+       string and drag the rest of the file along with it. */
     if ((estado === "'" || estado === '"') && c === '\n') { estado = 'codigo'; out += c; i++; continue; }
     if (c === '\\') { out += raw.slice(i, i + 2); i += 2; continue; }
     if (c === estado) estado = 'codigo';
@@ -326,8 +330,8 @@ function mascaraComentarios(raw) {
   return estado === 'codigo' ? out : raw;
 }
 
-/* Devolve [{ loc, text }] — a unidade que a gente linta. Em json a unidade é
-   a chave (porque é ela que o autor edita), em texto é a linha. */
+/* Returns [{ loc, text }], the unit we lint. In json the unit is the key
+   (because that is what the author edits), in text it is the line. */
 function units(file) {
   const raw = readFileSync(file, 'utf8');
   if (!file.endsWith('.json')) {
@@ -345,32 +349,32 @@ function units(file) {
   try {
     data = JSON.parse(raw);
   } catch (e) {
-    console.error(`copy-lint: ${file} não é JSON válido (${e.message})`);
+    console.error(`copy-lint: ${file} is not valid JSON (${e.message})`);
     process.exit(1);
   }
   walk(data, '');
   return out;
 }
 
-/* Guia de tamanho por tipo de linha, inferido pelo sufixo da chave. É AVISO,
-   nunca erro: copy boa não pode reprovar por 3 caracteres. Serve pra flagrar a
-   headline que vai quebrar em três linhas no mobile. */
+/* Length guide per line type, inferred from the key suffix. It is a WARNING,
+   never an error: good copy cannot fail over 3 characters. It exists to flag
+   the headline that will break into three lines on mobile. */
 const LIMITS = [
-  // SEO tem limite do Google, não do layout.
-  { test: /^meta\.(title|og_title|og_image_alt)$/, max: 60, tipo: 'title de SEO' },
+  // SEO has Google's limit, not the layout's.
+  { test: /^meta\.(title|og_title|og_image_alt)$/, max: 60, tipo: 'SEO title' },
   { test: /^meta\.(description|og_description)$/, max: 160, tipo: 'meta description' },
-  // As perguntas dentro da amostra do livro são corpo de texto, não headline.
-  { test: /^sample\.(q\d+|p\d+)$/, max: 340, tipo: 'corpo' },
+  // The questions inside the book sample are body text, not headlines.
+  { test: /^sample\.(q\d+|p\d+)$/, max: 340, tipo: 'body' },
   { test: /(^|\.)(cta|cta_\w+|badge|free_badge)$/i, max: 28, tipo: 'CTA' },
   { test: /(^|\.)(title|q\d*|tier|eyebrow|label|kicker)$/i, max: 60, tipo: 'headline' },
   { test: /(^|\.)(lead|subtitle)$/i, max: 180, tipo: 'lead' },
-  { test: /(^|\.)(body|body2|note|trigger|a\d+|_b)$/i, max: 280, tipo: 'corpo' },
+  { test: /(^|\.)(body|body2|note|trigger|a\d+|_b)$/i, max: 280, tipo: 'body' },
 ];
 
 function overLimit(loc, text) {
   const rule = LIMITS.find((l) => l.test.test(loc));
   if (!rule || text.length <= rule.max) return null;
-  return `${loc} (${rule.tipo}) tem ${text.length} caracteres, guia é ${rule.max}`;
+  return `${loc} (${rule.tipo}) has ${text.length} characters, guide is ${rule.max}`;
 }
 
 let hits = 0;
@@ -387,18 +391,18 @@ for (const file of files) {
     if (isJson) {
       const w = overLimit(loc, text);
       if (w) warnings.push(`${file}: ${w}`);
-      /* CITAÇÃO NÃO SE EDITA. Chave que termina em `quote` carrega a fala de
-         uma pessoa, atribuída e verificável, e reescrever ela pra caber numa
-         regra de estilo é falsificar depoimento.
+      /* A QUOTE IS NOT EDITED. A key ending in `quote` carries a person's
+         speech, attributed and verifiable, and rewriting it to fit a style
+         rule is forging a testimonial.
 
-         O caso que forçou isto está no /lote: `pedagio.quote` é "Ele não é um
-         bom designer, mas é um bom engenheiro", dita pelo Jaques na gravação
-         do lote. Ela casa com `nao-e-definicao` e continua tendo que ficar
-         exatamente como foi dita.
+         The case that forced this is in /lote: `pedagio.quote` is "Ele não é
+         um bom designer, mas é um bom engenheiro", said by Jaques in the lote
+         recording. It matches `nao-e-definicao` and still has to stay exactly
+         as it was said.
 
-         O aviso de TAMANHO sai antes e continua valendo: citação comprida
-         demais ainda quebra layout, e cortar citação com reticências é
-         decisão editorial legítima. */
+         The LENGTH warning comes out before this and still applies: a quote
+         that is too long still breaks the layout, and trimming a quote with
+         an ellipsis is a legitimate editorial decision. */
       if (CHAVE_DE_CITACAO.test(loc)) continue;
     }
     const seen = new Set();
@@ -414,17 +418,17 @@ for (const file of files) {
       hits++;
     }
   }
-  /* Pass de repetição: roda depois de varrer o arquivo inteiro.
+  /* Repetition pass: runs after scanning the whole file.
    *
-   * O orçamento é POR PEÇA, e num dicionário de locale a peça NÃO é o arquivo.
-   * Medido no visantlabs-os: `pt-BR.json` tem 5173 chaves de dezenas de telas
-   * independentes, e o limite de 1 acusava 11 ocorrências como se fossem a
-   * mesma página. Regra que grita 11 vezes ensina a pessoa a ignorar o linter,
-   * que é pior que não ter a regra.
+   * The budget is PER PIECE, and in a locale dictionary the piece is NOT the
+   * file. Measured in visantlabs-os: `pt-BR.json` has 5173 keys from dozens
+   * of independent screens, and the limit of 1 flagged 11 occurrences as if
+   * they were the same page. A rule that shouts 11 times teaches people to
+   * ignore the linter, which is worse than not having the rule.
    *
-   * Em JSON o grupo passa a ser o primeiro segmento da chave (`onboarding.*`,
-   * `mockup.*`) — o mais perto de "uma peça" que a estrutura oferece. Em
-   * componente segue por arquivo, que já É a peça.
+   * In JSON the group becomes the first segment of the key (`onboarding.*`,
+   * `mockup.*`), the closest to "one piece" the structure offers. In a
+   * component it stays per file, which already IS the piece.
    */
   const grupoDe = (loc) => (isJson ? String(loc).split('.')[0] : file);
 
@@ -446,7 +450,7 @@ for (const file of files) {
         loc: onde.map((o) => o.loc).join(', '),
         rule,
         match: onde.map((o) => o.match).join('", "'),
-        text: `${onde.length} ocorrências em ${isJson ? `${grupo}.*` : 'um arquivo'} (limite ${rule.max})`,
+        text: `${onde.length} occurrences in ${isJson ? `${grupo}.*` : 'one file'} (limit ${rule.max})`,
       });
       byRule.set(rule.id, rule.hint);
       hits++;
@@ -458,32 +462,33 @@ for (const file of files) {
   for (const f of found) {
     console.log(`  ${f.rule.id.padEnd(22)} ${f.loc}`);
     console.log(`    ${f.text.length > 160 ? f.text.slice(0, 157) + '...' : f.text}`);
-    console.log(`    ↑ casou: "${f.match}"`);
+    console.log(`    ↑ matched: "${f.match}"`);
   }
 }
 
-/* Eco: a mesma frase morando em dois arquivos.
-   Headline de LP costuma existir três vezes (componente, card do og:image,
-   `<title>` do metadata) e nada avisa quando você troca uma e esquece as
-   outras. O card social fica vendendo a promessa do mês passado. Sai como
-   AVISO, porque duplicar às vezes é a escolha certa: o que não pode é ser
-   surpresa. Só compara quando o linter recebeu 2+ arquivos.
+/* Echo: the same sentence living in two files.
+   An LP headline usually exists three times (component, og:image card,
+   metadata `<title>`) and nothing warns you when you change one and forget
+   the others. The social card keeps selling last month's promise. It comes
+   out as a WARNING, because duplicating is sometimes the right call: what it
+   cannot be is a surprise. Only compares when the linter got 2+ files.
 
-   ARQUIVO DE CÓDIGO FICA DE FORA, e isso é medido, não preferência. Rodando o
-   linter em 40 .tsx de um app React, o eco produziu 148 avisos contra 23
-   vícios reais: seis para um. E os 148 eram lixo, porque em código o "texto"
-   que sobra depois de tirar tag e chave ainda é sopa de atributo, então dois
-   componentes com a mesma lista de classe do Tailwind viram "eco de 69
-   palavras". Numa razão dessas a equipe aprende a ignorar a saída inteira, e
-   aí o eco custa as 23 descobertas boas em vez de somar uma.
+   CODE FILES ARE LEFT OUT, and that is measured, not preference. Running the
+   linter on 40 .tsx files of a React app, the echo produced 148 warnings
+   against 23 real tics: six to one. And the 148 were junk, because in code the
+   "text" left after removing tags and braces is still attribute soup, so two
+   components with the same Tailwind class list became a "69-word echo". At a
+   ratio like that the team learns to ignore the whole output, and then the
+   echo costs the 23 good findings instead of adding one.
 
-   Ele continua valendo onde nasceu para servir: JSON de copy, MD e HTML, que
-   é onde a headline de verdade se repete entre a página e o card social. */
+   It still applies where it was born to serve: copy JSON, MD and HTML, which
+   is where the real headline repeats between the page and the social card. */
 const paraEco = files.filter((f) => !CODIGO.test(f));
 if (paraEco.length > 1) {
-  /* Compara PALAVRA, não linha: no componente a headline vem quebrada em dois
-     `<span>` e no card do og:image ela é uma string só, então bater linha com
-     linha não acharia nada. Tag e chave de JSX saem fora, sobra a prosa. */
+  /* Compares WORDS, not lines: in the component the headline comes split
+     across two `<span>`s and in the og:image card it is one string, so
+     matching line to line would find nothing. JSX tags and braces go, the
+     prose stays. */
   const palavras = (file) =>
     porArquivo
       .get(file)
@@ -499,7 +504,7 @@ if (paraEco.length > 1) {
     for (let b = a + 1; b < paraEco.length; b++) {
       const A = palavras(paraEco[a]);
       const B = palavras(paraEco[b]);
-      /* Maior trecho comum, DP clássico em uma linha de estado. */
+      /* Longest common run, classic DP with one row of state. */
       let melhor = 0;
       let fim = 0;
       let anterior = new Array(B.length + 1).fill(0);
@@ -518,26 +523,26 @@ if (paraEco.length > 1) {
       if (melhor < MIN_PALAVRAS) continue;
       const trecho = A.slice(fim - melhor, fim).join(' ');
       warnings.push(
-        `eco de ${melhor} palavras entre ${paraEco[a]} e ${paraEco[b]}, atualize as duas: "${trecho.slice(0, 70)}${trecho.length > 70 ? '…' : ''}"`
+        `${melhor}-word echo between ${paraEco[a]} and ${paraEco[b]}, update both: "${trecho.slice(0, 70)}${trecho.length > 70 ? '…' : ''}"`
       );
     }
   }
 }
 
-/* Aviso de tamanho sai sempre, e NUNCA muda o exit code. */
+/* Length warnings always print, and NEVER change the exit code. */
 if (warnings.length && !quiet) {
-  console.log('\nAvisos (guia, não travam o exit code):');
+  console.log('\nWarnings (guidance, they do not affect the exit code):');
   for (const w of warnings) console.log(`  ${w}`);
 }
 
 if (!hits) {
-  if (!quiet) console.log('\n✔ copy limpa: nenhum vício encontrado.');
+  if (!quiet) console.log('\n✔ clean copy: no tics found.');
   process.exit(0);
 }
 
 if (!quiet) {
-  console.log('\nComo consertar:');
+  console.log('\nHow to fix:');
   for (const [id, hint] of byRule) console.log(`  ${id}: ${hint}`);
 }
-console.error(`\n✗ ${hits} ocorrência(s) em ${files.length} arquivo(s).`);
+console.error(`\n✗ ${hits} occurrence(s) in ${files.length} file(s).`);
 process.exit(1);

@@ -492,7 +492,7 @@ next section), never a sign telling people to scroll.
 > `@visant/ui` one by one and left ~100 one-sentence reports. All of them passed
 > tsc, lint, `casa-lint`, `interacao-check` and `palco-check`. The defects below
 > only exist by looking: they are decisions, not syntax. The full showcase
-> procedure is in `visant-frontend/references/vitrine-de-componentes.md`.
+> procedure is in `visant-frontend/references/component-showcase.md`.
 
 ## 35. The frame that speaks for the piece
 
@@ -581,7 +581,7 @@ the box, the pointer delta is in screen px, the canvas measures the already
 scaled size, and `overflow`/`contain` clips whatever is not in a portal.
 **Fix.** Portal to `body`; delta divided by the scale; `resize={{
 offsetSize: true }}` in R3F; dropdown in a portal; a box (`preview`) the real
-size of the piece. Full table in `vitrine-de-componentes.md` §3.
+size of the piece. Full table in `component-showcase.md` §3.
 **Test.** Run the piece with the stage at `scale(0.5)` and drag.
 
 ## 44. System scrollbar and a list that scrolls sideways

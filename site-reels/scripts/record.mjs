@@ -1,7 +1,7 @@
-// Grava cenas de um site em MP4 (1920x1080) pra deck/apresentação.
-// Uso: node record.mjs <scenes.mjs> [nome-da-cena ...]   (sem nome = todas)
-// Env: BASE (default http://localhost:3100), OUT (pasta de saída), CHROME, FFMPEG.
-// Requer o site rodando em BASE (de preferência build de produção: next build && next start -p 3100).
+// Records scenes of a site as MP4 (1920x1080) for a deck/presentation.
+// Usage: node record.mjs <scenes.mjs> [scene-name ...]   (no name = all)
+// Env: BASE (default http://localhost:3100), OUT (output folder), CHROME, FFMPEG.
+// Requires the site running at BASE (preferably a production build: next build && next start -p 3100).
 import puppeteer from 'puppeteer-core'
 import { findChrome, angleArgs } from './find-chrome.mjs'
 import { PuppeteerScreenRecorder } from 'puppeteer-screen-recorder'
@@ -14,17 +14,17 @@ const BASE = process.env.BASE ?? 'http://localhost:3100'
 const OUT = process.env.OUT ?? './videos'
 const CHROME = findChrome() // CHROME env, else installed Chrome/Edge, else Playwright Chromium (find-chrome.mjs)
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg' // on PATH, or full path in FFMPEG
-// W/H = viewport em px CSS; DPR = densidade (vídeo sai em W*DPR x H*DPR); MOBILE=1 emula celular (toque);
-// KEEP_UI=1 mantém nav/header (cards de portfolio mostram o site como ele é).
+// W/H = viewport in CSS px; DPR = density (video comes out at W*DPR x H*DPR); MOBILE=1 emulates a phone (touch);
+// KEEP_UI=1 keeps nav/header (portfolio cards show the site as it is).
 const W = +(process.env.W ?? 1920), H = +(process.env.H ?? 1080)
 const DPR = +(process.env.DPR ?? 1)
 const MOBILE = process.env.MOBILE === '1'
 const KEEP_UI = process.env.KEEP_UI === '1'
-const MIN_FPS = +(process.env.MIN_FPS ?? 24) // abaixo disso regrava (até 2x)
+const MIN_FPS = +(process.env.MIN_FPS ?? 24) // below this it re-records (up to 2x)
 
-// Some o que é UI de navegação: o vídeo mostra a marca, não o site
+// Hide navigation UI: the video shows the brand, not the site
 const HIDE_UI = `
-  /* nav do site e o ponto do cursor (components/motion/Cursor.tsx). Não usar [data-cursor]: marca o canvas 3D */
+  /* site nav and the cursor dot (components/motion/Cursor.tsx). Do not use [data-cursor]: it tags the 3D canvas */
   header, nav { display: none !important; }
   .fixed.mix-blend-difference.pointer-events-none[class*='z-'] { display: none !important; }
   html, body, * { cursor: none !important; }
@@ -33,7 +33,7 @@ const HIDE_UI = `
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
-// Rolagem suave controlada por rAF dentro da página (easing in-out)
+// Smooth scroll driven by rAF inside the page (easing in-out)
 async function scrollTo(page, y, ms) {
   await page.evaluate(
     ({ y, ms }) =>
@@ -54,7 +54,7 @@ async function scrollTo(page, y, ms) {
   )
 }
 
-// Rola até o fim do elemento/página (fração 0..1 da faixa rolável do seletor)
+// Scrolls to the end of the element/page (fraction 0..1 of the selector's scrollable range)
 async function scrollThrough(page, sel, ms, from = 0, to = 1) {
   const [a, b] = await page.evaluate(
     ({ sel, from, to }) => {
@@ -77,7 +77,7 @@ async function run(scene, browser) {
   await page.setViewport({ width: W, height: H, deviceScaleFactor: DPR, isMobile: MOBILE, hasTouch: MOBILE })
   await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scene.theme ?? 'light' }])
   await page.evaluateOnNewDocument((t) => localStorage.setItem('theme', t), scene.theme ?? 'light')
-  // CSS injetado a cada documento e reanexado se a hidratação do React limpar o <head>
+  // CSS injected into every document and re-attached if React hydration clears the <head>
   await page.evaluateOnNewDocument((css) => {
     const fix = () => {
       if (document.getElementById('reels-hide') || !document.body) return
@@ -108,18 +108,18 @@ async function run(scene, browser) {
   await scene.act(page, ctx)
   await rec.stop()
   await page.close()
-  // Reencoda: corta o carregamento (trim; 0.3s tira o 1º quadro em cache do screencast) e mira < 100MB, limite de vídeo do Figma
+  // Re-encode: cuts the loading (trim; 0.3s drops the screencast's cached 1st frame) and aims < 100MB, Figma's video limit
   const tmp = file.replace('.mp4', '.raw.mp4')
   renameSync(file, tmp)
   execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-ss', String(scene.trim ?? 0.3), '-i', tmp, '-c:v', 'libx264', '-preset', 'slow', '-crf', String(scene.crf ?? 20), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', file])
   rmSync(tmp)
   const ufps = uniqueFps(file)
-  console.log(ufps >= (scene.minFps ?? MIN_FPS) ? 'ok' : 'LOW-FPS', file, `${ufps.toFixed(1)} quadros únicos/s`)
+  console.log(ufps >= (scene.minFps ?? MIN_FPS) ? 'ok' : 'LOW-FPS', file, `${ufps.toFixed(1)} unique frames/s`)
   return ufps
 }
 
-// Quadros únicos por segundo (limiar fino: fumaça escura muda pouco por quadro).
-// Screencast engasgado (máquina sem memória, GPU disputada) grava 30fps com quadro repetido.
+// Unique frames per second (fine threshold: dark smoke changes little per frame).
+// A choking screencast (machine out of memory, contended GPU) records 30fps with repeated frames.
 function uniqueFps(file) {
   const r = spawnSync(FFMPEG, ['-hide_banner', '-i', file, '-vf', 'mpdecimate=hi=64:lo=24:frac=0.05', '-an', '-f', 'null', '-'], { encoding: 'utf8' })
   const frames = [...r.stderr.matchAll(/frame=\s*(\d+)/g)].pop()?.[1] ?? 0
@@ -134,7 +134,7 @@ const pick = process.argv.slice(3)
 const list = pick.length ? SCENES.filter((s) => pick.includes(s.name)) : SCENES
 const browser = await puppeteer.launch({
   executablePath: CHROME,
-  headless: false, // GPU real: WebGL fluido (headless cai no SwiftShader)
+  headless: false, // real GPU: smooth WebGL (headless falls back to SwiftShader)
   defaultViewport: null,
   args: [`--window-size=${Math.max(W, 500)},${H + 140}`, '--autoplay-policy=no-user-gesture-required', '--hide-scrollbars', ...angleArgs, '--ignore-gpu-blocklist', '--disable-backgrounding-occluded-windows', '--disable-renderer-backgrounding', '--disable-background-timer-throttling', '--disable-features=CalculateNativeWinOcclusion'],
 })

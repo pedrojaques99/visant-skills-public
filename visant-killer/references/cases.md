@@ -12,7 +12,7 @@ A frozen `AnimatePresence` in a lead-capture form passed `tsc`, ESLint,
 and nobody had opened the screen. Six green gates, one broken funnel: the
 difference between that round and a good one was not another detector, it was
 having looked. That is why `killer-scan` cannot say "gate open" without the
-surface table and the `## Tela vista` section.
+surface table and the `## Screen seen` section.
 
 ## Report first, detectors second
 
@@ -70,7 +70,7 @@ Opening a naming route on the real database charged and refunded credits: a
 session saved in the `deck` phase with an empty deck fires the paid generation
 on mount. Hence the two layers in `verify-screens.mjs`: `--skip-paid` routes
 never open, and every POST to a paid endpoint is aborted in the browser and shows
-up as `PAGO-BLOQUEADO`.
+up as `PAID-BLOCKED`.
 
 ## Copy hidden in a `.ts` lib
 
@@ -91,4 +91,4 @@ up with zero token check.
 
 In a real session half the initial findings came from the environment: a route
 compiling for 115s, partial hydration read as a bug, CDP cutting off at 45s. See
-[ambiente.md](ambiente.md).
+[environment.md](environment.md).

@@ -1,11 +1,11 @@
-// A ARMADILHA: /community/* num comentário de linha. Um removedor de comentário
-// em duas passadas lê o `/*` como abertura de bloco e apaga até o próximo fecho
-// — levando a lista de login junto. ESPERADO dica('/login'): isMarketing.
+// THE TRAP: /community/* in a line comment. A two-pass comment stripper
+// reads the `/*` as a block opener and deletes up to the next closer,
+// taking the login list with it. EXPECTED hint('/login'): isMarketing.
 function isMarketing(p: string) {
   const auth = ['/login'];
   if (p === '/pricing') return true;
   return auth.includes(p);
 }
-/* fecho de bloco de verdade, longe */
+/* a real block closer, far away */
 const EDITOR_PREFIXES = ['/canvas'];
 export { isMarketing, EDITOR_PREFIXES };

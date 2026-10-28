@@ -1,5 +1,5 @@
-/* Ver irmaos-pai.tsx. `t('common.search')` é a palavra "Buscar" do design
- * system: reusar a chave é o DS funcionando. ESPERADO: zero. */
+/* See irmaos-pai.tsx. `t('common.search')` is the design system's word
+ * "Buscar": reusing the key is the DS working. EXPECTED: zero. */
 declare const t: (k: string) => string;
 export function BuscaA() {
   return <input placeholder={t('common.search')} />;

@@ -1,7 +1,7 @@
 /*
- * Fixture do leitor de rotas do `killer-scan --init-report`. Contrato (ver
- * runSelfTest): 3 rotas com tela, 1 redirecionamento, a rota de layout sem
- * path e a rota comentada fora.
+ * Fixture of the `killer-scan --init-report` route reader. Contract (see
+ * runSelfTest): 3 routes with a screen, 1 redirect, the layout route without a
+ * path and the commented-out route left out.
  */
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy } from 'react';
@@ -10,7 +10,7 @@ import { Pricing } from './pages/Pricing';
 
 const Canvas = lazy(() => import('./pages/Canvas').then((m) => ({ default: m.Canvas })));
 
-/* página definida no próprio roteador: o arquivo é o App */
+/* page defined in the router itself: the file is App */
 function HomeRoute() {
   return null;
 }

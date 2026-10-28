@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 /**
- * scripts-smoke — prova que os detectores funcionam CHAMADOS DE FORA.
+ * scripts-smoke: proves the detectors work when CALLED FROM OUTSIDE.
  *
- * Existe por um zero que mentiu. O `motion-lint` fazia `join(cwd, alvo)`, então
- * `join("C:/x", "Z:/app")` virava `"C:/x/Z:/app"` e o script morria com
- * "no such path"; o `refine-scan` guardava `relative(cwd, alvo)` e explodia com
- * `ENOENT: C:\Users\...\D:\dev\...` entre drives; o `killer-scan` sobrevivia
- * mas comparava caminho relativo com absoluto no filtro do lint de token, e
- * devolvia zero achado num repo cheio deles.
+ * It exists because of a zero that lied. `motion-lint` did `join(cwd, target)`,
+ * so `join("C:/x", "Z:/app")` became `"C:/x/Z:/app"` and the script died with
+ * "no such path"; `refine-scan` stored `relative(cwd, target)` and blew up with
+ * `ENOENT: C:\Users\...\D:\dev\...` across drives; `killer-scan` survived
+ * but compared a relative path with an absolute one in the token lint filter,
+ * and returned zero findings in a repo full of them.
  *
- * Os três tinham --self-test verde. Nenhum dos três testava a única coisa que
- * todo chamador faz: passar caminho absoluto, de outro diretório. O self-test
- * roda de dentro da pasta da skill, que é justamente o caso que nunca quebra.
+ * All three had a green --self-test. None of them tested the one thing every
+ * caller does: pass an absolute path from another directory. The self-test
+ * runs from inside the skill folder, which is exactly the case that never breaks.
  *
- * Este smoke roda de um cwd ESTRANGEIRO e com alvo ABSOLUTO, que é o contrato
- * real. Se ele ficar verde por acidente de novo, é aqui que a fixture entra.
+ * This smoke runs from a FOREIGN cwd with an ABSOLUTE target, which is the real
+ * contract. If it goes green by accident again, this is where the fixture goes.
+ *
+ * Matchers accept both the Portuguese and the English output of each detector,
+ * so the smoke keeps passing while those scripts are translated.
  *
  *   node scripts-smoke.mjs
  */
@@ -25,11 +28,11 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// --root=<pasta>: roda os casos contra outro repo de skills; detector ausente lá é pulado.
+// --root=<folder>: runs the cases against another skills repo; a detector missing there is skipped.
 const rootArg = process.argv.slice(2).find((a) => a.startsWith("--root="))?.slice(7);
 const REPO = rootArg ? resolve(rootArg) : dirname(fileURLToPath(import.meta.url));
 
-/* Um alvo fora do repo, com um defeito plantado que cada detector reconhece. */
+/* A target outside the repo, with a planted defect every detector recognizes. */
 const sandbox = mkdtempSync(join(tmpdir(), "visant-smoke-"));
 const appDir = join(sandbox, "app");
 mkdirSync(appDir, { recursive: true });
@@ -47,9 +50,9 @@ writeFileSync(
   "utf8",
 );
 
-/* O brand-vault-lint não olha código, olha um vault — mas o contrato é o mesmo:
-   caminho absoluto, cwd estrangeiro. Defeito plantado: logo hospedado fora do
-   R2, que é o link que expira e mata a marca do cliente calado. */
+/* brand-vault-lint does not look at code, it looks at a vault, but the
+   contract is the same: absolute path, foreign cwd. Planted defect: a logo
+   hosted outside R2, the link that expires and silently kills the client's brand. */
 const vaultFile = join(sandbox, "vault.json");
 writeFileSync(
   vaultFile,
@@ -71,15 +74,15 @@ writeFileSync(
   "utf8",
 );
 
-/* O leva-plan lê uma lista de demandas e uma pasta de finais. Defeito plantado:
-   uma peça já entregue em `@finais` — se ela aparecer como pendente, o script
-   não abriu a pasta e a skill criaria issue de coisa pronta. */
+/* leva-plan reads a list of requests and a finals folder. Planted defect: a
+   piece already delivered in `@finais`; if it shows up as pending, the script
+   did not open the folder and the skill would create an issue for finished work. */
 const finaisDir = join(sandbox, "@finais");
 mkdirSync(join(finaisDir, "Envelope A3"), { recursive: true });
 const levaFile = join(sandbox, "demandas.json");
 writeFileSync(levaFile, JSON.stringify(["Envelope A3", "Placa de Obra"]), "utf8");
 
-/* cwd estrangeiro: nem o repo das skills, nem o alvo. É o que um agente faz. */
+/* Foreign cwd: neither the skills repo nor the target. That is what an agent does. */
 const foreignCwd = tmpdir();
 
 const CASES = [
@@ -87,50 +90,56 @@ const CASES = [
     name: "motion-lint",
     script: join(REPO, "visant-motion", "scripts", "motion-lint.mjs"),
     target: appDir,
-    /* Espera ACHAR: o alvo tem transition-all + ease-in + progresso falso.
-       Zero aqui significa que o script não abriu o arquivo. */
-    expect: (out, code) => (code === 1 || /finding/i.test(out) ? null : "não achou nada num alvo com defeito plantado"),
+    /* Expects to FIND: the target has transition-all + ease-in + fake progress.
+       Zero here means the script did not open the file. */
+    expect: (out, code) => (code === 1 || /finding|achado/i.test(out) ? null : "found nothing in a target with a planted defect"),
   },
   {
     name: "refine-scan",
     script: join(REPO, "visant-refine", "scripts", "refine-scan.mjs"),
     target: appDir,
-    expect: (out) => (/\d+ arquivo\(s\)/.test(out) && !/zero achado em 0 arquivo/.test(out) ? null : "não leu nenhum arquivo do alvo"),
+    expect: (out) =>
+      /\d+ (arquivo\(s\)|files?\b|file\(s\))/i.test(out) && !/zero (achado|findings?) (em|in|across) 0 (arquivo|file)/i.test(out)
+        ? null
+        : "did not read any file from the target",
   },
   {
     name: "killer-scan",
     script: join(REPO, "visant-killer", "scripts", "killer-scan.mjs"),
     target: appDir,
-    expect: (out) => (/arquivos no alvo: [1-9]/.test(out) ? null : "não expandiu o alvo em arquivo nenhum"),
+    expect: (out) =>
+      /(arquivos no alvo|files in (the )?target|target files): [1-9]/i.test(out) ? null : "did not expand the target into any file",
   },
   {
     name: "brand-vault-lint",
     script: join(REPO, "visant-brand-sync", "scripts", "brand-vault-lint.mjs"),
     target: vaultFile,
-    /* Espera ACHAR o logo efêmero. Zero aqui significa que não leu o arquivo. */
+    /* Expects to FIND the ephemeral logo. Zero here means it did not read the file. */
     expect: (out, code) =>
-      code === 1 && /logo-url-efemera/.test(out) ? null : "não achou o logo efêmero num vault com defeito plantado",
+      code === 1 && /logo-url-efemera/.test(out) ? null : "did not find the ephemeral logo in a vault with a planted defect",
   },
   {
     name: "leva-plan",
     script: join(REPO, "visant-team-director", "scripts", "leva-plan.mjs"),
     target: levaFile,
     args: ["--finais", finaisDir, "--time", "a,b", "--inicio", "2026-09-14"],
-    /* Espera 1 feita (envelope, pela pasta) e 1 pendente (placa). */
-    expect: (out) => (/1 feita\(s\), 1 pendente\(s\)/.test(out) ? null : "não casou a peça entregue com a pasta de finais"),
+    /* Expects 1 done (envelope, by folder) and 1 pending (placa). */
+    expect: (out) =>
+      /1 (feita\(s\)|done), 1 (pendente\(s\)|pending)/i.test(out) ? null : "did not match the delivered piece to the finals folder",
   },
 ];
 
 /*
- * OS SELF-TESTS RODAM AQUI TAMBÉM, e não só quando alguém lembra.
+ * THE SELF-TESTS RUN HERE TOO, not only when someone remembers.
  *
- * O `ruido-scan` e o `corta-scan` travam as regras deles em fixture (nove
- * regras e três geometrias). Fixture que ninguém roda é documentação: quem
- * afrouxa um limiar não descobre que zerou a regra, e regra zerada passa por
- * tela limpa — o pior modo de falha de um portão.
+ * `ruido-scan` and `corta-scan` lock their rules in fixtures (nine rules and
+ * three geometries). A fixture nobody runs is documentation: whoever loosens a
+ * threshold never learns they zeroed the rule, and a zeroed rule passes as a
+ * clean screen, the worst failure mode of a gate.
  *
- * O do `corta-scan` pede playwright e sai 0 dizendo "NÃO TESTADO" onde não
- * houver: "não consegui rodar" não é reprovação, e também não é aprovação.
+ * The `corta-scan` one needs playwright and exits 0 saying "NOT TESTED" (or
+ * "NÃO TESTADO") where it is missing: "could not run" is not a fail, and it is
+ * not a pass either.
  */
 const SELF_TESTS = [
   { name: "ruido-scan", script: join(REPO, "visant-killer", "scripts", "ruido-scan.mjs"), args: ["--self-test"] },
@@ -143,20 +152,20 @@ for (const t of SELF_TESTS) {
   const r = spawnSync(process.execPath, [t.script, ...t.args], { cwd: foreignCwd, encoding: "utf8", timeout: 180_000 });
   const out = `${r.stdout || ""}${r.stderr || ""}`;
   if (r.status === 0) {
-    const naoTestou = /NÃO TESTADO/.test(out);
-    console.log(`  ${naoTestou ? "–" : "✓"} ${t.name.padEnd(12)} ${naoTestou ? "self-test não rodou (sem playwright neste cwd)" : "self-test bate com o fixture"}`);
+    const notTested = /NÃO TESTADO|NOT TESTED/i.test(out);
+    console.log(`  ${notTested ? "–" : "✓"} ${t.name.padEnd(12)} ${notTested ? "self-test did not run (no playwright in this cwd)" : "self-test matches the fixture"}`);
   } else {
     failed++;
-    const falhas = out.split(String.fromCharCode(10)).filter((l) => /FALHA/.test(l)).join(String.fromCharCode(10));
-    console.error(`  ✗ ${t.name.padEnd(12)} self-test fora do esperado:`);
-    console.error(falhas || out.trim());
+    const failures = out.split(String.fromCharCode(10)).filter((l) => /FALHA|FAIL/.test(l)).join(String.fromCharCode(10));
+    console.error(`  ✗ ${t.name.padEnd(12)} self-test off contract:`);
+    console.error(failures || out.trim());
   }
 }
 
 for (const c of CASES) {
-  // O espelho público (export-public.mjs) não leva toda skill: detector ausente é pulado, não reprovado.
+  // The public mirror (export-public.mjs) does not carry every skill: a missing detector is skipped, not failed.
   if (!existsSync(c.script)) {
-    console.log(`  – ${c.name.padEnd(12)} skill fora deste repo, pulado`);
+    console.log(`  – ${c.name.padEnd(12)} skill not in this repo, skipped`);
     continue;
   }
   const r = spawnSync(process.execPath, [c.script, c.target, ...(c.args ?? [])], {
@@ -166,21 +175,22 @@ for (const c of CASES) {
   });
   const out = `${r.stdout || ""}${r.stderr || ""}`;
 
-  const crashed = /Error:|ENOENT|no such path|alvo não existe/i.test(out);
-  const problem = crashed ? out.split("\n").find((l) => /Error:|ENOENT|no such path|alvo não existe/i.test(l))?.trim() : c.expect(out, r.status);
+  const CRASH = /Error:|ENOENT|no such path|alvo não existe|target does not exist|target not found/i;
+  const crashed = CRASH.test(out);
+  const problem = crashed ? out.split("\n").find((l) => CRASH.test(l))?.trim() : c.expect(out, r.status);
 
   if (problem) {
     failed++;
     console.error(`  ✗ ${c.name.padEnd(12)} ${problem}`);
   } else {
-    console.log(`  ✓ ${c.name.padEnd(12)} aceita caminho absoluto de outro cwd`);
+    console.log(`  ✓ ${c.name.padEnd(12)} accepts an absolute path from another cwd`);
   }
 }
 
 console.log("-".repeat(64));
 if (failed) {
-  console.error(`scripts-smoke FALHOU: ${failed}/${CASES.length} detector(es) não funcionam chamados de fora.`);
-  console.error("Um detector que só funciona no cwd certo devolve zero por não ter olhado.");
+  console.error(`scripts-smoke FAILED: ${failed}/${CASES.length} detector(s) do not work when called from outside.`);
+  console.error("A detector that only works from the right cwd returns zero because it never looked.");
   process.exit(1);
 }
-console.log(`scripts-smoke ok — ${CASES.length}/${CASES.length} detectores de fora, mais ${SELF_TESTS.length} self-test(s) contra fixture.`);
+console.log(`scripts-smoke ok: ${CASES.length}/${CASES.length} detectors from outside, plus ${SELF_TESTS.length} self-test(s) against fixtures.`);

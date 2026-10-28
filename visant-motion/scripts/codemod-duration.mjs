@@ -1,32 +1,32 @@
 #!/usr/bin/env node
 /**
- * Codemod — troca duração inline por token do SSoT (`DUR.*`).
+ * Codemod: swaps inline durations for an SSoT token (`DUR.*`).
  *
- * Existe por uma conta: numa auditoria de 55 achados do motion-lint, 48 eram
- * `duration: 0.6` querendo virar `DUR.slow`. Puramente mecânico, e mesmo assim
- * consumiu a maior parte da sessão à mão. O `transition-all` já tinha codemod;
- * a duração, que é o achado mais comum de todos, não tinha.
+ * It exists because of a count: in an audit with 55 motion-lint findings, 48
+ * were `duration: 0.6` wanting to become `DUR.slow`. Purely mechanical, and it
+ * still ate most of the session by hand. `transition-all` already had a
+ * codemod; duration, the most common finding of all, did not.
  *
- *   node scripts/codemod-duration.mjs                 # dry-run, imprime o plano
- *   node scripts/codemod-duration.mjs --apply         # aplica exato + próximo
- *   node scripts/codemod-duration.mjs --apply --over  # inclui > 300ms
- *   node scripts/codemod-duration.mjs <pasta> ...     # alvo explícito
+ *   node scripts/codemod-duration.mjs                 # dry-run, prints the plan
+ *   node scripts/codemod-duration.mjs --apply         # applies exact + near
+ *   node scripts/codemod-duration.mjs --apply --over  # includes > 300ms
+ *   node scripts/codemod-duration.mjs <dir> ...       # explicit target
  *   node scripts/codemod-duration.mjs --self-test
  *
- * TRÊS BALDES, e a diferença entre eles é a razão de isto não ser um sed:
+ * THREE BUCKETS, and the difference between them is why this is not a sed:
  *
- *   EXATO    o número já é o valor de um token (0.2 -> DUR.base). Renomear,
- *            risco zero. Entra no --apply.
- *   PRÓXIMO  cai dentro da tolerância de um token e respeita o teto de 300ms
- *            (0.25 -> DUR.base). Mexe pouco no tempo. Entra no --apply.
- *   ACIMA    passa de 300ms, que é o defeito que a regra slow-ui-duration
- *            aponta (0.6 -> DUR.slow). Isso CORTA a duração pela metade — é
- *            mudança de comportamento, não refatoração. Só com --over, porque
- *            transição de rota e peça de marketing são exceções legítimas e
- *            quem decide é quem olha a tela.
+ *   EXACT     the number already is a token's value (0.2 -> DUR.base). Rename,
+ *             zero risk. Included in --apply.
+ *   NEAR      within a token's tolerance and under the 300ms ceiling
+ *             (0.25 -> DUR.base). Barely changes the timing. Included in --apply.
+ *   OVER      above 300ms, the defect the slow-ui-duration rule points at
+ *             (0.6 -> DUR.slow). This CUTS the duration in half: a behaviour
+ *             change, not a refactor. Only with --over, because route
+ *             transitions and marketing pieces are legitimate exceptions and
+ *             whoever looks at the screen decides.
  *
- * O codemod nunca inventa import: se o arquivo passa a usar `DUR` sem ter o
- * import, ele acrescenta usando o caminho que o próprio repo já usa.
+ * The codemod never invents an import: if the file starts using `DUR` without
+ * importing it, it adds the import using the path the repo already uses.
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -42,52 +42,53 @@ const ROOT = process.cwd();
 const EXTS = new Set([".tsx", ".ts", ".jsx", ".js"]);
 const SKIP_DIR = /^(node_modules|\.next|\.git|dist|build|coverage|__tests__|__mocks__)$/;
 
-/** Espelho do SSoT (assets/motion-ssot-starter/motion.ts). Segundos. */
+/** Mirror of the SSoT (assets/motion-ssot-starter/motion.ts). Seconds. */
 const DUR = { press: 0.12, fast: 0.16, base: 0.2, slow: 0.3 };
 const MAX_UI = 0.3;
-/* Tolerância RELATIVA, não absoluta. Com tolerância fixa de 60ms, 0.08 casava
-   com press (0.12) — mas 80ms e 120ms são 50% de diferença, e a percepção de
-   duração é logarítmica: o que importa é a razão, não a diferença. 25% é o
-   ponto onde ainda se lê como "o autor quis este token". */
+/* RELATIVE tolerance, not absolute. With a fixed 60ms tolerance, 0.08 matched
+   press (0.12), but 80ms and 120ms are 50% apart, and duration perception is
+   logarithmic: the ratio matters, not the difference. 25% is the point where
+   it still reads as "the author meant this token". */
 const REL_TOL = 0.25;
 
 /* -------------------------------------------------------------------------- */
-/* Classificação                                                              */
+/* Classification                                                             */
 /* -------------------------------------------------------------------------- */
 
-/** @returns {{token: string, bucket: 'EXATO'|'PRÓXIMO'|'ACIMA'} | null} */
+/** @returns {{token: string, bucket: 'EXACT'|'NEAR'|'OVER'} | null} */
 export function classify(seconds) {
   if (!Number.isFinite(seconds) || seconds <= 0) return null;
 
   for (const [name, v] of Object.entries(DUR)) {
-    if (Math.abs(seconds - v) < 1e-9) return { token: name, bucket: "EXATO" };
+    if (Math.abs(seconds - v) < 1e-9) return { token: name, bucket: "EXACT" };
   }
 
-  if (seconds > MAX_UI) return { token: "slow", bucket: "ACIMA" };
+  if (seconds > MAX_UI) return { token: "slow", bucket: "OVER" };
 
-  /* Empate arredonda pra BAIXO. DUR está em ordem crescente e o `<` estrito
-     deixa o primeiro ganhar, então 0.18 vira fast e 0.25 vira base. Não é
-     detalhe: a tese inteira desta skill é que UI abaixo de ~300ms responde e
-     acima disso parece travada. Quando o desempate é arbitrário, ele cai pro
-     lado que a skill defende. */
+  /* A tie rounds DOWN. DUR is in ascending order and the strict `<` lets the
+     first one win, so 0.18 becomes fast and 0.25 becomes base. Not a detail:
+     this skill's whole thesis is that UI under ~300ms responds and above that
+     feels stuck. When the tiebreak is arbitrary, it falls on the side the
+     skill defends. */
   let best = null;
   for (const [name, v] of Object.entries(DUR)) {
     const d = Math.abs(seconds - v);
     if (d <= v * REL_TOL && (!best || d < best.d)) best = { token: name, d };
   }
-  /* Abaixo de 300ms mas longe de qualquer token: não adivinha. Um 0.08 pode ser
-     escolha deliberada de press mais seco, e trocar por DUR.press sem avisar
-     esconde a decisão em vez de registrar. Vira NÃO-MAPEADO no relatório. */
-  return best ? { token: best.token, bucket: "PRÓXIMO" } : null;
+  /* Under 300ms but far from every token: do not guess. A 0.08 may be a
+     deliberate choice of a drier press, and swapping it for DUR.press without
+     notice hides the decision instead of recording it. It becomes UNMAPPED
+     in the report. */
+  return best ? { token: best.token, bucket: "NEAR" } : null;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Import do SSoT                                                             */
+/* SSoT import                                                                */
 /* -------------------------------------------------------------------------- */
 
 const IMPORT_DUR = /import\s*\{[^}]*\bDUR\b[^}]*\}\s*from\s*["']([^"']+)["']/;
 
-/** Descobre o caminho que ESTE repo usa pra importar o SSoT. */
+/** Finds the path THIS repo uses to import the SSoT. */
 function detectSsotPath(files) {
   const count = new Map();
   for (const f of files) {
@@ -98,7 +99,7 @@ function detectSsotPath(files) {
   return [...count.entries()].sort((a, b) => b[1] - a[1])[0][0];
 }
 
-/** Acrescenta o import depois do último import do arquivo. */
+/** Adds the import after the file's last import. */
 function addImport(src, path) {
   if (IMPORT_DUR.test(src)) return src;
   const lines = src.split("\n");
@@ -115,7 +116,7 @@ function addImport(src, path) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Varredura                                                                  */
+/* Walk                                                                       */
 /* -------------------------------------------------------------------------- */
 
 function walk(dir, out = []) {
@@ -130,10 +131,10 @@ function walk(dir, out = []) {
 }
 
 const isUi = (f) => f.split(sep).join("/").includes("components/ui/");
-/* O SSoT é o único lugar onde o número literal é a definição, não a cópia. */
+/* The SSoT is the only place where the literal number is the definition, not a copy. */
 const isSsot = (f) => /(^|[\\/])(lib[\\/])?motion\.tsx?$/.test(f);
 
-/** `duration: 0.6` em objeto de transition do framer. */
+/** `duration: 0.6` in a framer transition object. */
 const DURATION_LITERAL = /(\bduration:\s*)(\d*\.?\d+)(\s*[,}\n])/g;
 
 function processFile(file, ssotPath) {
@@ -145,16 +146,16 @@ function processFile(file, ssotPath) {
 
   const next = lines.map((line, i) => {
     if (/motion-lint-disable-next-line/.test(lines[i - 1] ?? "")) return line;
-    // Comentário não é código.
+    // A comment is not code.
     if (/^\s*(\/\/|\*|\/\*)/.test(line)) return line;
 
     return line.replace(DURATION_LITERAL, (whole, head, num, tail) => {
       const c = classify(parseFloat(num));
       if (!c) {
-        hits.push({ line: i + 1, from: num, bucket: "NÃO-MAPEADO", token: null });
+        hits.push({ line: i + 1, from: num, bucket: "UNMAPPED", token: null });
         return whole;
       }
-      const willWrite = c.bucket !== "ACIMA" || OVER;
+      const willWrite = c.bucket !== "OVER" || OVER;
       hits.push({ line: i + 1, from: num, bucket: c.bucket, token: c.token, applied: willWrite });
       return willWrite ? `${head}DUR.${c.token}${tail}` : whole;
     });
@@ -174,31 +175,31 @@ function processFile(file, ssotPath) {
 
 if (SELF_TEST) {
   const cases = [
-    // [segundos, token esperado, balde esperado]
-    [0.12, "press", "EXATO"],
-    [0.16, "fast", "EXATO"],
-    [0.2, "base", "EXATO"],
-    [0.3, "slow", "EXATO"],
-    [0.25, "base", "PRÓXIMO"],
-    [0.18, "fast", "PRÓXIMO"],  // empate fast/base cai pro mais rápido
-    [0.6, "slow", "ACIMA"],
-    [1.2, "slow", "ACIMA"],
-    [0.31, "slow", "ACIMA"], // 310ms já passou do teto: não é "próximo de slow"
+    // [seconds, expected token, expected bucket]
+    [0.12, "press", "EXACT"],
+    [0.16, "fast", "EXACT"],
+    [0.2, "base", "EXACT"],
+    [0.3, "slow", "EXACT"],
+    [0.25, "base", "NEAR"],
+    [0.18, "fast", "NEAR"],  // fast/base tie falls to the faster one
+    [0.6, "slow", "OVER"],
+    [1.2, "slow", "OVER"],
+    [0.31, "slow", "OVER"], // 310ms is already past the ceiling: not "near slow"
   ];
   const problems = [];
   for (const [s, token, bucket] of cases) {
     const c = classify(s);
-    if (!c) { problems.push(`${s}s: não classificou`); continue; }
+    if (!c) { problems.push(`${s}s: not classified`); continue; }
     if (c.token !== token || c.bucket !== bucket) {
-      problems.push(`${s}s: esperava ${bucket}/${token}, veio ${c.bucket}/${c.token}`);
+      problems.push(`${s}s: expected ${bucket}/${token}, got ${c.bucket}/${c.token}`);
     }
   }
-  /* Valor solto abaixo do teto NÃO pode ser adivinhado: se isto virar
-     PRÓXIMO algum dia, o codemod passa a apagar decisão deliberada. */
-  if (classify(0.08)) problems.push(`0.08s devia ficar NÃO-MAPEADO, veio ${classify(0.08).token}`);
-  if (classify(0)) problems.push("0 devia ser ignorado");
+  /* A stray value under the ceiling must NOT be guessed: if this ever becomes
+     NEAR, the codemod starts erasing deliberate decisions. */
+  if (classify(0.08)) problems.push(`0.08s should stay UNMAPPED, got ${classify(0.08).token}`);
+  if (classify(0)) problems.push("0 should be ignored");
 
-  // Reescrita de verdade, inclusive o import.
+  // A real rewrite, import included.
   const sample = `"use client";\nimport { motion } from "framer-motion";\n\nexport const A = () => <motion.div transition={{ duration: 0.2 }} />;\n`;
   const rewritten = addImport(
     sample.replace(DURATION_LITERAL, (w, h, n, t) => {
@@ -207,25 +208,25 @@ if (SELF_TEST) {
     }),
     "@/lib/motion",
   );
-  if (!/duration: DUR\.base/.test(rewritten)) problems.push("não reescreveu duration: 0.2 -> DUR.base");
-  if (!IMPORT_DUR.test(rewritten)) problems.push("não acrescentou o import do DUR");
-  if ((rewritten.match(/import \{ DUR \}/g) ?? []).length !== 1) problems.push("import duplicado");
+  if (!/duration: DUR\.base/.test(rewritten)) problems.push("did not rewrite duration: 0.2 -> DUR.base");
+  if (!IMPORT_DUR.test(rewritten)) problems.push("did not add the DUR import");
+  if ((rewritten.match(/import \{ DUR \}/g) ?? []).length !== 1) problems.push("duplicate import");
 
-  // Idempotência: rodar duas vezes não pode mexer de novo.
+  // Idempotence: running twice must not touch it again.
   const twice = addImport(rewritten, "@/lib/motion");
-  if (twice !== rewritten) problems.push("não é idempotente: segunda passada mexeu no arquivo");
+  if (twice !== rewritten) problems.push("not idempotent: the second pass changed the file");
 
   if (problems.length) {
-    console.error("codemod-duration --self-test FALHOU");
+    console.error("codemod-duration --self-test FAILED");
     for (const p of problems) console.error(`  - ${p}`);
     process.exit(1);
   }
-  console.log(`codemod-duration --self-test ok — ${cases.length} classificações, reescrita, import e idempotência.`);
+  console.log(`codemod-duration --self-test ok: ${cases.length} classifications, rewrite, import and idempotence.`);
   process.exit(0);
 }
 
 /* -------------------------------------------------------------------------- */
-/* Execução                                                                   */
+/* Run                                                                        */
 /* -------------------------------------------------------------------------- */
 
 const roots = argv.filter((a) => !a.startsWith("--"));
@@ -234,7 +235,7 @@ const targets = (roots.length ? roots : ["components", "app", "src"])
   .filter((t) => existsSync(t));
 
 if (!targets.length) {
-  console.error("codemod-duration: nenhum alvo existe. Passe a pasta explicitamente.");
+  console.error("codemod-duration: no target exists. Pass the folder explicitly.");
   process.exit(2);
 }
 
@@ -250,7 +251,7 @@ const disp = (f) => {
   return (r && !r.startsWith("..") && !isAbsolute(r) ? r : f).split(sep).join("/");
 };
 
-const buckets = { EXATO: [], "PRÓXIMO": [], ACIMA: [], "NÃO-MAPEADO": [] };
+const buckets = { EXACT: [], NEAR: [], OVER: [], UNMAPPED: [] };
 let filesChanged = 0;
 
 for (const file of scoped) {
@@ -265,31 +266,31 @@ for (const file of scoped) {
 
 const show = (name, list, note) => {
   if (!list.length) return;
-  console.log(`\n${name} (${list.length})${note ? ` — ${note}` : ""}`);
+  console.log(`\n${name} (${list.length})${note ? `: ${note}` : ""}`);
   for (const l of list) console.log(`  ${l}`);
 };
 
-show("EXATO", buckets.EXATO, "o número já É o token; renomear");
-show("PRÓXIMO", buckets["PRÓXIMO"], "dentro da tolerância e sob 300ms");
-show("ACIMA", buckets.ACIMA, OVER ? "aplicado: CORTA a duração, revise no diff" : "NÃO aplicado — mudança de comportamento, veja abaixo");
-show("NÃO-MAPEADO", buckets["NÃO-MAPEADO"], "longe de qualquer token; decida à mão ou acrescente um token ao SSoT");
+show("EXACT", buckets.EXACT, "the number already IS the token; rename");
+show("NEAR", buckets.NEAR, "within tolerance and under 300ms");
+show("OVER", buckets.OVER, OVER ? "applied: CUTS the duration, review the diff" : "NOT applied, behaviour change, see below");
+show("UNMAPPED", buckets.UNMAPPED, "far from every token; decide by hand or add a token to the SSoT");
 
 console.log("\n" + "─".repeat(64));
 if (!ssotPath) {
-  console.log("aviso: nenhum arquivo do alvo importa `DUR` ainda — o import NÃO foi");
-  console.log("acrescentado. Importe o SSoT em um arquivo primeiro (ou copie o");
-  console.log("assets/motion-ssot-starter/motion.ts), depois rode de novo.");
+  console.log("warning: no file in the target imports `DUR` yet, so the import was NOT");
+  console.log("added. Import the SSoT in one file first (or copy");
+  console.log("assets/motion-ssot-starter/motion.ts), then run again.");
 } else {
-  console.log(`SSoT detectado no próprio repo: import { DUR } from "${ssotPath}"`);
+  console.log(`SSoT detected in the repo itself: import { DUR } from "${ssotPath}"`);
 }
-const applied = buckets.EXATO.length + buckets["PRÓXIMO"].length + (OVER ? buckets.ACIMA.length : 0);
-console.log(`${APPLY ? "APLICADO" : "DRY-RUN"} — ${applied} troca(s) em ${filesChanged} arquivo(s).`);
-if (!OVER && buckets.ACIMA.length) {
+const applied = buckets.EXACT.length + buckets.NEAR.length + (OVER ? buckets.OVER.length : 0);
+console.log(`${APPLY ? "APPLIED" : "DRY-RUN"}: ${applied} swap(s) in ${filesChanged} file(s).`);
+if (!OVER && buckets.OVER.length) {
   console.log(
-    `\n${buckets.ACIMA.length} achado(s) ACIMA de 300ms ficaram de fora. Eles são o defeito que a\n` +
-      `regra slow-ui-duration aponta, mas trocar 0.6 por DUR.slow CORTA a animação pela\n` +
-      `metade — e transição de rota e peça de marketing são exceção legítima. Depois de\n` +
-      `olhar a lista:  node scripts/codemod-duration.mjs --apply --over`,
+    `\n${buckets.OVER.length} finding(s) OVER 300ms were left out. They are the defect the\n` +
+      `slow-ui-duration rule points at, but swapping 0.6 for DUR.slow CUTS the animation in\n` +
+      `half, and route transitions and marketing pieces are legitimate exceptions. After\n` +
+      `reading the list:  node scripts/codemod-duration.mjs --apply --over`,
   );
 }
-if (!APPLY) console.log("\nRode de novo com --apply pra escrever.");
+if (!APPLY) console.log("\nRun again with --apply to write.");

@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Escolhe o MELHOR momento de cada clipe e ranqueia os clipes por qualidade tecnica.
-# Serve pra montagem nao entrar no take pelo comeco tremido, e pra escolher b-roll
-# por nitidez em vez de por ordem de arquivo.
+# Picks the BEST moment of each clip and ranks clips by technical quality.
+# It keeps the edit from entering a take at its shaky start, and picks b-roll
+# by sharpness instead of by file order.
 #
-# Gera:
-#   _build/frames.tsv   arquivo <TAB> melhor_t <TAB> nitidez <TAB> brilho <TAB> nota
+# Writes (column names kept as-is, it is a file format):
+#   _build/frames.tsv   file <TAB> best_t <TAB> sharpness <TAB> brightness <TAB> score
 #
-# Uso:  SRC=/midia PROJ=/projeto bash frames.sh
-#       PONTOS=5 bash frames.sh     # sonda mais pontos por clipe (mais lento)
+# Usage: SRC=/media PROJ=/project bash frames.sh
+#        PONTOS=5 bash frames.sh     # probes more points per clip (slower)
 #
-# LIMITE MEDIDO: a nota e QUALIDADE TECNICA, nao valor narrativo. Ela pune duas
-# coisas que costumam ser as mais importantes do video:
-#   - selfie falando (fundo estourado, pouca borda) -> mas e a espinha narrativa
-#   - close de peca grafica plana (placa, cracha) -> mas e o produto do trabalho
-# Use a nota pra (a) escolher o ponto de entrada do take e (b) ordenar B-ROLL
-# dentro de um capitulo. NUNCA pra decidir o que entra no video.
+# MEASURED LIMIT: the score is TECHNICAL QUALITY, not narrative value. It punishes
+# two things that are often the most important in the video:
+#   - talking selfie (blown background, few edges) -> but it is the narrative spine
+#   - close-up of a flat graphic piece (sign, badge) -> but it is the work's product
+# Use the score to (a) pick the entry point of a take and (b) order B-ROLL
+# within a chapter. NEVER to decide what goes into the video.
 set -uo pipefail
 
 BASE="${PROJ:-$PWD}"
@@ -22,10 +22,10 @@ ROOT="${SRC:-$BASE}"
 MAN="$BASE/_build/manifest.tsv"
 OUT="$BASE/_build/frames.tsv"
 PONTOS="${PONTOS:-3}"
-[ -f "$MAN" ] || { echo "Sem manifest. Roda antes: ingest.sh"; exit 1; }
+[ -f "$MAN" ] || { echo "No manifest. Run first: ingest.sh"; exit 1; }
 
-# nitidez = densidade de borda depois do edgedetect. Camera tremida e foco perdido
-# derrubam esse numero, que e exatamente o b-roll que nao deve entrar.
+# sharpness = edge density after edgedetect. Camera shake and lost focus
+# drop this number, which is exactly the b-roll that should not go in.
 nitidez() { ffmpeg -nostdin -v error -ss "$2" -i "$1" -frames:v 1 \
   -vf "scale=480:-2,edgedetect=low=0.1:high=0.3,signalstats,metadata=print:file=-" \
   -f null - 2>/dev/null | awk -F= '/YAVG/{printf "%.2f",$2; exit}'; }
@@ -42,8 +42,8 @@ while IFS=$'\t' read -r -u 9 f dur; do
   src="$ROOT/$f"
   [ -f "$src" ] || continue
   melhor_t=0; melhor_n=0
-  # sonda dentro do miolo: 20%..80%. O comeco costuma ter o movimento de levantar
-  # a camera e o fim, o de abaixar.
+  # probes inside the core: 20%..80%. The start usually has the camera being
+  # raised and the end, being lowered.
   for k in $(seq 1 "$PONTOS"); do
     t="$(awk -v d="$dur" -v k="$k" -v n="$PONTOS" 'BEGIN{printf "%.1f", d*(0.2 + 0.6*(k-1)/(n>1?n-1:1))}')"
     n="$(nitidez "$src" "$t")"; n="${n:-0}"
@@ -51,8 +51,8 @@ while IFS=$'\t' read -r -u 9 f dur; do
     [ "$maior" = s ] && { melhor_n="$n"; melhor_t="$t"; }
   done
   b="$(brilho "$src" "$melhor_t")"; b="${b:-0}"
-  # nota: nitidez penalizada por exposicao ruim. Escuro demais ou estourado nao
-  # se conserta na montagem.
+  # score: sharpness penalized by bad exposure. Too dark or blown out cannot
+  # be fixed in the edit.
   nota="$(awk -v n="$melhor_n" -v b="$b" 'BEGIN{
     p=1
     if (b<45)  p=0.35
@@ -65,8 +65,8 @@ while IFS=$'\t' read -r -u 9 f dur; do
 done 9< <(awk -F'\t' 'NR>1 && $2=="video" {print $1"\t"$3}' "$MAN")
 
 echo
-echo "== melhores 12:"
-tail -n +2 "$OUT" | sort -t$'\t' -k5 -rn | head -12 | awk -F'\t' '{printf "  %-18s t=%-6s nota=%-7s (nitidez %s, brilho %s)\n",$1,$2,$5,$3,$4}'
-echo "== piores 6 (candidatos a ficar de fora):"
-tail -n +2 "$OUT" | sort -t$'\t' -k5 -n | head -6 | awk -F'\t' '{printf "  %-18s nota=%-7s (nitidez %s, brilho %s)\n",$1,$5,$3,$4}'
+echo "== best 12:"
+tail -n +2 "$OUT" | sort -t$'\t' -k5 -rn | head -12 | awk -F'\t' '{printf "  %-18s t=%-6s score=%-7s (sharpness %s, brightness %s)\n",$1,$2,$5,$3,$4}'
+echo "== worst 6 (candidates to leave out):"
+tail -n +2 "$OUT" | sort -t$'\t' -k5 -n | head -6 | awk -F'\t' '{printf "  %-18s score=%-7s (sharpness %s, brightness %s)\n",$1,$5,$3,$4}'
 echo "-> $OUT"

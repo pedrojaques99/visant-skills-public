@@ -1,59 +1,59 @@
 #!/usr/bin/env node
 /**
- * ruido-scan — o detector de POLUIÇÃO DE CROMO.
+ * ruido-scan: the CHROME POLLUTION detector.
  *
- * Os três detectores que já existiam olham para outra coisa: `impeccable` acha
- * o tell de IA no código, `audit:design` acha token errado, `copy-lint` acha
- * vício de voz numa frase. Nenhum deles enxerga o defeito mais comum de uma
- * tela feita por agente: **a página inteira funcionando, escrita corretamente,
- * com tokens certos, e ainda assim ilegível de tanto texto de apoio.**
+ * The three detectors that already existed look at something else: `impeccable`
+ * finds the AI tell in code, `audit:design` finds the wrong token, `copy-lint`
+ * finds voice tics in a sentence. None of them sees the most common defect of a
+ * screen built by an agent: **the whole page working, correctly written, with
+ * the right tokens, and still unreadable from so much supporting text.**
  *
- * O caso que gerou este arquivo: cinco salas de uma vitrine foram reconstruídas
- * por cinco agentes em paralelo, cada um seguindo as skills da casa. Todos os
- * portões ficaram verdes. E o usuário abriu a tela e disse "tá cheio de texto
- * ainda, label desnecessária, ruído visual". Contados, eram ONZE blocos de
- * texto antes do primeiro pixel de produto — e a mesma informação aparecia três
- * vezes, em três tamanhos.
+ * The case that produced this file: five rooms of a showcase were rebuilt by
+ * five agents in parallel, each one following the house skills. Every gate went
+ * green. And the user opened the screen and said "still full of text,
+ * unnecessary labels, visual noise". Counted, there were ELEVEN text blocks
+ * before the first pixel of product, and the same information appeared three
+ * times, in three sizes.
  *
- * Por que isso passa por tudo: **cada peça de cromo, sozinha, é defensável.**
- * O rótulo nomeia o trecho. A nota orienta. A instrução ajuda quem chega. O
- * ordinal dá ordem. Nenhuma linha é "errada" — o dano é o SOMATÓRIO, e nenhum
- * linter soma. Agente, em particular, escreve isso por default: ele acabou de
- * decidir uma estrutura e quer que a estrutura apareça, então legenda tudo o
- * que fez. É a assinatura de quem explica o próprio trabalho em vez de
- * entregá-lo.
+ * Why this gets past everything: **each piece of chrome, alone, is defensible.**
+ * The label names the section. The note guides. The instruction helps whoever
+ * arrives. The ordinal gives order. No line is "wrong": the damage is the SUM,
+ * and no linter sums. An agent in particular writes this by default: it has
+ * just decided on a structure and wants the structure to show, so it captions
+ * everything it did. It is the signature of someone explaining their own work
+ * instead of delivering it.
  *
- * As regras abaixo são as que sobreviveram a casos reais. Cada uma mira um
- * padrão que só é defeito por acumulação, e por isso quase todas têm PISO: uma
- * ocorrência é escolha, três é sintoma.
+ * The rules below are the ones that survived real cases. Each one targets a
+ * pattern that is only a defect by accumulation, and that is why almost all of
+ * them have a FLOOR: one occurrence is a choice, three is a symptom.
  *
- * Duas delas (2026-09-11) NÃO são de texto, e entraram porque o texto não era o
- * problema: `realce-que-nao-decide` acha destaque em repouso — o realce que
- * roda uma vez por item e acende a lista inteira — e `porta-repetida` acha a
- * mesma porta de dado nomeada em dois arquivos. A segunda é a primeira regra
- * desta skill que não cabe num arquivo, e o achado que a gerou havia passado
- * pelas sete anteriores, por `tsc`, por `ui:audit` e por 2347 testes.
+ * Two of them (2026-09-11) are NOT about text, and came in because text was not
+ * the problem: `realce-que-nao-decide` finds highlight at rest (the highlight
+ * that runs once per item and lights up the whole list) and `porta-repetida`
+ * finds the same data door named in two files. The second is the first rule of
+ * this skill that does not fit in one file, and the finding that produced it
+ * had gotten past the seven previous rules, `tsc`, `ui:audit` and 2347 tests.
  *
- * Seis entraram em 2026-10-05 (fase 2 do slop killer no visantlabs-os), todas
- * achadas ABRINDO a tela depois de os detectores darem verde: `capa-sintetica`,
+ * Six came in on 2026-10-05 (slop killer phase 2 in visantlabs-os), all found
+ * by OPENING the screen after the detectors went green: `capa-sintetica`,
  * `img-de-tile-sem-onerror`, `cascata-por-indice`, `hover-que-levanta`,
- * `grade-de-pontos` e `blur-em-card`. No mesmo dia a `porta-repetida` passou a
- * exigir a MESMA TELA pelo grafo de imports (`grafo.mjs`): de 25 achados quase
- * todos falsos pra 2 reais.
+ * `grade-de-pontos` and `blur-em-card`. The same day `porta-repetida` started
+ * requiring the SAME SCREEN through the import graph (`grafo.mjs`): from 25
+ * findings, almost all false, down to 2 real ones.
  *
  * Nine more came in on 2026-10-28, from the design-slop signals 47-57 of the
  * catalog: `tag-everywhere`, `italic-headline-word`, `display-serif-tight`,
  * `divider-everywhere`, `opacity-ladder`, `box-in-box`, `code-crumb`,
  * `numbered-section` and `mono-everywhere`. Signals 50 and 54 stay with the eye.
  *
- * Uso:
- *   node ruido-scan.mjs <alvo...>          # arquivos ou pastas
- *   node ruido-scan.mjs --quiet <alvo...>  # só o placar
+ * Usage:
+ *   node ruido-scan.mjs <target...>          # files or folders
+ *   node ruido-scan.mjs --quiet <target...>  # scoreboard only
  *
- * Sai 1 se achou. Achado aqui é CANDIDATO A CORTE, não conserto automático:
- * confirme em arquivo:linha antes de apagar, porque uma dessas linhas pode ser
- * a única que orienta de verdade. A regra de ouro do corte está no
- * `references/slop-catalog.md`, entrada "página que se explica".
+ * Exits 1 on findings. A finding here is a CUT CANDIDATE, not an automatic fix:
+ * confirm it at file:line before deleting, because one of those lines may be
+ * the only one that really guides. The golden rule of cutting is in
+ * `references/slop-catalog.md`, entry "page that explains itself".
  */
 
 import fs from 'node:fs';
@@ -65,36 +65,36 @@ const quiet = args.includes('--quiet');
 const targets = args.filter((a) => !a.startsWith('--'));
 
 /*
- * Nada de trabalho no topo — este módulo também é importado.
+ * No work at the top level: this module is also imported.
  *
- * `killer-scan.mjs` importa `scanRuido` daqui, e `import` executa o módulo
- * inteiro. Como a checagem de alvo e a varredura liam `process.argv` no topo,
- * elas enxergavam os argumentos de QUEM IMPORTOU: em
- * `killer-scan --init-report AUDIT.md <alvo>`, o nome do relatório entrava como
- * alvo e o `walk` estourava ENOENT num arquivo que ainda nem tinha sido criado
- * — derrubando o portão inteiro antes do primeiro detector, e justamente no
- * comando que a skill manda rodar primeiro.
+ * `killer-scan.mjs` imports `scanRuido` from here, and `import` runs the whole
+ * module. Since the target check and the scan read `process.argv` at the top,
+ * they saw the arguments of WHOEVER IMPORTED: in
+ * `killer-scan --init-report AUDIT.md <target>`, the report name came in as a
+ * target and `walk` blew up with ENOENT on a file not yet created, taking down
+ * the whole gate before the first detector, and precisely on the command the
+ * skill says to run first.
  *
- * O guard `executadoDireto` já existia lá embaixo. O problema é que o trabalho
- * acontecia antes dele.
+ * The `executadoDireto` guard already existed down below. The problem is that
+ * the work happened before it.
  */
 function exigirAlvo() {
-  /* `--self-test` roda contra o fixture e não pede alvo. */
+  /* `--self-test` runs against the fixture and needs no target. */
   if (!targets.length && !args.includes('--self-test')) {
-    console.error('uso: node ruido-scan.mjs [--quiet] <arquivo|pasta>...');
-    console.error('     node ruido-scan.mjs --self-test    # trava as regras no fixture');
+    console.error('usage: node ruido-scan.mjs [--quiet] <file|folder>...');
+    console.error('       node ruido-scan.mjs --self-test    # locks the rules against the fixture');
     process.exit(2);
   }
 }
 
 /*
- * O que nunca é tela de produto.
+ * What is never a product screen.
  *
- * `.claude` e `worktrees` entraram depois de rodar num repo de fora: ele tinha
- * duas worktrees de agente versionadas dentro de si, e o mesmo arquivo era
- * contado três vezes. Dezenove achados viravam seis reais, e o placar inflado
- * é pior que o número certo — ele faz o time achar que a dívida é maior do que
- * é e desistir antes de começar.
+ * `.claude` and `worktrees` came in after running on an outside repo: it had
+ * two agent worktrees versioned inside it, and the same file was counted three
+ * times. Nineteen findings became six real ones, and an inflated scoreboard is
+ * worse than the right number: it makes the team think the debt is bigger than
+ * it is and give up before starting.
  */
 const IGNORA = new Set([
   'node_modules', '.git', 'dist', 'build', '.next', 'coverage', '.turbo',
@@ -114,49 +114,49 @@ function walk(p, out = []) {
   return out;
 }
 
-/** Resolve o alvo só quando alguém pede — nunca na importação. Ver `exigirAlvo`. */
+/** Resolves the target only when someone asks, never on import. See `exigirAlvo`. */
 const listarArquivos = () => targets.flatMap((t) => walk(path.resolve(t)));
 
 /* ------------------------------------------------------------------ */
-/* extração: só o que chega no olho de quem usa                        */
+/* extraction: only what reaches the user's eye                        */
 /* ------------------------------------------------------------------ */
 
 /**
- * Texto de JSX e os atributos que viram texto na tela.
+ * JSX text and the attributes that become text on screen.
  *
- * Deliberadamente NÃO olha comentário, nome de variável nem string de código:
- * o detector morre de falso positivo no primeiro `const label = "clique"` se
- * fizer isso, e detector barulhento é detector que o agente aprende a ignorar.
+ * Deliberately does NOT look at comments, variable names or code strings: the
+ * detector dies of false positives at the first `const label = "clique"` if it
+ * does, and a noisy detector is a detector the agent learns to ignore.
  */
 function extrairTextos(src) {
   const out = [];
-  /* uma passada só: `// /community/*` num comentário de linha não abre bloco (ver grafo.mjs) */
+  /* a single pass: `// /community/*` in a line comment does not open a block (see grafo.mjs) */
   const semComentario = tirarComentario(src)
     /*
-     * `<title>` e `<desc>` de SVG são NOME ACESSÍVEL, não cromo visual.
+     * SVG `<title>` and `<desc>` are ACCESSIBLE NAME, not visual chrome.
      *
-     * Mesmo motivo do `alt` (ver ATTRS abaixo): ninguém enxerga esse texto na
-     * tela, ele existe para quem usa leitor de tela. Um detector que mandasse
-     * encurtar isso estaria pedindo para piorar a acessibilidade.
+     * Same reason as `alt` (see ATTRS below): nobody sees this text on screen,
+     * it exists for screen reader users. A detector that asked to shorten it
+     * would be asking to make accessibility worse.
      */
     .replace(/<(title|desc)(\s[^>]*)?>[\s\S]*?<\/\1>/g, (m) => m.replace(/[^\n]/g, ' '));
 
   const linhaDe = (idx) => semComentario.slice(0, idx).split('\n').length;
 
   /*
-   * TEXTO DENTRO DE BLOCO DE CÓDIGO NÃO É FRASE DE TELA — e por isso ganha marca.
+   * TEXT INSIDE A CODE BLOCK IS NOT A SCREEN SENTENCE, and so it gets a mark.
    *
-   * Falso positivo confirmado na rodada 1 do slop killer (visantlabs-os,
-   * 2026-10-05): 14 achados de `mesma-info-dois-tamanhos` na DocsPage, todos
-   * dentro de bloco de exemplo — `# Pass your API key in every request` contra
-   * `# Pass your API key in the Authorization header`, e listas de endpoint
-   * (`POST /api/...`) em seções diferentes. Documentação de API repete o header
-   * de autenticação em cada seção DE PROPÓSITO: quem chega por âncora lê só uma.
+   * False positive confirmed in slop killer round 1 (visantlabs-os,
+   * 2026-10-05): 14 `mesma-info-dois-tamanhos` findings on DocsPage, all inside
+   * example blocks: `# Pass your API key in every request` against
+   * `# Pass your API key in the Authorization header`, and endpoint lists
+   * (`POST /api/...`) in different sections. API docs repeat the auth header in
+   * every section ON PURPOSE: whoever arrives by anchor reads only one.
    *
-   * Bloco de código aqui é `<pre>`, `<code>` e elemento com classe `font-*mono`
-   * (é assim que esta casa e quase todo repo desenha bloco de exemplo). O texto
-   * continua sendo extraído — as outras regras ainda olham —, só leva a marca
-   * `codigo`, e a R5 não compara frase marcada.
+   * A code block here is `<pre>`, `<code>` and an element with a `font-*mono`
+   * class (that is how this house and almost every repo draws an example
+   * block). The text is still extracted (the other rules still look), it just
+   * carries the `codigo` mark, and R5 does not compare marked sentences.
    */
   const regioesDeCodigo = [];
   for (const m of semComentario.matchAll(/<([A-Za-z][\w.]*)\b((?:[^<>{}]|\{[^{}]*\})*)>/g)) {
@@ -164,7 +164,7 @@ function extrairTextos(src) {
     const attrs = m[2] ?? '';
     if (attrs.trimEnd().endsWith('/')) continue;
     if (!(tag === 'pre' || tag === 'code' || /\bfont-[\w-]*mono\b/.test(attrs))) continue;
-    /* fecha na tag de MESMO nome, contando aninhamento */
+    /* closes on the tag with the SAME name, counting nesting */
     const nome = tag.replace('.', '\\.');
     const re = new RegExp(`<${nome}\\b|</${nome}\\s*>`, 'g');
     re.lastIndex = m.index + m[0].length;
@@ -180,11 +180,10 @@ function extrairTextos(src) {
   const emCodigo = (idx) => regioesDeCodigo.some(([a, b]) => idx >= a && idx < b);
 
   /*
-   * ATRIBUTO DE METADADO NÃO CHEGA NO OLHO. `<SEO description=…>` e
-   * `<SoftwareApplicationSchema description=…>` repetem a mesma frase por dever
-   * (snippet do Google e JSON-LD), e nenhum dos dois aparece na tela. Falso
-   * positivo confirmado em BrandingMachinePage:1022 e DocsPage:354 na mesma
-   * rodada.
+   * A METADATA ATTRIBUTE NEVER REACHES THE EYE. `<SEO description=…>` and
+   * `<SoftwareApplicationSchema description=…>` repeat the same sentence by duty
+   * (Google snippet and JSON-LD), and neither appears on screen. False positive
+   * confirmed at BrandingMachinePage:1022 and DocsPage:354 in the same round.
    */
   const TAG_META = /^(SEO|Seo|Helmet|Head|meta|link|\w*Schema|JsonLd\w*|StructuredData\w*|Metadata)$/;
   const metaEm = (idx) => {
@@ -194,67 +193,67 @@ function extrairTextos(src) {
     return !!m && TAG_META.test(m[1]);
   };
   /*
-   * Chave de i18n (`placeholder={t('common.search')}`) não é o texto, é o
-   * ENDEREÇO dele. Antes desta marca, a palavra "common search" virava frase de
-   * tela e a R9 acusou quatro buscas de quatro telas diferentes como a mesma
-   * porta — o reuso deliberado de uma chave de vocabulário comum.
+   * An i18n key (`placeholder={t('common.search')}`) is not the text, it is its
+   * ADDRESS. Before this mark, the words "common search" became a screen
+   * sentence and R9 flagged four searches on four different screens as the same
+   * door: the deliberate reuse of a common vocabulary key.
    */
   const CHAVE_I18N = /^[\w-]+(\.[\w-]+)+$/;
   const marcas = (idx, t) => ({ codigo: emCodigo(idx), meta: metaEm(idx), chave: CHAVE_I18N.test(t) });
 
   /*
-   * Texto solto entre tags — e a peneira que separa texto de CÓDIGO.
+   * Loose text between tags, and the sieve that separates text from CODE.
    *
-   * Falso positivo confirmado numa rodada real: `React.useState<string | null>`
-   * seguido de outra linha com `React.useState<TipoFilter>` casa com o padrão
-   * `>…<`, porque genérico de TypeScript usa os mesmos sinais de uma tag. As
-   * duas "frases" extraídas eram declarações de estado quase idênticas, e a
-   * regra de informação repetida acusou 50% de palavras em comum entre duas
-   * linhas de código que ninguém nunca vai ler na tela.
+   * False positive confirmed in a real round: `React.useState<string | null>`
+   * followed by another line with `React.useState<TipoFilter>` matches the
+   * `>…<` pattern, because a TypeScript generic uses the same signs as a tag.
+   * The two extracted "sentences" were nearly identical state declarations, and
+   * the repeated-information rule flagged 50% shared words between two lines of
+   * code nobody will ever read on screen.
    *
-   * Detector que grita no código perde a autoridade que precisa ter quando
-   * grita na tela. A peneira: texto de interface não tem `=`, `;`, `=>` nem
-   * palavra reservada de JS.
+   * A detector that shouts at code loses the authority it needs when it shouts
+   * at the screen. The sieve: interface text has no `=`, `;`, `=>` or JS
+   * reserved word.
    */
   const CHEIRO_DE_CODIGO = /[;=]|=>|\b(const|let|var|function|return|await|import|export|React|use[A-Z])\w*/;
   /*
-   * Duas peneiras a mais, e as duas saíram do MESMO falso positivo confirmado
-   * em 2026-08-19 (visant-club, `components/club/Rail.tsx`): a R5 acusou "l.142
-   * e l.145 — 50% das palavras em comum" em cima de
+   * Two more sieves, and both came from the SAME false positive confirmed on
+   * 2026-08-19 (visant-club, `components/club/Rail.tsx`): R5 flagged "l.142
+   * and l.145, 50% shared words" on
    *
    *     () => Array.from(ref.current?.querySelectorAll<HTMLElement>('[data-item]')
    *     ...  Array.from(item.querySelectorAll<HTMLElement>('a[href], button')
    *
-   * O `>` do `=>` abre o casamento e o `<` do genérico o fecha, então o trecho
-   * extraído foi `Array.from(ref.current?.querySelectorAll` — código puro, que
-   * escapou do `CHEIRO_DE_CODIGO` porque não tem `=`, `;` nem palavra
-   * reservada. Nenhuma das duas linhas chega no olho de ninguém, e o SKILL.md é
-   * explícito: este detector só olha string que chega no olho do usuário.
+   * The `>` of the `=>` opens the match and the `<` of the generic closes it, so
+   * the extracted chunk was `Array.from(ref.current?.querySelectorAll`: pure
+   * code, which escaped `CHEIRO_DE_CODIGO` because it has no `=`, `;` or
+   * reserved word. Neither line reaches anyone's eye, and SKILL.md is explicit:
+   * this detector only looks at strings that reach the user's eye.
    *
-   *   - **`=>` não é abertura de tag.** Se o caractere antes do `>` é `=`, o
-   *     casamento começou numa seta de função, não num fecho de tag.
-   *   - **Texto de interface tem parêntese e colchete equilibrados.** Código
-   *     cortado no meio de uma chamada quase nunca tem. É genérico o bastante
-   *     para pegar o próximo recorte de código sem apertar frase de tela:
-   *     "Grátis (por enquanto)" continua passando.
+   *   - **`=>` is not a tag opening.** If the character before the `>` is `=`,
+   *     the match started at a function arrow, not at a tag close.
+   *   - **Interface text has balanced parentheses and brackets.** Code cut in the
+   *     middle of a call almost never does. It is generic enough to catch the
+   *     next code fragment without squeezing screen sentences:
+   *     "Grátis (por enquanto)" still passes.
    */
   const arrowFn = (i) => semComentario[i - 1] === '=';
   /*
-   * GENERICO DE TS FECHA COM `>` IGUALZINHO A UMA TAG — e abre com `<` igualzinho
-   * tambem, entao um par de genericos em linhas vizinhas vira "texto" entre eles.
-   * Falso positivo confirmado em 2026-09-21 (liminal-stage, PiscinaDeLuz.tsx:86):
+   * A TS GENERIC CLOSES WITH `>` JUST LIKE A TAG, and opens with `<` just like
+   * one too, so a pair of generics on neighboring lines becomes "text" between
+   * them. False positive confirmed on 2026-09-21 (liminal-stage, PiscinaDeLuz.tsx:86):
    *
    *     ids:   Array<string | null>(PS1_LAMPS).fill(null),
    *     pesos: Array<number>(PS1_LAMPS).fill(0),
    *
-   * O trecho extraido — `(PS1_LAMPS).fill(null), pesos: Array` — tem parenteses
-   * equilibrados, nenhum `=`, nenhum `;` e nenhuma palavra reservada. Passou por
-   * todas as peneiras e virou "57% das palavras em comum" com a linha de cima.
+   * The extracted chunk (`(PS1_LAMPS).fill(null), pesos: Array`) has balanced
+   * parentheses, no `=`, no `;` and no reserved word. It got past every sieve
+   * and became "57% shared words" with the line above.
    *
-   * O teste olha pra tras do `>` que abriu o casamento: se ha um `<` casando com
-   * ele contendo SO coisa de tipo (identificador, `|`, `&`, `,`, `[]`, `?`, `.`)
-   * e antes desse `<` vem um identificador, era um generico. Uma tag de verdade
-   * teria `=`, `"` ou `/` ali dentro.
+   * The test looks behind the `>` that opened the match: if there is a matching
+   * `<` containing ONLY type stuff (identifier, `|`, `&`, `,`, `[]`, `?`, `.`)
+   * and an identifier comes before that `<`, it was a generic. A real tag would
+   * have `=`, `"` or `/` in there.
    */
   const genericoTS = (i) => {
     const fim = i;
@@ -287,83 +286,85 @@ function extrairTextos(src) {
     out.push({ texto: t, linha: linhaDe(m.index), ...marcas(m.index, t) });
   }
   /*
-   * Atributos que aparecem para a pessoa.
+   * Attributes that show up for the person.
    *
-   * Falso positivo confirmado em 2026-08-12 (visant-board, MemberIssuesView):
-   * o regex não distingue o ATRIBUTO `title="Fechar"` da ATRIBUIÇÃO
-   * `title = "Nenhuma tarefa por aqui ainda";`. E a diferença importa muito
-   * para a R5: uma variável guarda um valor por vez, então dois `title = …` em
-   * ramos de um `if/else` NUNCA aparecem juntos na tela — acusá-los de "a mesma
-   * informação em dois tamanhos" é acusar um empty state de repetir o outro que
-   * ele substitui.
+   * False positive confirmed on 2026-08-12 (visant-board, MemberIssuesView):
+   * the regex does not tell the ATTRIBUTE `title="Fechar"` from the ASSIGNMENT
+   * `title = "Nenhuma tarefa por aqui ainda";`. And the difference matters a lot
+   * for R5: a variable holds one value at a time, so two `title = …` in branches
+   * of an `if/else` NEVER appear together on screen. Flagging them as "the same
+   * information in two sizes" is flagging an empty state for repeating the other
+   * one it replaces.
    *
-   * Dois discriminadores, e um só já resolve o caso:
-   *   - declaração: vem depois de `let`/`const`/`var`;
-   *   - statement: termina em `;` (atributo JSX nunca termina em ponto e vírgula
-   *     — depois dele vem espaço, outro atributo, `/` ou `>`).
+   * Two discriminators, and either one alone settles the case:
+   *   - declaration: comes after `let`/`const`/`var`;
+   *   - statement: ends in `;` (a JSX attribute never ends in a semicolon:
+   *     after it comes a space, another attribute, `/` or `>`).
    */
   /*
-   * O TEXTO ALTERNATIVO NÃO É CROMO — e por isso saiu daqui.
+   * ALT TEXT IS NOT CHROME, and that is why it left this list.
    *
-   * Falso positivo confirmado em 2026-08-19 (visant-club,
-   * `app/(club)/mural/page.tsx:73`): a R3 acusou de "legenda do que vem" o
-   * `alt` de uma ilustração de estado vazio —
+   * False positive confirmed on 2026-08-19 (visant-club,
+   * `app/(club)/mural/page.tsx:73`): R3 flagged as "caption of what comes" the
+   * `alt` of an empty-state illustration:
    *
    *   alt="Pintura a óleo de uma parede de galeria com várias molduras
    *        penduradas e nenhuma tela dentro delas, e uma escada encostada ao lado"
    *
-   * — porque a frase termina em "ao lado". Só que `alt` é descrição de imagem
-   * para leitor de tela: é OBRIGATÓRIO, é longo por dever, e NINGUÉM o enxerga
-   * na tela. Este detector conta poluição VISUAL; mandar encurtar um `alt` é
-   * pedir para piorar a acessibilidade, que é o oposto do que a regra defende.
+   * because the sentence ends in "ao lado". But `alt` is an image description
+   * for screen readers: it is REQUIRED, long by duty, and NOBODY sees it on
+   * screen. This detector counts VISUAL pollution; asking to shorten an `alt` is
+   * asking to make accessibility worse, the opposite of what the rule defends.
    *
-   * `alt`, `aria-label`, `aria-description(by)` e `<title>`/`<desc>` de SVG
-   * saem do escopo DESTE detector. Continuam no escopo do `copy-lint`, que
-   * julga voz e não densidade de tela.
+   * `alt`, `aria-label`, `aria-description(by)` and SVG `<title>`/`<desc>` are
+   * out of scope for THIS detector. They stay in scope for `copy-lint`, which
+   * judges voice, not screen density.
    *
-   * `title` (atributo) FICA: tooltip aparece para quem enxerga, e tooltip que
-   * repete o rótulo ao lado é exatamente o cromo que a R5 caça.
+   * `title` (attribute) STAYS: a tooltip shows for whoever sees, and a tooltip
+   * that repeats the label next to it is exactly the chrome R5 hunts.
    */
   /*
-   * `cap` ENTROU em 2026-09-11, e entrou por um achado que passou pelas sete
-   * regras. `<Group cap="link ou arquivo">` é como esta base nomeia seção de
-   * painel: é rótulo de tela, tão visível quanto um `title`, e estava fora do
-   * escopo do detector. O par que ele formava com um `placeholder` idêntico em
-   * outro arquivo (ver R8, `porta-repetida`) era invisível porque METADE DO PAR
-   * não era extraída — detector cego de um olho aprova o que não viu.
+   * `cap` CAME IN on 2026-09-11, through a finding that got past the seven
+   * rules. `<Group cap="link ou arquivo">` is how this codebase names a panel
+   * section: it is a screen label, as visible as a `title`, and it was out of
+   * the detector's scope. The pair it formed with an identical `placeholder` in
+   * another file (see R8, `porta-repetida`) was invisible because HALF OF THE
+   * PAIR was not extracted: a detector blind in one eye approves what it did
+   * not see.
    *
-   * Só casa com string entre aspas, então `cap={40}` (teto numérico, o outro
-   * sentido da palavra nesta base) fica de fora.
+   * It only matches a quoted string, so `cap={40}` (numeric ceiling, the other
+   * meaning of the word in this codebase) stays out.
    */
-  /* `(?<![-\w])` é o que impede `aria-label` de entrar por `label` e
-     `aria-description` por `description`: `\b` sozinho casa depois do hífen. */
+  /* `(?<![-\w])` is what stops `aria-label` from coming in via `label` and
+     `aria-description` via `description`: `\b` alone matches after the hyphen. */
   const ATTRS = /(\blet\s+|\bconst\s+|\bvar\s+)?(?<![-\w])(title|label|placeholder|heading|hint|cap|tese|nota|contexto|titulo|descricao|description)\s*=\s*(?:"([^"]{3,400})"|'([^']{3,400})'|\{\s*["'`]([^"'`]{3,400})["'`]\s*\})(\s*;)?/g;
   for (const m of semComentario.matchAll(ATTRS)) {
     const declaracao = !!m[1];
     const statement = !!m[6];
-    if (declaracao || statement) continue; // é código, não atributo de tela
+    if (declaracao || statement) continue; // it is code, not a screen attribute
     const t = (m[3] ?? m[4] ?? m[5] ?? '').replace(/\s+/g, ' ').trim();
     if (t && /\p{L}/u.test(t)) out.push({ texto: t, linha: linhaDe(m.index), attr: m[2], ...marcas(m.index, t) });
   }
   /*
-   * ATRIBUTO VISÍVEL CUJO VALOR É UMA EXPRESSÃO — o buraco que deixou um achado
-   * confirmado passar por sete regras.
+   * A VISIBLE ATTRIBUTE WHOSE VALUE IS AN EXPRESSION: the hole that let a
+   * confirmed finding get past seven rules.
    *
-   * O `ATTRS` acima só lê string crua (`placeholder="x"`) ou string sozinha
-   * entre chaves. Mas o texto de tela raramente é crú num app de verdade:
+   * The `ATTRS` above only reads a raw string (`placeholder="x"`) or a lone
+   * string inside braces. But screen text is rarely raw in a real app:
    *
    *   placeholder={api.set ? `link · vai pra "${api.set}"` : compact ? 'link ou arquivo' : 'url .mp3'}
    *
-   * Esse `'link ou arquivo'` é tão visível quanto qualquer outro, e era a metade
-   * invisível do par de portas repetidas do jukebox (2026-09-11): a R9 rodou
-   * contra o código defeituoso e devolveu zero, porque o lado que digita nunca
-   * chegou ao extrator. Detector que lê só o caso fácil aprova o caso real.
+   * That `'link ou arquivo'` is as visible as any other, and it was the
+   * invisible half of the jukebox repeated-door pair (2026-09-11): R9 ran
+   * against the broken code and returned zero, because the typing side never
+   * reached the extractor. A detector that only reads the easy case approves
+   * the real one.
    *
-   * Aqui cada literal DENTRO do valor do atributo entra, com a linha do próprio
-   * literal (não a do atributo — `arquivo:linha` tem que apontar pra palavra).
-   * O escopo é a expressão do atributo, com chaves balanceadas e teto de 600
-   * caracteres: é onde só existe texto de tela, e por isso não vira a peneira de
-   * código que o resto deste arquivo passou três rodadas construindo.
+   * Here every literal INSIDE the attribute value comes in, with the literal's
+   * own line (not the attribute's: `file:line` has to point at the word). The
+   * scope is the attribute expression, with balanced braces and a 600-character
+   * ceiling: it is where only screen text lives, and so it does not become the
+   * code sieve the rest of this file spent three rounds building.
    */
   const ATTR_EXPR = /(?<![-\w])(title|label|placeholder|heading|hint|cap|tese|nota|contexto|titulo|descricao|description)\s*=\s*\{/g;
   for (const m of semComentario.matchAll(ATTR_EXPR)) {
@@ -376,7 +377,7 @@ function extrairTextos(src) {
       else if (c === '}') prof--;
     }
     const expr = semComentario.slice(ini, i - 1);
-    /* string sozinha já foi extraída pelo ATTRS — não conta duas vezes */
+    /* a lone string was already extracted by ATTRS: do not count it twice */
     if (/^\s*["'`][^"'`]*["'`]\s*$/.test(expr)) continue;
     for (const lit of expr.matchAll(/"([^"\n]{3,200})"|'([^'\n]{3,200})'|`([^`$\n]{3,200})`/g)) {
       const t = (lit[1] ?? lit[2] ?? lit[3] ?? '').replace(/\s+/g, ' ').trim();
@@ -386,9 +387,9 @@ function extrairTextos(src) {
     }
   }
   /*
-   * DEDUPE por linha+texto: as duas passadas de atributo podem tocar a mesma
-   * string, e uma string duplicada viraria um PAR pra R5 ("a mesma informação
-   * em dois tamanhos") — o detector acusando a si mesmo de repetir.
+   * DEDUPE by line+text: the two attribute passes can touch the same string,
+   * and a duplicated string would become a PAIR for R5 ("the same information
+   * in two sizes"): the detector accusing itself of repeating.
    */
   const visto = new Set();
   return out.filter((o) => {
@@ -415,26 +416,26 @@ const conteudo = (t) =>
     .filter((w) => w.length > 2 && !PALAVRA_VAZIA.has(w));
 
 /* ------------------------------------------------------------------ */
-/* as regras por arquivo                                               */
+/* the per-file rules                                                  */
 /* ------------------------------------------------------------------ */
 
 const REGRAS = [];
 
 /*
- * R1 — rótulo gritado.
+ * R1: shouted label.
  *
- * `font-mono text-micro uppercase tracking-wider text-muted-foreground` numa
- * linha só é uma escolha de tipografia. Cinco delas empilhadas numa página é o
- * tell de dashboard genérico: cada trecho anuncia o próprio nome em caixa-alta
- * antes de mostrar qualquer coisa. Apple agrupa com espaço e hierarquia de
- * corpo; template agrupa com etiqueta.
+ * `font-mono text-micro uppercase tracking-wider text-muted-foreground` on a
+ * single line is a typography choice. Five of them stacked on one page is the
+ * generic dashboard tell: each section announces its own name in caps before
+ * showing anything. Apple groups with space and body hierarchy; a template
+ * groups with tags.
  *
- * Piso de 3 no arquivo, porque um cabeçalho de tabela ou um eyebrow único é
- * legítimo e comum.
+ * Floor of 3 per file, because a table header or a single eyebrow is
+ * legitimate and common.
  */
 REGRAS.push({
   id: 'rotulo-gritado',
-  descricao: 'rótulo em caixa-alta + tracking + corpo micro, repetido na mesma tela',
+  descricao: 'uppercase + tracking + micro-size label, repeated on the same screen',
   piso: 3,
   achar(src, file) {
     const out = [];
@@ -453,75 +454,80 @@ REGRAS.push({
 });
 
 /*
- * R2 — texto que ensina a usar.
+ * R2: text that teaches how to use.
  *
  * "Clique para abrir a ficha", "arrasta um cartão pra outra coluna", "passe o
- * mouse". Instrução de uso é o que se escreve quando a tela não se explica — e
- * quase sempre a tela SE explica, e a frase só estava ali porque quem construiu
- * queria ter certeza de que o trabalho seria notado.
+ * mouse". A usage instruction is what gets written when the screen does not
+ * explain itself, and almost always the screen DOES explain itself, and the
+ * sentence was only there because whoever built it wanted to be sure the work
+ * would be noticed.
  *
- * Sem piso: uma só já é sintoma, e é barata de confirmar.
+ * No floor: a single one is already a symptom, and cheap to confirm.
  *
- * **A regra foi ESTREITADA depois de rodar em três repos de fora.** A primeira
- * versão aceitava verbo solto (`escolha`, `selecione`, `digite`, `choose`,
- * `select`, `enter`) e caía em duas armadilhas que só aparecem fora da casa:
+ * **The rule was NARROWED after running on three outside repos.** The first
+ * version accepted a loose verb (`escolha`, `selecione`, `digite`, `choose`,
+ * `select`, `enter`) and fell into two traps that only show up outside the
+ * house:
  *
- * - **Colisão de língua.** "Supabase Service **Role** Key" virava achado porque
- *   `role` é o imperativo de "rolar" em português. "Scale down slightly on
- *   **click**" idem, com `click` sendo substantivo. Num repo bilíngue isso é
- *   constante, e detector que erra 40% é detector que o time desliga.
- * - **Rótulo de formulário não é cromo.** "Choose the model shown on the
- *   Overview tab" descreve o que o campo faz; é a função do rótulo. A regra
- *   mira instrução ao lado de um controle que JÁ se explica, não a etiqueta que
- *   explica um campo que não tem como se explicar sozinho.
+ * - **Language collision.** "Supabase Service **Role** Key" became a finding
+ *   because `role` is the imperative of "rolar" (scroll) in Portuguese. "Scale
+ *   down slightly on **click**" too, with `click` being a noun. In a bilingual
+ *   repo this is constant, and a detector that is wrong 40% of the time is a
+ *   detector the team turns off.
+ * - **A form label is not chrome.** "Choose the model shown on the Overview
+ *   tab" describes what the field does; that is the label's job. The rule
+ *   targets an instruction next to a control that ALREADY explains itself, not
+ *   the label that explains a field which cannot explain itself.
  *
- * O núcleo de alta precisão que sobrou: o verbo precisa vir colado ao
- * MECANISMO (clique **para**, arraste **o**, role **a**, click **to**, drag
- * **the**, hover over). Verbo sozinho não basta.
+ * The high-precision core that remained: the verb has to be glued to the
+ * MECHANISM (clique **para**, arraste **o**, role **a**, click **to**, drag
+ * **the**, hover over). A verb alone is not enough.
  *
- * Exceção legítima e conhecida: primeiro uso de um gesto que não tem
- * afordância nativa (arrastar um canvas, atalho de teclado). Aí a instrução
- * fica, com o motivo escrito na linha.
+ * Known legitimate exception: first use of a gesture with no native affordance
+ * (dragging a canvas, a keyboard shortcut). Then the instruction stays, with
+ * the reason written on the line.
  */
 REGRAS.push({
   id: 'ensina-a-usar',
-  descricao: 'frase que ensina a operar um controle que já tem afordância',
+  descricao: 'sentence teaching how to operate a control that already has affordance',
   piso: 1,
   texto: true,
   achar(textos) {
     /*
-     * Bilíngue de propósito.
+     * Bilingual on purpose.
      *
-     * A primeira versão só falava português, e num repo em inglês ela acharia
-     * zero — o que é PIOR do que não rodar, porque um detector que devolve zero
-     * passa por tela limpa. O padrão desta regra não é linguístico, é de
-     * postura: imperativo dirigido a quem lê, mandando operar um controle. Isso
-     * existe igual nas duas línguas, e um repo brasileiro costuma ter as duas
-     * (peça de terceiro vem com copy em inglês de fábrica — foi assim que um
-     * `StoreStatus` chegou dizendo "Open now until 18h" no topo da dobra mais
-     * cara de uma landing brasileira).
+     * The first version only spoke Portuguese, and on an English repo it would
+     * find zero, which is WORSE than not running, because a detector that
+     * returns zero passes as a clean screen. This rule's pattern is not
+     * linguistic, it is about posture: an imperative aimed at the reader,
+     * telling them to operate a control. That exists the same way in both
+     * languages, and a Brazilian repo usually has both (a third-party piece
+     * ships with English copy out of the box: that is how a `StoreStatus`
+     * arrived saying "Open now until 18h" at the top of the most expensive fold
+     * of a Brazilian landing page).
      */
     const GESTO =
       /(\bclique (para|aqui|no|na|em)|\bclica (no|na|em|aqui)|\baperte (o|a|para)|\barrast[ae] (o|a|um|uma|para|pra)|\barraste-?o\b|\bsolt[ea] (o|a|aqui|fora)|\bpasse o mouse|\bpassa o mouse|\brole (a|o|as|os|at[ée]|para|pra)|\bclick (to|here|on the|and)|\btap (to|here)|\bdrag (the|it|a|to|and)|\bdrop (it|the|here)|\bhover over|\bscroll (to|down to|up to))/i;
     /*
-     * Verbo entre aspas é EXEMPLO, não instrução.
+     * A quoted verb is an EXAMPLE, not an instruction.
      *
-     * Falso positivo confirmado numa rodada real: o placeholder de uma busca
-     * tolerante a acento dizia `tente "animacao", "vintage", "arrastar"`. As
-     * três palavras são termos de teste — a peça está provando que acha
-     * "animacao" sem o til —, e "arrastar" ali não manda ninguém arrastar
-     * nada. Um `audit-ignore` no arquivo esconderia o próximo caso; a regra é
-     * que estava mal escrita.
+     * False positive confirmed in a real round: the placeholder of an
+     * accent-tolerant search said `tente "animacao", "vintage", "arrastar"`.
+     * The three words are test terms (the piece is proving it finds "animacao"
+     * without the tilde), and "arrastar" there tells nobody to drag anything.
+     * An `audit-ignore` on the file would hide the next case; it was the rule
+     * that was badly written.
      */
     const semExemplos = (s) => s.replace(/["“”'‘’][^"“”'‘’]{1,40}["“”'‘’]/g, ' ');
     /*
-     * Imperativo manda; oração subordinada descreve.
+     * An imperative commands; a subordinate clause describes.
      *
-     * "Role a lista e a barra gruda" é instrução. "AO ROLAR, a barra gruda" é a
-     * mesma informação sem mandar em ninguém — é descrição de comportamento, que
-     * é justamente o que uma ficha de componente deve dizer. A regra existe para
-     * matar o dedo em riste, não a frase declarativa; sem esta peneira ela
-     * empurraria toda documentação de peça para a voz passiva.
+     * "Role a lista e a barra gruda" is an instruction. "AO ROLAR, a barra
+     * gruda" is the same information without commanding anyone: it is a
+     * description of behavior, which is exactly what a component sheet should
+     * say. The rule exists to kill the wagging finger, not the declarative
+     * sentence; without this sieve it would push all component docs into the
+     * passive voice.
      */
     const semSubordinada = (s) =>
       s.replace(/\b(ao|quando|se|enquanto|depois de|antes de|when|while|after|before)\s+\p{L}+/giu, ' ');
@@ -534,17 +540,17 @@ REGRAS.push({
 });
 
 /*
- * R3 — legenda do que vem a seguir.
+ * R3: caption of what comes next.
  *
  * "As dez peças abaixo cobrem…", "veja a seguir", "o gráfico ao lado mostra".
- * A frase narra o que a própria página mostra dois centímetros depois. É o
- * texto mais caro de uma tela: ocupa o lugar nobre para dizer o que o
- * conteúdo diria sozinho, e envelhece na primeira vez que alguém reordena a
- * página (aí ela mente).
+ * The sentence narrates what the page itself shows two centimeters later. It is
+ * the most expensive text on a screen: it takes the prime spot to say what the
+ * content would say on its own, and it goes stale the first time someone
+ * reorders the page (then it lies).
  */
 REGRAS.push({
   id: 'legenda-do-que-vem',
-  descricao: 'frase que narra o conteúdo que aparece logo em seguida',
+  descricao: 'sentence narrating the content that appears right after it',
   piso: 1,
   texto: true,
   achar(textos) {
@@ -557,18 +563,18 @@ REGRAS.push({
 });
 
 /*
- * R4 — verbo repetido por item.
+ * R4: verb repeated per item.
  *
- * Uma lista de cinco peças em que cada nome vem seguido da palavra `add`
- * escreve `add` cinco vezes na mesma faixa. A segunda já não informa nada, e
- * da terceira em diante é textura. O conserto é sempre o mesmo: a ação vira
- * ícone (largura de um caractere) ou aparece no hover e no foco.
+ * A list of five pieces where each name is followed by the word `add` writes
+ * `add` five times in the same strip. The second one already says nothing, and
+ * from the third on it is texture. The fix is always the same: the action
+ * becomes an icon (one character wide) or appears on hover and focus.
  *
- * Detecta string curta e constante renderizada DENTRO de um `.map(`.
+ * Detects a short constant string rendered INSIDE a `.map(`.
  */
 REGRAS.push({
   id: 'verbo-por-item',
-  descricao: 'palavra de ação constante repetida uma vez por item de lista',
+  descricao: 'constant action word repeated once per list item',
   piso: 1,
   achar(src) {
     const out = [];
@@ -580,7 +586,7 @@ REGRAS.push({
         if (/^(add|copiar|copy|ver|abrir|open|usar|use|editar|baixar|instalar)$/.test(p)) {
           out.push({
             linha: src.slice(0, m.index + t.index).split('\n').length,
-            amostra: `"${t[1]}" por item`,
+            amostra: `"${t[1]}" per item`,
           });
         }
       }
@@ -590,73 +596,73 @@ REGRAS.push({
 });
 
 /*
- * R6 — seta desenhada, nas duas formas.
+ * R6: drawn arrow, in both forms.
  *
- * LEI da casa, escrita depois de aparecer em repo atrás de repo: **ícone é
- * ativo de biblioteca, nunca caractere e nunca SVG à mão.**
+ * House LAW, written after it showed up in repo after repo: **an icon is a
+ * library asset, never a character and never a hand-written SVG.**
  *
- * O caso A é o glifo (`→`, `←`, `↑`, `↓`, e a família de variantes). É o vício
- * nº 1 do Claude, e passa por todo linter porque, para o compilador, é só uma
- * letra. Os defeitos são de tipografia, não de gosto:
+ * Case A is the glyph (`→`, `←`, `↑`, `↓`, and the family of variants). It is
+ * Claude's #1 habit, and it gets past every linter because, to the compiler,
+ * it is just a letter. The defects are typographic, not a matter of taste:
  *
- * - herda a métrica da fonte do texto, então desalinha da linha de base do
- *   rótulo ao lado, e o desalinho muda com a família;
- * - não tem peso nem tamanho controláveis (`weight`, `size`), então não
- *   acompanha a hierarquia da tela;
- * - muda de desenho conforme a fonte instalada, e some para fonte sem o
- *   glifo, virando tofu;
- * - o leitor de tela lê como texto, não como decoração.
+ * - it inherits the font metrics of the text, so it misaligns with the
+ *   baseline of the label next to it, and the misalignment changes with the
+ *   family;
+ * - it has no controllable weight or size (`weight`, `size`), so it does not
+ *   follow the screen hierarchy;
+ * - its drawing changes with the installed font, and it vanishes for fonts
+ *   without the glyph, becoming tofu;
+ * - the screen reader reads it as text, not decoration.
  *
- * O caso B é o `<svg>` desenhado na mão dentro do componente. Mira ESTREITO,
- * na única assinatura de alta precisão: `viewBox` na grade universal de ícone
- * (`0 0 16 16`, `0 0 20 20`, `0 0 24 24`). Ninguém desenha logotipo de marca
- * nessa grade — quem usa essa caixa está redesenhando um ícone que já existe
- * em qualquer biblioteca. SVG de marca, grafismo e ilustração têm viewBox
- * próprio e não são tocados de propósito: a regra só acusa o que é
- * substituível por um import.
+ * Case B is the `<svg>` drawn by hand inside the component. It aims NARROW, at
+ * the only high-precision signature: a `viewBox` on the universal icon grid
+ * (`0 0 16 16`, `0 0 20 20`, `0 0 24 24`). Nobody draws a brand logo on that
+ * grid: whoever uses that box is redrawing an icon that already exists in any
+ * library. Brand SVG, graphics and illustration have their own viewBox and are
+ * left alone on purpose: the rule only flags what an import can replace.
  *
- * Sem piso: uma só já é a lei violada, e é barata de confirmar.
+ * No floor: a single one is already the law broken, and cheap to confirm.
  *
- * Exceção legítima, com o motivo escrito na linha, como toda exceção desta
- * skill: glifo dentro de bloco de código de exemplo ou de documentação, e
- * seta como conteúdo de dado do próprio cliente (uma linha do tempo escrita
- * como "Exatas → engenharia"). Nos dois casos a seta é texto de verdade, não
- * cromo de interface.
+ * Legitimate exception, with the reason written on the line, like every
+ * exception in this skill: a glyph inside an example or documentation code
+ * block, and an arrow as the client's own data content (a timeline written as
+ * "Exatas → engenharia"). In both cases the arrow is real text, not interface
+ * chrome.
  */
 const SETA_GLIFO = /[←-⇿⟰-⟿⤀-⥿⬀-⬑➜-➾]/u;
 
 /*
- * Vai no CÓDIGO, não no texto extraído — e isso é um conserto, não uma
- * preferência. A primeira versão usava `texto: true` e pegava `← Voltar`, mas
- * deixava passar `<span aria-hidden="true">→</span>`: o extrator descarta nó de
- * um caractere só, que é justamente a forma MAIS comum do vício. Um detector
- * que erra o caso dominante é pior que nenhum, porque devolve zero e o zero
- * parece aprovação.
+ * It runs on the CODE, not on the extracted text, and that is a fix, not a
+ * preference. The first version used `texto: true` and caught `← Voltar`, but
+ * let `<span aria-hidden="true">→</span>` through: the extractor discards
+ * single-character nodes, which is precisely the MOST common form of the habit.
+ * A detector that misses the dominant case is worse than none, because it
+ * returns zero and zero looks like approval.
  *
- * Comentário sai antes de casar, senão a própria documentação desta regra
- * (que precisa citar os glifos para ser legível) viraria achado.
+ * Comments are removed before matching, otherwise this rule's own docs (which
+ * need to quote the glyphs to be readable) would become findings.
  */
 REGRAS.push({
   id: 'seta-glifo',
-  descricao: 'seta em caractere onde deveria haver ícone de biblioteca',
+  descricao: 'arrow as a character where a library icon should be',
   piso: 1,
   achar(src) {
-    /* Troca comentário por espaço do mesmo tamanho: mata o falso positivo sem
-       deslocar nenhuma linha, então o número de linha do achado continua certo. */
+    /* Replaces comments with spaces of the same length: kills the false positive
+       without shifting any line, so the finding's line number stays right. */
     const limpo = src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (m) =>
       m.replace(/[^\n]/g, ' ')
     );
     const out = [];
     const RE = new RegExp(SETA_GLIFO.source, 'gu');
     /*
-     * GLIFO DE TECLA NAO E SETA DE NAVEGACAO — falso positivo confirmado em repo
-     * real (liminal-stage: `<kbd>↵</kbd>`, `hint="⇧i"`). O simbolo impresso na
-     * tecla e a unica grafia que casa com o objeto fisico; nenhum icone de
-     * biblioteca substitui "a tecla Enter" sem virar uma seta generica.
+     * A KEY GLYPH IS NOT A NAVIGATION ARROW: false positive confirmed in a real
+     * repo (liminal-stage: `<kbd>↵</kbd>`, `hint="⇧i"`). The symbol printed on
+     * the key is the only spelling that matches the physical object; no library
+     * icon replaces "the Enter key" without becoming a generic arrow.
      *
-     * O teste e de vizinhanca, nao de caractere: dentro de `<kbd>`, ou numa
-     * propriedade que nomeia tecla/atalho. Fora disso, a seta continua sendo o
-     * vicio que a regra existe pra pegar.
+     * The test is about the neighborhood, not the character: inside `<kbd>`, or
+     * in a prop that names a key/shortcut. Outside that, the arrow is still the
+     * habit the rule exists to catch.
      */
     const TECLA = /[\u21B5\u21E7\u2318\u2325\u238B\u21E5\u23CE]/u;
     const emTecla = (linhaTxt, ch) =>
@@ -676,7 +682,7 @@ REGRAS.push({
 
 REGRAS.push({
   id: 'icone-desenhado-a-mao',
-  descricao: 'SVG de ícone escrito no componente em vez de importado',
+  descricao: 'icon SVG written in the component instead of imported',
   piso: 1,
   achar(src) {
     const out = [];
@@ -692,44 +698,44 @@ REGRAS.push({
 });
 
 /*
- * R5 — a mesma informação em dois tamanhos.
+ * R5: the same information in two sizes.
  *
- * O defeito estrutural que gerou este detector. Uma tela tinha a tese do
- * produto no cabeçalho, uma "abertura" um pouco abaixo dizendo o mesmo em
- * outras palavras, e a nota do primeiro bloco dizendo pela terceira vez. Cada
- * uma parecia curta e útil; juntas empurravam o produto para baixo da dobra.
+ * The structural defect that produced this detector. A screen had the product
+ * thesis in the header, an "opening" a little below saying the same in other
+ * words, and the note of the first block saying it a third time. Each seemed
+ * short and useful; together they pushed the product below the fold.
  *
- * Compara pares de frases do MESMO arquivo por sobreposição de palavras de
- * conteúdo. Piso alto de similaridade (0.5) e mínimo de 4 palavras para não
- * acusar dois rótulos curtos que por acaso compartilham um substantivo.
+ * Compares sentence pairs from the SAME file by content-word overlap. High
+ * similarity floor (0.5) and a minimum of 4 words so it does not flag two short
+ * labels that happen to share a noun.
  */
 /**
- * Abertura de estado vazio, PT e EN. Ver o motivo dentro da R5.
+ * Empty-state opening, PT and EN. See the reason inside R5.
  *
- * Ancorado no começo da frase: "nada" no meio de uma frase ("não deixe nada
- * para depois") não é estado vazio.
+ * Anchored at the start of the sentence: "nada" in the middle of a sentence
+ * ("não deixe nada para depois") is not an empty state.
  */
 const EMPTY_STATE =
   /^\s*(nada|nenhum|nenhuma|sem\s|você\s+não|voce\s+nao|ainda\s+não|ainda\s+nao|no\s|nothing|none|empty|there\s+are\s+no)\b/i;
 
 /**
- * Abertura de mensagem de FALHA, PT e EN.
+ * FAILURE message opening, PT and EN.
  *
- * Mesma lógica do estado vazio, por outro motivo: "Não foi possível carregar os
- * comentários" e "Não foi possível carregar os membros" compartilham a fórmula
- * DE PROPÓSITO — é a linguagem consistente da casa para erro, e o que distingue
- * as duas é justamente o complemento. Divergir a fórmula pra escapar do
- * detector deixaria a UI pior.
+ * Same logic as the empty state, for another reason: "Não foi possível carregar
+ * os comentários" and "Não foi possível carregar os membros" share the formula
+ * ON PURPOSE: it is the house's consistent language for errors, and what tells
+ * them apart is precisely the complement. Diverging the formula to escape the
+ * detector would make the UI worse.
  */
 const FALHA =
   /^\s*(não\s+foi\s+possível|nao\s+foi\s+possivel|erro\s+ao|falha\s+ao|não\s+consegui|nao\s+consegui|couldn'?t|could\s+not|failed\s+to|unable\s+to|something\s+went\s+wrong)\b/i;
 
-/** Atributos que carregam o NOME acessível — o mesmo recado, outro público. */
+/** Attributes that carry the accessible NAME: the same message, another audience. */
 const NOME_ACESSIVEL = new Set(['title', 'aria-label', 'alt']);
 
 REGRAS.push({
   id: 'mesma-info-dois-tamanhos',
-  descricao: 'duas frases da mesma tela dizendo a mesma coisa',
+  descricao: 'two sentences on the same screen saying the same thing',
   piso: 1,
   texto: true,
   achar(textos) {
@@ -741,9 +747,9 @@ REGRAS.push({
         falha: FALHA.test(t.texto),
       }))
       /*
-       * Fora da comparação: bloco de código (exemplo repetido por seção é dever
-       * de doc), metadado (SEO e JSON-LD não aparecem) e chave de i18n (é o
-       * endereço do texto, não o texto). Ver as marcas em `extrairTextos`.
+       * Out of the comparison: code block (an example repeated per section is a
+       * doc's duty), metadata (SEO and JSON-LD do not show) and i18n key (it is
+       * the text's address, not the text). See the marks in `extrairTextos`.
        */
       .filter((t) => t.palavras.size >= 4 && !t.codigo && !t.meta && !t.chave);
     const out = [];
@@ -756,59 +762,62 @@ REGRAS.push({
         const a = frases[i];
         const b = frases[j];
         /*
-         * Dois estados VAZIOS nunca aparecem juntos.
+         * Two EMPTY states never show together.
          *
-         * Falso positivo confirmado em 2026-08-12 (visant-board): "Nada
-         * agendado nos próximos 14 dias" contra "Nada seu nos próximos 14
-         * dias", e "Nenhuma hora apontada ainda" contra "Nenhuma hora apontada
-         * nesta semana". São ramos de um mesmo `if/else` — uma frase SUBSTITUI
-         * a outra, e a tela mostra no máximo uma. Acusá-las de repetição é
-         * cobrar que estados vazios diferentes usem vocabulário diferente,
-         * quando o vocabulário comum é justamente o que os faz reconhecíveis.
+         * False positive confirmed on 2026-08-12 (visant-board): "Nada
+         * agendado nos próximos 14 dias" against "Nada seu nos próximos 14
+         * dias", and "Nenhuma hora apontada ainda" against "Nenhuma hora
+         * apontada nesta semana". They are branches of the same `if/else`: one
+         * sentence REPLACES the other, and the screen shows at most one.
+         * Flagging them as repetition is demanding that different empty states
+         * use different vocabulary, when the shared vocabulary is exactly what
+         * makes them recognizable.
          */
         if (a.vazio && b.vazio) continue;
-        /* Duas mensagens de FALHA compartilham a fórmula de propósito — ver FALHA. */
+        /* Two FAILURE messages share the formula on purpose: see FALHA. */
         if (a.falha && b.falha) continue;
         /*
-         * `title` + `aria-label` com o MESMO texto é o padrão acessível.
+         * `title` + `aria-label` with the SAME text is the accessible pattern.
          *
-         * Falso positivo confirmado no mesmo dia (`PorteMeter`): o medidor de
-         * porte põe "Porte médio" nos dois, de propósito — quem passa o mouse
-         * descobre o nome, quem usa leitor de tela não ouve "quatro pontos".
-         * São o mesmo recado para PÚBLICOS diferentes, não a mesma informação
-         * em dois tamanhos. Divergir os dois seria o defeito.
+         * False positive confirmed the same day (`PorteMeter`): the size meter
+         * puts "Porte médio" in both, on purpose: whoever hovers discovers the
+         * name, whoever uses a screen reader does not hear "four dots". They
+         * are the same message for different AUDIENCES, not the same
+         * information in two sizes. Diverging them would be the defect.
          */
         if (NOME_ACESSIVEL.has(a.attr ?? '') && NOME_ACESSIVEL.has(b.attr ?? '')) continue;
         /*
-         * Dois ATRIBUTOS do mesmo elemento não são duas frases da tela.
+         * Two ATTRIBUTES of the same element are not two screen sentences.
          *
-         * Falso positivo confirmado em 2026-08-12 (liminal-stage, Hub.tsx:153):
-         * `placeholder="buscar sala, mapa ou o que está tocando…"` ao lado de
-         * `aria-label="buscar sala, mapa ou faixa"` no MESMO <input>. Não são
-         * duas frases empilhadas — é um campo só, dito uma vez para quem vê e
-         * uma vez para quem ouve, que é o padrão acessível. A pista é a linha
-         * repetida no próprio achado ("l.153 e l.153").
+         * False positive confirmed on 2026-08-12 (liminal-stage, Hub.tsx:153):
+         * `placeholder="buscar sala, mapa ou o que está tocando…"` next to
+         * `aria-label="buscar sala, mapa ou faixa"` on the SAME <input>. They
+         * are not two stacked sentences: it is a single field, said once for
+         * whoever sees and once for whoever listens, which is the accessible
+         * pattern. The clue is the repeated line in the finding itself
+         * ("l.153 and l.153").
          *
-         * Escopado por atributo (não por linha crua) de propósito: duas frases
-         * de JSX que caibam numa linha só continuam sendo duas frases.
+         * Scoped by attribute (not by raw line) on purpose: two JSX sentences
+         * that fit on a single line are still two sentences.
          */
         if (a.attr && b.attr && a.linha === b.linha) continue;
         /*
-         * NOME ACESSIVEL IDENTICO EM CONTROLES IRMAOS e simetria, nao repeticao.
+         * AN IDENTICAL ACCESSIBLE NAME ON SIBLING CONTROLS is symmetry, not
+         * repetition.
          *
-         * Falso positivo confirmado em 2026-09-21 (liminal-stage, Inventory.tsx:81):
+         * False positive confirmed on 2026-09-21 (liminal-stage, Inventory.tsx:81):
          *
          *   label={`mover ${label} para a tecla ${(slot ?? 2) - 1}`}
          *   label={`mover ${label} para a tecla ${(slot ?? 0) + 1}`}
          *
-         * Sao os botoes "antes" e "depois" do mesmo card. Depois da interpolacao
-         * sair, as duas frases ficam com 100% das palavras em comum — e e assim
-         * que TEM que ser: dois controles que fazem a mesma coisa em sentidos
-         * opostos precisam do mesmo nome. Exigir vocabulario diferente aqui seria
-         * pedir que um deles mentisse.
+         * They are the "before" and "after" buttons of the same card. Once the
+         * interpolation is gone, the two sentences share 100% of their words,
+         * and that is how it HAS to be: two controls doing the same thing in
+         * opposite directions need the same name. Demanding different vocabulary
+         * here would be asking one of them to lie.
          *
-         * O escopo e estreito: so atributo, so 100% igual, so a tres linhas de
-         * distancia. Duas frases de TELA iguais continuam sendo achado.
+         * The scope is narrow: attributes only, 100% equal only, at most three
+         * lines apart. Two equal SCREEN sentences are still a finding.
          */
         if (a.attr && b.attr && jacDe(a, b) === 1 && Math.abs(a.linha - b.linha) <= 3) continue;
         const inter = [...a.palavras].filter((w) => b.palavras.has(w)).length;
@@ -817,7 +826,7 @@ REGRAS.push({
         if (jac >= 0.5) {
           out.push({
             linha: a.linha,
-            amostra: `l.${a.linha} e l.${b.linha} — ${Math.round(jac * 100)}% das palavras em comum`,
+            amostra: `l.${a.linha} and l.${b.linha}: ${Math.round(jac * 100)}% shared words`,
           });
         }
       }
@@ -827,48 +836,49 @@ REGRAS.push({
 });
 
 /* ------------------------------------------------------------------ */
-/* as regras que o OLHO pegava e o detector não (fase 2, 2026-10-05)   */
+/* the rules the EYE caught and the detector did not (phase 2, 2026-10-05) */
 /* ------------------------------------------------------------------ */
 /*
- * As seis regras abaixo saíram da rodada 1 do slop killer no visantlabs-os.
- * Todas foram achadas ABRINDO a tela, depois de os detectores darem verde — e
- * todas têm assinatura estática barata. O que era julgamento de olho e se
- * repetiu em dezenas de arquivos vira regra; o resto continua sendo olho.
+ * The six rules below came out of slop killer round 1 in visantlabs-os. All
+ * were found by OPENING the screen, after the detectors went green, and all
+ * have a cheap static signature. What was an eye judgment and repeated across
+ * dozens of files becomes a rule; the rest stays with the eye.
  *
- * Nenhuma delas é de texto: olham o código com comentário apagado (a posição
- * das linhas fica, então `arquivo:linha` continua certo). O `//` depois de `:`
- * sobrevive de propósito — `http://www.w3.org/2000/svg` dentro de um data URI
- * é justamente onde mora a grade de pontos.
+ * None of them is about text: they look at the code with comments blanked (line
+ * positions stay, so `file:line` stays right). The `//` after `:` survives on
+ * purpose: `http://www.w3.org/2000/svg` inside a data URI is exactly where the
+ * dot grid lives.
  */
-const semComentarioCod = semComentario; // uma passada só — ver o porquê em grafo.mjs
+const semComentarioCod = semComentario; // a single pass: see why in grafo.mjs
 const linhaEm = (src, idx) => src.slice(0, idx).split('\n').length;
 const janelaDe = (linhas, l, antes, depois) =>
   linhas.slice(Math.max(0, l - 1 - antes), Math.min(linhas.length, l + depois)).join('\n');
 
 /*
- * R10 — capa sintética.
+ * R10: synthetic cover.
  *
- * Sem imagem, o card inventa uma: degradê com o hash do nome virando matiz
- * (`hsl(${hue} …)`), ou as cores da marca viradas `linear-gradient` no lugar da
- * capa. Os dois casos reais da rodada 1 estavam no grid de marcas e no hero do
- * cockpit, e os dois tinham comentário defendendo a escolha ("nunca cai num
- * cinza padrão"). O problema é o que a tela diz: um card sem asset fica
- * indistinguível de um card COM asset, e a pessoa não sabe o que falta subir.
- * Vazio honesto (ícone + "sem capa") informa; degradê decora.
+ * With no image, the card invents one: a gradient with the name hash turned
+ * into hue (`hsl(${hue} …)`), or the brand colors turned into a
+ * `linear-gradient` in place of the cover. The two real cases of round 1 were
+ * on the brand grid and the cockpit hero, and both had a comment defending the
+ * choice ("never falls into a default gray"). The problem is what the screen
+ * says: a card with no asset becomes indistinguishable from a card WITH an
+ * asset, and the person does not know what is missing. An honest empty state
+ * (icon + "no cover") informs; a gradient decorates.
  *
- * Duas assinaturas:
- *   a. matiz derivada de string — `charCodeAt` no arquivo E `hsl(${…}` ou
- *      `hsla(${…}` interpolado. Avatar com cor por nome é o mesmo vício em
- *      tamanho menor, e cai aqui também.
- *   b. `linear-gradient(` interpolando cor de dado (`colors`, `.hex`, `stops`,
- *      `primary`, `accent`, `c1`) a até 15 linhas de vocabulário de imagem
- *      ausente (`img`, `image`, `cover`, `capa`, `thumb`, `fallback`,
- *      `placeholder`). Gradiente que MOSTRA a paleta da marca (amostra de cor,
- *      swatch de guideline) não tem esse vocabulário perto e passa.
+ * Two signatures:
+ *   a. hue derived from a string: `charCodeAt` in the file AND an interpolated
+ *      `hsl(${…}` or `hsla(${…}`. An avatar colored by name is the same habit
+ *      at a smaller size, and lands here too.
+ *   b. `linear-gradient(` interpolating a data color (`colors`, `.hex`, `stops`,
+ *      `primary`, `accent`, `c1`) within 15 lines of missing-image vocabulary
+ *      (`img`, `image`, `cover`, `capa`, `thumb`, `fallback`, `placeholder`). A
+ *      gradient that SHOWS the brand palette (color sample, guideline swatch)
+ *      has no such vocabulary nearby and passes.
  */
 REGRAS.push({
   id: 'capa-sintetica',
-  descricao: 'degradê inventado (hash do nome ou cores da marca) no lugar de imagem que não existe',
+  descricao: 'invented gradient (name hash or brand colors) in place of an image that does not exist',
   piso: 1,
   achar(src) {
     const s = semComentarioCod(src);
@@ -881,40 +891,41 @@ REGRAS.push({
       out.push({ linha: l, amostra });
     };
     if (/\bcharCodeAt\s*\(/.test(s)) {
-      for (const m of s.matchAll(/\bhsla?\(\s*\$\{/g)) push(linhaEm(s, m.index), 'matiz derivada de hash de string');
+      for (const m of s.matchAll(/\bhsla?\(\s*\$\{/g)) push(linhaEm(s, m.index), 'hue derived from a string hash');
     }
     const COR_DE_DADO = /\$\{[^}]*\b(colors?|hex|stops|primary\w*|accent\w*|c[123])\b[^}]*\}/i;
     const IMAGEM_AUSENTE = /\b(img|image|imagem|cover|capa|thumb\w*|fallback|placeholder)\b/i;
     for (const m of s.matchAll(/linear-gradient\(/g)) {
       const l = linhaEm(s, m.index);
-      /* até o fim do template (a crase), não até o primeiro `)`: `${colors.join(', ')}` tem parêntese dentro */
+      /* up to the end of the template (the backtick), not the first `)`: `${colors.join(', ')}` has a parenthesis inside */
       const crase = s.indexOf('`', m.index);
       const trecho = s.slice(m.index, crase > m.index && crase - m.index < 400 ? crase : m.index + 240);
       if (!COR_DE_DADO.test(trecho)) continue;
       if (!IMAGEM_AUSENTE.test(janelaDe(linhas, l, 15, 15))) continue;
-      push(l, 'cores de dado viradas degradê perto de imagem ausente');
+      push(l, 'data colors turned into a gradient near a missing image');
     }
     return out;
   },
 });
 
 /*
- * R11 — imagem de tile sem `onError`.
+ * R11: tile image without `onError`.
  *
- * `<img className="object-cover">` (ou com `aspect-*`) sem `onError` é o tile
- * que, com a URL quebrada, vira o ícone de imagem partida do navegador — ou,
- * com `blur-up`, um borrão eterno. Caso real da rodada 1: MasonryCard da
- * /references, com 128 referências apontando pra `/api/local-image?path=Z:\`.
- * O conserto da casa é `<Thumb>` (src/components/ui/Thumb.tsx), que reserva a
- * caixa e cai num vazio honesto; a regra só cobra quem desenhou a `<img>` à mão.
+ * `<img className="object-cover">` (or with `aspect-*`) without `onError` is the
+ * tile that, with a broken URL, becomes the browser's broken-image icon, or,
+ * with `blur-up`, an eternal blur. Real case from round 1: MasonryCard on
+ * /references, with 128 references pointing to `/api/local-image?path=Z:\`.
+ * The house fix is `<Thumb>` (src/components/ui/Thumb.tsx), which reserves the
+ * box and falls back to an honest empty state; the rule only charges whoever
+ * drew the `<img>` by hand.
  *
- * Fora da regra: o próprio `Thumb`, tag com spread (`{...props}` pode trazer o
- * `onError`), e `<img>` sem classe de tile (ícone, logo inline, avatar
- * pequeno).
+ * Out of the rule: `Thumb` itself, a tag with a spread (`{...props}` may bring
+ * the `onError`), and an `<img>` without a tile class (icon, inline logo, small
+ * avatar).
  */
 REGRAS.push({
   id: 'img-de-tile-sem-onerror',
-  descricao: '<img> de tile (object-cover/aspect) sem onError: URL quebrada vira ícone partido',
+  descricao: 'tile <img> (object-cover/aspect) without onError: a broken URL becomes a broken icon',
   piso: 1,
   achar(src, file) {
     if (/(^|[\\/])Thumb\.(tsx|jsx)$/.test(file ?? '')) return [];
@@ -922,7 +933,7 @@ REGRAS.push({
     const linhas = s.split('\n');
     const out = [];
     for (const m of s.matchAll(/<(motion\.img|img)\b/g)) {
-      /* fim da tag: primeiro `>` fora de chaves */
+      /* end of the tag: first `>` outside braces */
       let prof = 0;
       let i = m.index + m[0].length;
       for (; i < s.length && i < m.index + 3000; i++) {
@@ -935,11 +946,11 @@ REGRAS.push({
       if (!/\bobject-cover\b|\baspect-(?:\[|square|video|\d)/.test(tag)) continue;
       if (/\bonError\b/.test(tag) || /\{\s*\.\.\./.test(tag)) continue;
       /*
-       * `src` que não quebra: arquivo do próprio usuário ainda no navegador
-       * (`preview`, blob, dataURL — a pré-visualização do upload), LQIP de
-       * blur-up, e asset do build (caminho a partir de `/public` ou import de
-       * imagem). Falso positivo medido na primeira rodada da regra: os widgets
-       * de upload das mini-tools e as thumbs fixas da landing.
+       * A `src` that does not break: the user's own file still in the browser
+       * (`preview`, blob, dataURL: the upload preview), blur-up LQIP, and a
+       * build asset (path from `/public` or an image import). False positive
+       * measured in the rule's first round: the upload widgets of the
+       * mini-tools and the fixed thumbs of the landing page.
        */
       const srcExpr = (tag.match(/\bsrc\s*=\s*(\{[^}]*\}|"[^"]*"|'[^']*')/) ?? [])[1] ?? '';
       if (/preview|objectUrl|blob|dataUrl|base64|createObjectURL|lqip|blurData|placeholder/i.test(srcExpr)) continue;
@@ -948,28 +959,28 @@ REGRAS.push({
       if (id && new RegExp(`import\\s+${id[1]}\\s+from\\s+['"][^'"]+\\.(png|jpe?g|webp|svg|gif|avif)['"]`).test(s)) continue;
       const l = linhaEm(s, m.index);
       if (/<Thumb\b/.test(janelaDe(linhas, l, 5, 0))) continue;
-      out.push({ linha: l, amostra: `<${m[1]}> com object-cover/aspect e sem onError` });
+      out.push({ linha: l, amostra: `<${m[1]}> with object-cover/aspect and no onError` });
     }
     return out;
   },
 });
 
 /*
- * R12 — cascata por índice.
+ * R12: cascade by index.
  *
- * `delay: index * 0.05` faz a lista entrar em escadinha. Em tela de TRABALHO
- * (superfície B) é atraso puro: o 30º item espera 1,5s pra aparecer, a cada
- * filtro, a cada volta pra página. É o tell de motion mais comum de agente —
- * ele quer que a lista "ganhe vida" — e o visant-motion já proíbe; faltava a
- * régua.
+ * `delay: index * 0.05` makes the list enter as a staircase. On a WORK screen
+ * (surface B) it is pure delay: the 30th item waits 1.5s to appear, on every
+ * filter, on every return to the page. It is the most common agent motion tell
+ * (it wants the list to "come alive"), and visant-motion already forbids it;
+ * the ruler was missing.
  *
- * Pega `delay`, `transitionDelay` e `animationDelay` cujo valor multiplica
- * `i`, `idx`, `index` ou `*Index`, em objeto de transição, prop ou template de
- * estilo.
+ * Catches `delay`, `transitionDelay` and `animationDelay` whose value
+ * multiplies `i`, `idx`, `index` or `*Index`, in a transition object, prop or
+ * style template.
  */
 REGRAS.push({
   id: 'cascata-por-indice',
-  descricao: 'atraso de entrada multiplicado pelo índice do item (lista em escadinha)',
+  descricao: 'entry delay multiplied by the item index (staircase list)',
   piso: 1,
   achar(src) {
     const s = semComentarioCod(src);
@@ -981,20 +992,20 @@ REGRAS.push({
 });
 
 /*
- * R13 — hover que levanta.
+ * R13: hover that lifts.
  *
- * `hover:-translate-y-1`, `hover:scale-105`, `group-hover:scale-110` na
- * imagem, `whileHover={{ y: -4 }}`. O card que pula ao passar o mouse é o
- * template de landing de 2021 aplicado a tela de trabalho: mexe o layout do
- * vizinho no olho, não existe no toque e não diz nada que a borda não diria.
- * Medido na rodada 1: 26 cards do AdminPage com o mesmo `hover:-translate-y-1`.
+ * `hover:-translate-y-1`, `hover:scale-105`, `group-hover:scale-110` on the
+ * image, `whileHover={{ y: -4 }}`. The card that jumps on hover is the 2021
+ * landing template applied to a work screen: it moves the neighbor's layout in
+ * the eye, does not exist on touch and says nothing the border would not.
+ * Measured in round 1: 26 cards on AdminPage with the same `hover:-translate-y-1`.
  *
- * Escala MENOR que 1 no hover (`hover:scale-95`, `scale-[0.98]`) é afundar, não
- * levantar, e fica de fora — o press-in do Button da casa usa isso no `active:`.
+ * A hover scale BELOW 1 (`hover:scale-95`, `scale-[0.98]`) is sinking, not
+ * lifting, and stays out: the house Button's press-in uses it on `active:`.
  */
 REGRAS.push({
   id: 'hover-que-levanta',
-  descricao: 'card/imagem que sobe ou cresce no hover (translate-y negativo, scale > 1)',
+  descricao: 'card/image that rises or grows on hover (negative translate-y, scale > 1)',
   piso: 1,
   achar(src) {
     const s = semComentarioCod(src);
@@ -1019,21 +1030,21 @@ REGRAS.push({
 });
 
 /*
- * R14 — grade de pontos como fundo.
+ * R14: dot grid as background.
  *
- * Textura de pontinhos atrás do conteúdo: `radial-gradient` de 1px repetido com
- * `background-size`, um SVG de `<circle>` em data URI, ou o componente
- * (`GridDots*`, `DotPattern`, `DotGrid`). É o papel quadriculado de todo
- * template de IA, e na rodada 1 estava em três lugares ao mesmo tempo — o
- * `PageShell` (todas as páginas), o fallback de capa e o admin. Apagado do DS
- * (GridDotsBackground morreu com 0 usos); a regra impede que volte.
+ * Dotted texture behind the content: a 1px `radial-gradient` repeated with
+ * `background-size`, a `<circle>` SVG in a data URI, or the component
+ * (`GridDots*`, `DotPattern`, `DotGrid`). It is the graph paper of every AI
+ * template, and in round 1 it was in three places at once: `PageShell` (every
+ * page), the cover fallback and the admin. Deleted from the DS
+ * (GridDotsBackground died with 0 uses); the rule keeps it from coming back.
  *
- * `radial-gradient` de BRILHO (elipse grande, sem `background-size`) é outra
- * coisa e passa.
+ * A GLOW `radial-gradient` (large ellipse, no `background-size`) is something
+ * else and passes.
  */
 REGRAS.push({
   id: 'grade-de-pontos',
-  descricao: 'textura de pontos como fundo (radial-gradient repetido, SVG de círculo, GridDots)',
+  descricao: 'dot texture as background (repeated radial-gradient, circle SVG, GridDots)',
   piso: 1,
   achar(src) {
     const s = semComentarioCod(src);
@@ -1052,46 +1063,48 @@ REGRAS.push({
       const perto = janelaDe(linhas, l, 3, 3);
       const repetido = /background-?size|backgroundSize|bg-\[(?:length|size):/i.test(perto);
       const ponto = /\b(?:circle|_?\d(?:\.\d)?px)\b[^)]{0,40}transparent|1px[,_ ]+transparent/i.test(s.slice(m.index, m.index + 160));
-      if (repetido && ponto) push(m.index, 'radial-gradient de ponto repetido com background-size');
+      if (repetido && ponto) push(m.index, 'dot radial-gradient repeated with background-size');
     }
-    for (const m of s.matchAll(/data:image\/svg\+xml[^\n]{0,400}?(?:%3Ccircle|<circle)/gi)) push(m.index, 'SVG de círculo em data URI como textura');
+    for (const m of s.matchAll(/data:image\/svg\+xml[^\n]{0,400}?(?:%3Ccircle|<circle)/gi)) push(m.index, 'circle SVG in a data URI as texture');
     return out;
   },
 });
 
 /*
- * R15 — blur em card.
+ * R15: blur on a card.
  *
- * `backdrop-blur` só faz sentido quando HÁ algo passando por baixo: diálogo,
- * popover, folha lateral, barra fixa ou grudada, peça flutuando sobre o canvas.
- * Num card no fluxo da página, em cima de fundo chapado, ele não borra nada —
- * só custa GPU e assina "glassmorphism de template". A casa já decidiu isso no
- * `GlassPanel` (default `flat`, blur só com `intensity` explícito) e no SSoT
- * de glass (blur só em painel); a regra cobra o resto do repo.
+ * `backdrop-blur` only makes sense when there IS something passing underneath:
+ * a dialog, popover, side sheet, fixed or sticky bar, a piece floating over the
+ * canvas. On a card in the page flow, over a flat background, it blurs nothing:
+ * it only costs GPU and signs "template glassmorphism". The house already
+ * decided this in `GlassPanel` (default `flat`, blur only with explicit
+ * `intensity`) and in the glass SSoT (blur only on panels); the rule charges
+ * the rest of the repo.
  *
- * Fica de fora o que sobrepõe: classe com `fixed`, `sticky` ou `absolute` (no
- * elemento ou nas 6 linhas acima, onde mora o `cn(` partido e o pai
- * `fixed inset-0` do card de modal), e contexto de overlay pelo NOME — da tag
- * vizinha, do componente que contém a linha ou do arquivo (Dialog, Sheet,
- * Popover, Overlay, Modal, Dropdown, Menu, Tooltip, Toast, HoverCard, Command,
- * Palette, Drawer, Select, Lightbox, Fullscreen). A primeira versão olhava só a
- * vizinhança e acusava o próprio `Modal.tsx` e o `SelectContent` do DS.
+ * What overlaps stays out: a class with `fixed`, `sticky` or `absolute` (on the
+ * element or in the 6 lines above, where the split `cn(` and the
+ * `fixed inset-0` parent of the modal card live), and overlay context by NAME
+ * (of the neighboring tag, of the component containing the line, or of the
+ * file: Dialog, Sheet, Popover, Overlay, Modal, Dropdown, Menu, Tooltip, Toast,
+ * HoverCard, Command, Palette, Drawer, Select, Lightbox, Fullscreen). The first
+ * version only looked at the neighborhood and flagged `Modal.tsx` itself and
+ * the DS's `SelectContent`.
  */
 REGRAS.push({
   id: 'blur-em-card',
-  descricao: 'backdrop-blur em elemento no fluxo (não é dialog/sheet/popover/overlay fixo)',
+  descricao: 'backdrop-blur on an in-flow element (not a dialog/sheet/popover/fixed overlay)',
   piso: 1,
   achar(src, file) {
     const OVERLAY =
       /(Dialog|Sheet|Popover|Overlay|Modal|Dropdown|Menu|Tooltip|Toast|HoverCard|Command|Palette|Drawer|Backdrop|Select|Combobox|Popup|Lightbox|Fullscreen|toast)/;
-    /* O arquivo inteiro É o overlay (Modal.tsx, select.tsx, CommandPalette.tsx). */
+    /* The whole file IS the overlay (Modal.tsx, select.tsx, CommandPalette.tsx). */
     const base = path.basename(file ?? '').replace(/\.\w+$/, '');
     if (OVERLAY.test(base.charAt(0).toUpperCase() + base.slice(1))) return [];
     const s = semComentarioCod(src);
     const linhas = s.split('\n');
     const out = [];
     const SOBREPOE = /(?<![\w-])(fixed|sticky|absolute)(?![\w-])/;
-    /* componente que contém a linha: `function X(` ou `const X = (` acima dela */
+    /* component containing the line: `function X(` or `const X = (` above it */
     const componenteEm = (idx) => {
       let nome = null;
       for (const m of s.slice(0, idx).matchAll(/(?:function\s+|const\s+)([A-Z][\w$]*)\s*(?:[=:(<])/g)) nome = m[1];
@@ -1102,9 +1115,10 @@ REGRAS.push({
       const l = linhaEm(s, m.index);
       if (vistos.has(l)) continue;
       /*
-       * 10 linhas acima pro posicionamento: o botão de ação sobre a imagem do
-       * card herda o `absolute` do grupo que o contém, e o pai `fixed inset-0`
-       * do card de modal costuma estar ali. 6 pro nome de overlay.
+       * 10 lines above for positioning: the action button over the card image
+       * inherits the `absolute` of the group that holds it, and the
+       * `fixed inset-0` parent of the modal card is usually there. 6 for the
+       * overlay name.
        */
       if (SOBREPOE.test(janelaDe(linhas, l, 10, 1))) continue;
       if (OVERLAY.test(janelaDe(linhas, l, 6, 1)) || OVERLAY.test(componenteEm(m.index))) continue;
@@ -1545,85 +1559,87 @@ REGRAS.push({
 });
 
 /* ------------------------------------------------------------------ */
-/* execução                                                            */
+/* execution                                                           */
 /* ------------------------------------------------------------------ */
 
 /**
- * Exceção com motivo escrito — e só assim.
+ * An exception with a written reason, and only that way.
  *
- * Um portão que fica vermelho no caso legítimo é um portão que o time aprende a
- * ignorar, e aí ele para de valer para o caso ilegítimo também. Mas a saída
- * NÃO pode ser um `ignore` mudo por valor: isso esconde o próximo caso, que é a
- * regra escrita no SKILL.md desta skill.
+ * A gate that goes red on the legitimate case is a gate the team learns to
+ * ignore, and then it stops counting for the illegitimate case too. But the way
+ * out CANNOT be a silent `ignore` by value: that hides the next case, which is
+ * the rule written in this skill's SKILL.md.
  *
- * O meio-termo que esta casa já usa: a exceção vive, desde que o motivo esteja
- * escrito na linha. Aqui isso vira contrato executável — um comentário nas oito
- * linhas acima do achado, citando a regra pelo nome, libera aquele achado. Quem
- * quiser calar o detector é obrigado a escrever por que, e a próxima pessoa lê
- * o porquê no lugar onde a dúvida aparece.
+ * The middle ground this house already uses: the exception lives, as long as
+ * the reason is written on the line. Here that becomes an executable contract:
+ * a comment within the eight lines above the finding, citing the rule by name,
+ * releases that finding. Whoever wants to silence the detector has to write
+ * why, and the next person reads the why where the doubt shows up.
  *
- * Oito linhas porque um comentário de bloco explicando a decisão costuma ter
- * quatro ou cinco, e ele fica ACIMA do JSX que gerou o achado.
+ * Eight lines because a block comment explaining the decision usually has four
+ * or five, and it sits ABOVE the JSX that produced the finding.
  */
 const JANELA_DA_EXCECAO = 8;
 
 /*
- * R8 — o realce que não decide nada.
+ * R8: the highlight that decides nothing.
  *
- * `on: true` escrito à mão dentro da fábrica de um card. Não é erro de sintaxe,
- * não é token errado, não é cromo de texto: é DESTAQUE EM REPOUSO. O caso que
- * gerou a regra (jukebox, 2026-09-11): todo disco que estava na fila vinha
- * `on: true`, e `.tcard.on` acende borda, sombra e nome. Com três discos na
- * caixa e os três na fila, a grade inteira acendia em ciano — e "no ar" ficava
- * indistinguível de "3º na fila". Destaque que destaca tudo não destaca nada, e
- * o único destaque da grade tinha sido gasto num fato que um selo já contava.
+ * `on: true` written by hand inside a card factory. It is not a syntax error,
+ * not a wrong token, not text chrome: it is HIGHLIGHT AT REST. The case that
+ * produced the rule (jukebox, 2026-09-11): every record in the queue came with
+ * `on: true`, and `.tcard.on` lights up border, shadow and name. With three
+ * records in the box and all three in the queue, the whole grid lit up in cyan,
+ * and "on air" became indistinguishable from "3rd in queue". A highlight that
+ * highlights everything highlights nothing, and the grid's only highlight had
+ * been spent on a fact a badge already told.
  *
- * Por que passa por tudo: `on: true` é uma linha correta. O defeito só existe
- * quando ela roda uma vez POR ITEM — e é justamente o que a janela de lookback
- * procura, não a linha solta.
+ * Why it gets past everything: `on: true` is a correct line. The defect only
+ * exists when it runs once PER ITEM, and that is exactly what the lookback
+ * window looks for, not the loose line.
  *
- * Precisão em vez de volume: a propriedade tem que ter nome de realce, o valor
- * tem que ser o literal `true`, e nas 8 linhas acima tem que haver sinal de
- * FÁBRICA (`.map(`, `=> ({`, `return {`, `card={`). Sem isso, a regra acusaria
- * todo `{ enabled: true }` de config do repo.
+ * Precision over volume: the property must have a highlight name, the value
+ * must be the literal `true`, and within the 8 lines above there must be a
+ * FACTORY signal (`.map(`, `=> ({`, `return {`, `card={`). Without that, the
+ * rule would flag every config `{ enabled: true }` in the repo.
  *
- * Exceção legítima e comum: a peça que é uma só na tela e está acesa de
- * propósito (o plano atual numa tabela de preço, a aba montada aberta). Aí o
- * motivo vai escrito, como em toda exceção desta skill.
+ * A legitimate and common exception: the piece that is the only one on screen
+ * and lit on purpose (the current plan in a pricing table, the tab mounted
+ * open). Then the reason gets written, like every exception in this skill.
  */
 REGRAS.push({
   id: 'realce-que-nao-decide',
-  descricao: 'realce (`on`/`active`/`selected`) fixado em `true` dentro da fábrica de um item',
+  descricao: 'highlight (`on`/`active`/`selected`) hard-set to `true` inside an item factory',
   piso: 1,
   achar(src) {
     const out = [];
     const linhas = src.split('\n');
     const FABRICA = /\.map\(|\.flatMap\(|=>\s*\(?\{|return\s*\{|card=\{|item=\{|render\w*=\{/;
     /*
-     * ARGUMENTO DE CHAMADA NÃO É DESCRITOR DE ITEM — o falso positivo desta
-     * regra, confirmado na primeira rodada em repo real (Director.tsx:823):
+     * A CALL ARGUMENT IS NOT AN ITEM DESCRIPTOR: this rule's false positive,
+     * confirmed in the first round on a real repo (Director.tsx:823):
      *
      *   add: f.screen?.on ? undefined : () => { setScreen({ on: true }) }
      *
-     * `on` ali é o interruptor de uma tela de vídeo, e `{ on: true }` é o
-     * argumento de um setter. A janela de fábrica casou porque um `=> {` de
-     * callback é indistinguível de um `=> ({` de fábrica olhando oito linhas.
+     * `on` there is the switch of a video screen, and `{ on: true }` is a
+     * setter argument. The factory window matched because a callback `=> {` is
+     * indistinguishable from a factory `=> ({` when looking at eight lines.
      *
-     * O discriminador é o caractere: se o `{` que contém a propriedade abre
-     * logo depois de `nome(`, é argumento de chamada. `=> ({` passa (antes do
-     * parêntese vem `>`, não identificador) e `return {` nunca cai aqui.
+     * The discriminator is the character: if the `{` holding the property
+     * opens right after `name(`, it is a call argument. `=> ({` passes (before
+     * the parenthesis comes `>`, not an identifier) and `return {` never lands
+     * here.
      */
     /*
-     * SOBE POR TODOS OS NIVEIS, nao so um. A primeira versao olhava a chave
-     * imediatamente acima e parava — entao um objeto ANINHADO dentro do
-     * argumento escapava do teste e virava achado:
+     * IT CLIMBS THROUGH EVERY LEVEL, not just one. The first version looked at
+     * the brace right above and stopped, so an object NESTED inside the
+     * argument escaped the test and became a finding:
      *
      *   struct({ game: id ? { on: true, tempo: 80 } : null })
      *
-     * A chave que contem `on: true` e precedida por `? `, nao por `nome(`, e a
-     * regra acusava um setter de config de sala como fabrica de card (confirmado
-     * em liminal-stage/Director.tsx:403). Objeto dentro de argumento continua
-     * sendo argumento, em qualquer profundidade.
+     * The brace containing `on: true` is preceded by `? `, not by `name(`, and
+     * the rule flagged a room config setter as a card factory (confirmed in
+     * liminal-stage/Director.tsx:403). An object inside an argument is still an
+     * argument, at any depth.
      */
     const argumentoDeChamada = (idx) => {
       let i = idx;
@@ -1642,8 +1658,8 @@ REGRAS.push({
           while (j >= 0 && /\s/.test(src[j])) j--;
           return /[A-Za-z0-9_$\]]/.test(src[j] ?? '');
         }
-        /* `=> ({` e `return {` param aqui: sao fabrica de verdade. `?`, `:`, `,`
-           e `[` querem dizer que ainda estamos numa expressao — sobe mais. */
+        /* `=> ({` and `return {` stop here: they are a real factory. `?`, `:`, `,`
+           and `[` mean we are still inside an expression: climb further. */
         if (src[j] === '>' || /[A-Za-z0-9_$]/.test(src[j] ?? '')) return false;
         i--;
       }
@@ -1662,41 +1678,44 @@ REGRAS.push({
 });
 
 /**
- * Exceção de ARQUIVO INTEIRO, para superfície com linguagem visual própria.
+ * A WHOLE-FILE exception, for a surface with its own visual language.
  *
- * Existe porque a janela de oito linhas não cobre o caso real: uma área de
- * console/HUD usa caixa-alta + tracking + mono em DEZENAS de lugares, de
- * propósito — `font-mono uppercase tracking-[0.2em]` com rótulos tipo `ID_003`
- * é identidade, não o dashboard genérico que a R1 caça. Medido em 2026-08-12:
- * 40 achados de `rotulo-gritado` no visant-board, todos dentro de
- * `app/admin/agent/**`, e nenhum deles descuido.
+ * It exists because the eight-line window does not cover the real case: a
+ * console/HUD area uses caps + tracking + mono in DOZENS of places, on purpose:
+ * `font-mono uppercase tracking-[0.2em]` with labels like `ID_003` is identity,
+ * not the generic dashboard R1 hunts. Measured on 2026-08-12: 40
+ * `rotulo-gritado` findings in visant-board, all inside `app/admin/agent/**`,
+ * and none of them carelessness.
  *
- * O motivo continua OBRIGATÓRIO e na mesma linha do marcador — a diferença é o
- * escopo, não a licença. Formato:
+ * The reason is still REQUIRED and on the same line as the marker: the
+ * difference is the scope, not the license. Format (the English
+ * `noise-ignore-file:` is accepted as an alias):
  *
- *   // ruido-ignore-file: rotulo-gritado — HUD do agente: mono + caixa-alta é
- *   // a identidade desta área, não etiqueta de dashboard.
+ *   // ruido-ignore-file: rotulo-gritado, agent HUD: mono + caps is
+ *   // this area's identity, not a dashboard label.
  */
 function arquivoTemExcecao(src, regraId) {
-  const m = src.match(/ruido-ignore-file:(.+)/);
+  const m = src.match(/(?:ruido|noise)-ignore-file:(.+)/);
   if (!m) return false;
   const linha = m[1];
-  // Precisa citar a regra E ter texto depois dela: marcador mudo não libera.
+  // It must cite the rule AND have text after it: a silent marker releases nothing.
   const i = linha.indexOf(regraId);
   if (i === -1) return false;
   return linha.slice(i + regraId.length).trim().length > 3;
 }
 
 /*
- * O MESMO contrato dos outros quatro portões (scan-ui-scale, scan-ui-slop,
- * scan-lightmode-breakage, scan-design-violations): na linha do achado ou nas
- * oito acima, `EXCEÇÃO ao ruido-scan/<regra>: <motivo>`, e o motivo precisa ter
- * 8+ letras, com uma palavra de 3+ começando na própria linha (pode continuar
- * na seguinte). Antes bastava "EXCEÇÃO" e o nome da regra em qualquer lugar da
- * janela, então `// EXCEÇÃO ao ruido-scan/blur-em-card` mudo liberava o achado
- * e o contrato que este arquivo cobra (quem cala o detector escreve por quê)
- * não era executado. Nome de regra é exato: `blur` não libera `blur-em-card`.
- * Exceção abaixo do achado não vale.
+ * The SAME contract as the other four gates (scan-ui-scale, scan-ui-slop,
+ * scan-lightmode-breakage, scan-design-violations): on the finding's line or
+ * the eight above, `EXCEÇÃO ao ruido-scan/<rule>: <reason>` (or the English
+ * `EXCEPTION to ruido-scan/<rule>: <reason>`), and the reason needs 8+ letters,
+ * with a 3+ letter word starting on the marker line itself (it may continue on
+ * the next one). It used to be enough to have "EXCEÇÃO" and the rule name
+ * anywhere in the window, so a silent `// EXCEÇÃO ao ruido-scan/blur-em-card`
+ * released the finding and the contract this file enforces (whoever silences
+ * the detector writes why) was not executed. The rule name is exact: `blur`
+ * does not release `blur-em-card`. An exception below the finding does not
+ * count.
  */
 const escapaRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const contaLetras = (s) => (s.match(/\p{L}/gu) ?? []).length;
@@ -1706,7 +1725,7 @@ function reExcecao(regraId) {
     RE_EXCECAO.set(
       regraId,
       new RegExp(
-        String.raw`(?:EXCE(?:Ç|C)(?:Ã|A)O|EXCEPTION)\s+ao\s+` +
+        String.raw`(?:EXCE(?:Ç|C)(?:Ã|A)O|EXCEPTION)\s+(?:ao|to)\s+` +
           String.raw`\x60?(?:ruido-scan/)?${escapaRe(regraId)}(?![\w-])\x60?\s*:\s*(.*)`,
         'i',
       ),
@@ -1721,7 +1740,7 @@ function temMotivoEscrito(linhas, linhaDoAchado, regraId) {
   for (let k = Math.min(i, linhas.length - 1); k >= Math.max(0, i - JANELA_DA_EXCECAO); k--) {
     const m = (linhas[k] ?? '').match(re);
     if (!m) continue;
-    // O motivo pode quebrar pra linha seguinte do comentário; conta as duas.
+    // The reason may wrap to the next comment line; count both.
     const seguinte = k + 1 <= i ? (linhas[k + 1] ?? '').replace(/^\s*(?:\/\/|\*|\/\*|\{\/\*)/, '') : '';
     const cabeca = m[1].replace(/\*\/\}?\s*$/, '');
     if (contaLetras(`${cabeca} ${seguinte}`) >= 8 && /\p{L}{3,}/u.test(cabeca)) return true;
@@ -1730,90 +1749,93 @@ function temMotivoEscrito(linhas, linhaDoAchado, regraId) {
 }
 
 /* ------------------------------------------------------------------ */
-/* a regra que só existe ENTRE arquivos                                */
+/* the rule that only exists BETWEEN files                             */
 /* ------------------------------------------------------------------ */
 
 /*
- * R9 — duas portas pro mesmo gesto.
+ * R9: two doors for the same gesture.
  *
- * Esta é a primeira regra desta skill que NÃO cabe num arquivo, e é por isso
- * que o defeito que a gerou passou por tudo.
+ * This is the first rule of this skill that does NOT fit in one file, and that
+ * is why the defect that produced it got past everything.
  *
- * O caso (jukebox, 2026-09-11): a aba "sua caixa" tinha um campo de url que
- * escreve no set da SALA, e o rodapé logo abaixo — que vem de OUTRO arquivo,
- * por chamada de componente — tem um campo de url que escreve na caixa
- * PESSOAL. Mesma forma, os mesmos dois ícones do lado, 40px entre um e outro. E
- * o rótulo de um (`<Group cap="link ou arquivo">`, em JukeboxPanel.tsx) era
- * LITERALMENTE o placeholder do outro (`'link ou arquivo'`, em MyPlaylist.tsx).
- * Bancos diferentes, permissões diferentes, e nada na tela dizia isso: a pessoa
- * lia o mesmo formulário duas vezes e escolhia por sorte.
+ * The case (jukebox, 2026-09-11): the "your box" tab had a url field that
+ * writes to the ROOM's set, and the footer right below (which comes from
+ * ANOTHER file, through a component call) has a url field that writes to the
+ * PERSONAL box. Same shape, the same two icons beside it, 40px between one and
+ * the other. And the label of one (`<Group cap="link ou arquivo">`, in
+ * JukeboxPanel.tsx) was LITERALLY the placeholder of the other
+ * (`'link ou arquivo'`, in MyPlaylist.tsx). Different stores, different
+ * permissions, and nothing on screen said so: the person read the same form
+ * twice and chose by luck.
  *
- * Nenhum detector por arquivo enxerga isso, e nenhuma varredura de componente
- * enxergaria sem resolver a árvore de render. O que É estático e barato: a
- * MESMA string de tela nomeando uma porta de entrada de dado em dois arquivos
- * diferentes. Quando um formulário é genuinamente reusado, o texto vem por
- * prop — ele não é escrito duas vezes.
+ * No per-file detector sees this, and no component sweep would see it without
+ * resolving the render tree. What IS static and cheap: the SAME screen string
+ * naming a data entry door in two different files. When a form is genuinely
+ * reused, the text comes through a prop: it is not written twice.
  *
- * Precisão: exige duas palavras de conteúdo (nunca acusa "salvar", "nome",
- * "buscar"), arquivos diferentes, e que pelo menos um lado seja `placeholder` —
- * o atributo que só existe onde se DIGITA. Rótulo repetido sem campo nenhum é
- * outro assunto, e é da R5, dentro do arquivo.
+ * Precision: it requires two content words (never flags "salvar", "nome",
+ * "buscar"), different files, and at least one side being a `placeholder`, the
+ * attribute that only exists where you TYPE. A repeated label with no field is
+ * another matter, and belongs to R5, inside the file.
  *
- * Achado aqui não é "apague um". As duas portas podem ser as duas necessárias:
- * o conserto de hoje foi MUDAR UMA DE LUGAR (o campo da sala virou ação da aba
- * fila), porque o defeito é as duas ocuparem a mesma tela sem dizer qual é
- * qual.
+ * A finding here is not "delete one". The two doors may both be needed: the fix
+ * that day was MOVING ONE ELSEWHERE (the room field became an action of the
+ * queue tab), because the defect is the two of them occupying the same screen
+ * without saying which is which.
  *
- * E ele tem DUAS FORMAS, as duas úteis, e só quem abre o arquivo sabe qual é:
+ * And it has TWO FORMS, both useful, and only whoever opens the file knows
+ * which one it is:
  *
- *   1. **Duas portas na mesma tela** — o caso do jukebox. Defeito de layout: a
- *      pessoa escolhe por sorte. Conserto: separar ou fundir.
- *   2. **O mesmo nome pra coisas diferentes** — achado na primeira rodada desta
- *      regra: `Director.tsx:1647` chama de "link ou arquivo" a porta das
- *      TEXTURAS de ambiência da sala, e `MyPlaylist.tsx:869` chama de "link ou
- *      arquivo" a porta da sua caixa de MÚSICA. Telas diferentes, então não é o
- *      defeito 1 — é vocabulário: duas coisas com um nome só ensinam a pessoa
- *      que o nome não quer dizer nada.
+ *   1. **Two doors on the same screen**: the jukebox case. A layout defect: the
+ *      person chooses by luck. Fix: separate or merge.
+ *   2. **The same name for different things**: found in this rule's first
+ *      round: `Director.tsx:1647` calls the door for the room's ambience
+ *      TEXTURES "link ou arquivo", and `MyPlaylist.tsx:869` calls the door for
+ *      your MUSIC box "link ou arquivo". Different screens, so it is not defect
+ *      1: it is vocabulary. Two things with one name teach the person that the
+ *      name means nothing.
  *
- * A regra não tenta adivinhar qual das duas é. Ela aponta as duas pontas e
- * exige que alguém abra as duas — que é o único jeito de saber.
+ * The rule does not try to guess which of the two it is. It points at both ends
+ * and demands that someone open both, which is the only way to know.
  */
 const REGRAS_GLOBAIS = [];
 
 /*
- * A FORMA 2 SAIU EM 2026-10-05, e a regra passou a exigir a MESMA TELA.
+ * FORM 2 WAS DROPPED ON 2026-10-05, and the rule started requiring the SAME
+ * SCREEN.
  *
- * A rodada 1 do slop killer (visantlabs-os) deu 25 achados desta regra, e o
- * julgamento de cada um, arquivo aberto, foi quase todo "não": quatro buscas
- * `t('common.search')` em quatro telas sobre dados diferentes; o formulário de
- * orçamento que devolve o formulário Visant num `return` antecipado (as duas
- * portas nunca coexistem); dois passos de um assistente num ternário; o canvas
- * e a Mockup Machine, que nem são a mesma rota. Regra que erra 9 em 10 ensina o
- * time a pular a seção inteira — e aí o caso do jukebox, que é real, passa.
+ * Slop killer round 1 (visantlabs-os) gave 25 findings for this rule, and the
+ * verdict on each, file open, was almost always "no": four
+ * `t('common.search')` searches on four screens over different data; the budget
+ * form that returns the Visant form in an early `return` (the two doors never
+ * coexist); two steps of a wizard in a ternary; the canvas and the Mockup
+ * Machine, which are not even the same route. A rule that is wrong 9 times in
+ * 10 teaches the team to skip the whole section, and then the jukebox case,
+ * which is real, gets through.
  *
- * O que ficou:
+ * What remained:
  *
- *   - **Mesma tela**, aproximada pelo grafo de imports: as duas pontas têm um
- *     ancestral estático comum a no máximo dois níveis (um renderiza o outro,
- *     ou os dois são filhos do mesmo pai). Import lazy não conta — rota
- *     separada por `import()` é tela separada —, e roteador e barril não servem
- *     de pai comum (juntariam o app inteiro).
- *   - **Não exclusivas**: se o pai comum renderiza um dos lados num `return`
- *     antecipado, ou os dois em lados opostos de um ternário, as portas nunca
- *     aparecem juntas.
- *   - **Rótulo de campo de verdade**: o placeholder tem que ser rótulo, não
- *     exemplo de código (`[{"name": …}]` de importação em lote não é campo).
- *   - **Chave de vocabulário comum fica de fora** (`common.*`, `shared.*`):
- *     reusar a palavra "Buscar" é o design system funcionando.
+ *   - **Same screen**, approximated by the import graph: the two ends share a
+ *     static ancestor at most two levels up (one renders the other, or both are
+ *     children of the same parent). A lazy import does not count (a route split
+ *     by `import()` is a separate screen), and a router or barrel does not
+ *     serve as a common parent (it would join the whole app).
+ *   - **Not exclusive**: if the common parent renders one side in an early
+ *     `return`, or both on opposite sides of a ternary, the doors never show
+ *     together.
+ *   - **A real field label**: the placeholder must be a label, not a code
+ *     example (a bulk-import `[{"name": …}]` is not a field).
+ *   - **Common vocabulary keys stay out** (`common.*`, `shared.*`): reusing the
+ *     word "Buscar" is the design system working.
  *
- * O caso "o mesmo nome pra coisas diferentes em telas diferentes" é problema de
- * vocabulário, não de layout; ele continua sendo pergunta do julgamento
- * (references/slop-catalog.md), não de detector.
+ * The "same name for different things on different screens" case is a
+ * vocabulary problem, not a layout one; it stays a judgment question
+ * (references/slop-catalog.md), not a detector one.
  */
 const VOCABULARIO_COMUM = /^(common|shared|ui|actions|general|global|comum)\./;
 const rotuloDeCampo = (t) => !/[{}[\]\n=<>]|":|\\n/.test(t) && conteudo(t).length <= 8;
 
-/** O pai comum renderiza um lado num `return` antecipado, ou os dois num ternário? */
+/** Does the common parent render one side in an early `return`, or both in a ternary? */
 function exclusivos(g, pai, cA, cB) {
   const src = g.fonte.get(pai) ?? '';
   const nA = cA === pai ? [] : nomesEm(g, pai, cA);
@@ -1833,7 +1855,7 @@ function exclusivos(g, pai, cA, cB) {
   return false;
 }
 
-/** As duas pontas aparecem juntas? Ver o bloco acima da regra. */
+/** Do the two ends show together? See the block above the rule. */
 export function mesmaTela(g, a, b) {
   const A = normP(a);
   const B = normP(b);
@@ -1843,7 +1865,7 @@ export function mesmaTela(g, a, b) {
     if (!ancB.has(pai)) continue;
     const cA = ancA.get(pai);
     const cB = ancB.get(pai);
-    /* Mesmo filho dos dois lados: o ancestral comum MAIS BAIXO está abaixo deste. */
+    /* Same child on both sides: the LOWEST common ancestor is below this one. */
     if (pai !== A && pai !== B && cA === cB) continue;
     if (!exclusivos(g, pai, cA, cB)) return true;
   }
@@ -1852,7 +1874,7 @@ export function mesmaTela(g, a, b) {
 
 REGRAS_GLOBAIS.push({
   id: 'porta-repetida',
-  descricao: 'a mesma porta de dado nomeada em dois componentes que aparecem na mesma tela',
+  descricao: 'the same data door named in two components that show on the same screen',
   achar(porArquivo) {
     const chaves = new Map();
     for (const [file, textos] of porArquivo) {
@@ -1864,7 +1886,7 @@ REGRAS_GLOBAIS.push({
         if (palavras.length < 2) continue;
         const k = palavras.join(' ');
         if (!chaves.has(k)) chaves.set(k, []);
-        chaves.get(k).push({ file, linha: t.linha, attr: t.attr ?? 'texto' });
+        chaves.get(k).push({ file, linha: t.linha, attr: t.attr ?? 'text' });
       }
     }
     const candidatas = [...chaves].filter(
@@ -1874,13 +1896,13 @@ REGRAS_GLOBAIS.push({
     const g = montarGrafo([...porArquivo.keys()]);
     const out = [];
     for (const [k, ocorrencias] of candidatas) {
-      /* par a par: só conta o par em arquivos diferentes, com um placeholder, na mesma tela */
+      /* pair by pair: only counts a pair in different files, with a placeholder, on the same screen */
       const parceiros = new Map();
       for (let i = 0; i < ocorrencias.length; i++) {
         for (let j = i + 1; j < ocorrencias.length; j++) {
           const x = ocorrencias[i];
           const y = ocorrencias[j];
-          if (x.file === y.file) continue; // mesmo arquivo é da R5
+          if (x.file === y.file) continue; // the same file belongs to R5
           if (x.attr !== 'placeholder' && y.attr !== 'placeholder') continue;
           if (!mesmaTela(g, x.file, y.file)) continue;
           if (!parceiros.has(x)) parceiros.set(x, []);
@@ -1889,11 +1911,11 @@ REGRAS_GLOBAIS.push({
           parceiros.get(y).push(x);
         }
       }
-      /* Aponta em TODAS as pontas: um achado que cita uma só manda consertar o
-         lado errado — e o lado errado costuma ser o que a pessoa abriu primeiro. */
+      /* Points at EVERY end: a finding that cites only one sends you to fix the
+         wrong side, and the wrong side is usually the one the person opened first. */
       for (const [o, outras] of parceiros) {
         const onde = outras.map((x) => `${path.basename(x.file)}:${x.linha}`).join(', ');
-        out.push({ file: o.file, linha: o.linha, amostra: `"${k}" como ${o.attr} · na mesma tela que ${onde}` });
+        out.push({ file: o.file, linha: o.linha, amostra: `"${k}" as ${o.attr} · on the same screen as ${onde}` });
       }
     }
     return out;
@@ -1902,7 +1924,7 @@ REGRAS_GLOBAIS.push({
 
 export function scanRuido(files) {
   const achados = [];
-  /** texto de tela por arquivo — é o que as regras globais leem (ver R9) */
+  /** screen text per file: it is what the global rules read (see R9) */
   const porArquivo = new Map();
   const fonte = new Map();
   for (const file of files) {
@@ -1928,10 +1950,11 @@ export function scanRuido(files) {
     }
   }
   /*
-   * As globais rodam DEPOIS, com o mapa inteiro na mão. A exceção escrita
-   * continua valendo, conferida em cada ponta do achado no arquivo daquela
-   * ponta: o motivo pode estar escrito num lado só ("este é o campo da sala, o
-   * outro é o da caixa"), e isso já resolve a dúvida que a regra levanta.
+   * The global rules run AFTER, with the whole map in hand. The written
+   * exception still counts, checked at each end of the finding in that end's
+   * file: the reason may be written on one side only ("this is the room field,
+   * the other is the box one"), and that already settles the doubt the rule
+   * raises.
    */
   for (const regra of REGRAS_GLOBAIS) {
     for (const h of regra.achar(porArquivo)) {
@@ -1945,40 +1968,41 @@ export function scanRuido(files) {
 }
 
 /*
- * Rodou pela linha de comando, ou foi importado pelo killer-scan?
+ * Was it run from the command line, or imported by killer-scan?
  *
- * A comparação óbvia (`import.meta.url` contra `argv[1]` resolvido) mente no
- * Windows: o `pathname` de uma URL de arquivo vem como `/Z:/...`, com barra na
- * frente e barras trocadas, e a igualdade nunca bate. O script então rodava,
- * não imprimia nada e saía 0 — um detector que diz "tudo certo" porque não
- * chegou a olhar, que é o pior modo de falha possível num portão.
+ * The obvious comparison (`import.meta.url` against the resolved `argv[1]`)
+ * lies on Windows: the `pathname` of a file URL comes as `/Z:/...`, with a
+ * leading slash and swapped slashes, and the equality never matches. The script
+ * then ran, printed nothing and exited 0: a detector that says "all good"
+ * because it never got to look, which is the worst possible failure mode for a
+ * gate.
  *
- * Comparar o nome do arquivo basta: quem importa isto o faz pelo nome.
+ * Comparing the file name is enough: whoever imports this does so by name.
  */
 const executadoDireto = path.basename(process.argv[1] ?? '') === 'ruido-scan.mjs';
 
 /**
- * `--self-test`: o detector auditado pelo próprio padrão que ele cobra.
+ * `--self-test`: the detector audited by the very standard it enforces.
  *
- * Os três falsos positivos desta rodada foram consertados arrumando a regra, e
- * a regra da casa manda travar o caso num fixture — senão a próxima pessoa que
- * mexer no regex reabre o buraco sem saber que ele existiu. O fixture declara,
- * por bloco, quantos achados são esperados.
+ * The three false positives of this round were fixed by fixing the rule, and
+ * the house rule says to lock the case in a fixture, otherwise the next person
+ * who touches the regex reopens the hole without knowing it existed. The
+ * fixture declares, per block, how many findings are expected.
  */
 function selfTest() {
   const dir = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), 'fixtures');
   /*
-   * DOIS arquivos, porque a R9 (`porta-repetida`) só existe ENTRE arquivos:
-   * rodar o self-test contra um só faria a regra devolver zero pra sempre, e
-   * zero num self-test lê como aprovação. O segundo é mínimo de propósito —
-   * tudo que entra nele conta pras outras regras também.
+   * TWO files, because R9 (`porta-repetida`) only exists BETWEEN files:
+   * running the self-test against a single one would make the rule return zero
+   * forever, and zero in a self-test reads as approval. The second is minimal
+   * on purpose: everything in it counts for the other rules too.
    */
   /*
-   * `ruido-fase2.tsx` trava as seis regras de 2026-10-05 e os falsos positivos
-   * de `mesma-info` em bloco de código e metadado. `porta/` trava a exigência
-   * de MESMA TELA da R9: cada arquivo lá é uma ponta, e o grafo de imports
-   * entre eles é o caso (return antecipado, ternário, import morto, telas sem
-   * relação, vocabulário comum, exemplo de JSON, e o par de irmãos que conta).
+   * `ruido-fase2.tsx` locks the six rules of 2026-10-05 and the `mesma-info`
+   * false positives in code blocks and metadata. `porta/` locks R9's SAME
+   * SCREEN requirement: each file there is one end, and the import graph
+   * between them is the case (early return, ternary, dead import, unrelated
+   * screens, common vocabulary, JSON example, and the sibling pair that counts).
    */
   const porta = path.join(dir, 'porta');
   const fixtures = [
@@ -1988,79 +2012,83 @@ function selfTest() {
   ];
   for (const f of fixtures) {
     if (fs.existsSync(f)) continue;
-    console.error(`self-test: fixture não encontrado em ${f}`);
+    console.error(`self-test: fixture not found at ${f}`);
     process.exit(2);
   }
   const achados = scanRuido(fixtures);
   const porRegra = achados.reduce((a, x) => ((a[x.regra] = (a[x.regra] ?? 0) + 1), a), {});
 
-  /* O que o fixture promete. Ver os comentários "ESPERADO" dentro dele. */
+  /* What the fixture promises. See the "EXPECTED" comments inside it. */
   const esperado = {
-    /* 2 = o imperativo em português + o em inglês. Exemplo entre aspas,
-       subordinada (nas duas línguas) e exceção com motivo não contam. */
+    /* 2 = the Portuguese imperative + the English one. A quoted example, a
+       subordinate clause (in both languages) and an exception with a reason do
+       not count. */
     'ensina-a-usar': 2,
     'legenda-do-que-vem': 2, // "as dez peças abaixo" + "the three panels below"
     'rotulo-gritado': 3,
     'verbo-por-item': 0,
     /*
-     * 2 = o par `title`/`placeholder` no mesmo render + o par de frases de JSX
-     * com parêntese equilibrado.
+     * 2 = the `title`/`placeholder` pair in the same render + the pair of JSX
+     * sentences with balanced parentheses.
      *
-     * Era 0 (só os genéricos de TS, que não podem virar "frase"). Virou 1 em
-     * 2026-08-12 junto com o conserto do falso positivo de ATRIBUIÇÃO: sem um
-     * positivo no fixture, estreitar o regex de atributos poderia zerar a regra
-     * inteira e o self-test aplaudiria — um detector que não detecta nada passa
-     * em todo teste negativo.
+     * It was 0 (only the TS generics, which cannot become a "sentence"). It
+     * became 1 on 2026-08-12 together with the ASSIGNMENT false positive fix:
+     * without a positive in the fixture, narrowing the attribute regex could
+     * zero out the whole rule and the self-test would applaud: a detector that
+     * detects nothing passes every negative test.
      *
-     * Virou 2 em 2026-08-19: o par de atributos deixou de ser `alt`+
-     * `placeholder` (o `alt` saiu do escopo do detector) e passou a ser
-     * `title`+`placeholder`, e entrou um segundo positivo — duas frases de JSX
-     * com PARÊNTESE equilibrado. Esse segundo existe para que a peneira nova de
-     * parêntese desbalanceado não possa ser afrouxada até engolir frase de tela.
+     * It became 2 on 2026-08-19: the attribute pair stopped being `alt`+
+     * `placeholder` (`alt` left the detector's scope) and became
+     * `title`+`placeholder`, and a second positive came in: two JSX sentences
+     * with balanced PARENTHESES. That second one exists so the new
+     * unbalanced-parenthesis sieve cannot be loosened until it swallows screen
+     * sentences.
      */
     'mesma-info-dois-tamanhos': 2,
     /*
-     * 2 = a seta do botão (`→` sozinha num span) + a do link de voltar.
+     * 2 = the button arrow (`→` alone in a span) + the one on the back link.
      *
-     * Os dois casos existem de propósito: a versão `texto: true` desta regra
-     * pegava só o segundo, porque o extrator de texto descarta nó de um
-     * caractere. Sem o primeiro travado aqui, alguém reescreve a regra em cima
-     * do texto extraído, o self-test aplaude, e o vício mais comum volta a
-     * passar.
+     * Both cases exist on purpose: the `texto: true` version of this rule only
+     * caught the second, because the text extractor discards single-character
+     * nodes. Without the first one locked here, someone rewrites the rule on
+     * top of the extracted text, the self-test applauds, and the most common
+     * habit gets through again.
      */
     'seta-glifo': 2,
-    /* 1 = o ícone na grade 24×24. O grafismo de marca (viewBox 0 0 1017 135)
-       fica de fora: a regra só acusa o que um import substituiria. */
+    /* 1 = the icon on the 24×24 grid. The brand graphic (viewBox 0 0 1017 135)
+       stays out: the rule only flags what an import would replace. */
     'icone-desenhado-a-mao': 1,
     /*
-     * 1 = o `on: true` na fábrica do card. Os dois negativos existem pra travar
-     * os dois jeitos de a regra virar ruído: o argumento de chamada
-     * (`setScreen({ on: true })`, o falso positivo confirmado em Director.tsx)
-     * e a peça única acesa de propósito, com o motivo escrito.
+     * 1 = the `on: true` in the card factory. The two negatives exist to lock
+     * the two ways the rule turns into noise: the call argument
+     * (`setScreen({ on: true })`, the false positive confirmed in Director.tsx)
+     * and the single piece lit on purpose, with the reason written.
      */
     'realce-que-nao-decide': 1,
     /*
-     * 4 = as DUAS PONTAS do par do jukebox (`cap` em ruido-casos, que agora
-     * renderiza a caixa, e `placeholder` em ruido-porta-b) + as duas pontas do
-     * par de irmãos em porta/irmaos-*. São duas por par porque um achado que
-     * cita uma ponta só manda consertar o lado errado. Os outros seis casos de
-     * porta/ são negativos e precisam continuar em zero.
+     * 4 = the TWO ENDS of the jukebox pair (`cap` in ruido-casos, which now
+     * renders the box, and `placeholder` in ruido-porta-b) + the two ends of
+     * the sibling pair in porta/irmaos-*. Two per pair because a finding that
+     * cites only one end sends you to fix the wrong side. The other six cases
+     * in porta/ are negatives and must stay at zero.
      */
     'porta-repetida': 4,
-    /* fase 2 — ver os ESPERADO em fixtures/ruido-fase2.tsx */
-    'capa-sintetica': 2, // hash do nome + cores da marca no lugar da capa
-    'img-de-tile-sem-onerror': 2, // <img> e <motion.img> de tile; 5 negativos
-    'cascata-por-indice': 2, // delay: index * … e animationDelay `${i * …}`
+    /* phase 2: see the EXPECTED comments in fixtures/ruido-fase2.tsx */
+    'capa-sintetica': 2, // name hash + brand colors in place of the cover
+    'img-de-tile-sem-onerror': 2, // tile <img> and <motion.img>; 5 negatives
+    'cascata-por-indice': 2, // delay: index * … and animationDelay `${i * …}`
     /*
-     * 7 = os 3 da R13 (-translate-y, group-hover:scale-105, whileHover y<0) + 4
-     * do bloco "A EXCEÇÃO ESCRITA PRECISA DE MOTIVO": exceção muda, motivo
-     * curto, nome da regra pela metade e exceção abaixo do achado NÃO liberam.
-     * Os dois com motivo (numa linha e quebrado em duas) liberam. Com o
-     * contrato antigo (só "EXCEÇÃO" + nome na janela) dava 5.
+     * 7 = the 3 from R13 (-translate-y, group-hover:scale-105, whileHover y<0) +
+     * 4 from the "THE WRITTEN EXCEPTION NEEDS A REASON" block: a silent
+     * exception, a short reason, half the rule name and an exception below the
+     * finding do NOT release. The two with a reason (on one line and wrapped
+     * over two) do, and so does the English `EXCEPTION to` alias (if the alias
+     * breaks, this becomes 8). Under the old contract (only "EXCEÇÃO" + name in
+     * the window) it gave 5.
      */
     'hover-que-levanta': 7,
-    'grade-de-pontos': 3, // <GridDots…>, radial repetido, SVG de círculo
-    'blur-em-card': 1, // o card no fluxo; barra grudada e diálogo ficam fora
+    'grade-de-pontos': 3, // <GridDots…>, repeated radial, circle SVG
+    'blur-em-card': 1, // the in-flow card; sticky bar and dialog stay out
     /*
      * Signals 47-57 (2026-10-28): every count below comes from sinais-sujo.tsx
      * alone. sinais-limpo.tsx holds the legitimate twin of each block (below
@@ -2083,17 +2111,17 @@ function selfTest() {
     const achou = porRegra[regra] ?? 0;
     const ok = achou === n;
     if (!ok) falhou++;
-    console.log(`  ${ok ? 'ok  ' : 'FALHA'}  ${regra.padEnd(26)} esperado ${n}, achou ${achou}`);
-    /* Na falha, mostra ONDE: contagem errada sem a linha manda caçar no escuro. */
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${regra.padEnd(26)} expected ${n}, found ${achou}`);
+    /* On failure, show WHERE: a wrong count without the line sends you hunting in the dark. */
     if (!ok) for (const a of achados.filter((x) => x.regra === regra)) console.log(`           ${path.basename(a.file)}:${a.linha}  ${a.amostra}`);
   }
-  /* Regra que achou no fixture e não está no contrato também é falha. */
+  /* A rule that fired on the fixture and is not in the contract is also a failure. */
   for (const regra of Object.keys(porRegra)) {
     if (regra in esperado) continue;
     falhou++;
-    console.log(`  FALHA  ${regra.padEnd(26)} fora do contrato, achou ${porRegra[regra]}`);
+    console.log(`  FAIL  ${regra.padEnd(26)} outside the contract, found ${porRegra[regra]}`);
   }
-  console.log(falhou ? `\nself-test: ${falhou} regra(s) fora do esperado.` : `\nself-test: as ${Object.keys(esperado).length} regras batem com o fixture.`);
+  console.log(falhou ? `\nself-test: ${falhou} rule(s) off the expected count.` : `\nself-test: all ${Object.keys(esperado).length} rules match the fixture.`);
   process.exit(falhou ? 1 : 0);
 }
 
@@ -2104,14 +2132,14 @@ if (executadoDireto) {
   const arquivos = listarArquivos();
   const achados = scanRuido(arquivos);
   const bar = '-'.repeat(64);
-  console.log(`\nruido-scan  alvo: ${targets.join(' ')}`);
-  console.log(`arquivos de interface: ${arquivos.length}\n`);
+  console.log(`\nruido-scan  target: ${targets.join(' ')}`);
+  console.log(`interface files: ${arquivos.length}\n`);
 
   if (!achados.length) {
-    console.log('[OK]  ruído de cromo  zero');
+    console.log('[OK]  chrome noise  zero');
     console.log(bar);
-    console.log('Zero aqui NÃO quer dizer tela limpa: este detector conta cromo,');
-    console.log('não julga se o que sobrou merece o lugar que ocupa. Abra a tela.');
+    console.log('Zero here does NOT mean a clean screen: this detector counts chrome,');
+    console.log('it does not judge whether what is left deserves its place. Open the screen.');
     console.log(bar);
     process.exit(0);
   }
@@ -2125,18 +2153,18 @@ if (executadoDireto) {
   for (const regra of [...REGRAS, ...REGRAS_GLOBAIS]) {
     const lista = porRegra.get(regra.id);
     if (!lista?.length) continue;
-    console.log(`[FALHA]  ${regra.id.padEnd(26)} ${lista.length} achado(s) — ${regra.descricao}`);
+    console.log(`[FAIL]  ${regra.id.padEnd(26)} ${lista.length} finding(s): ${regra.descricao}`);
     if (!quiet) {
       for (const a of lista.slice(0, 12)) {
         console.log(`           ${a.file}:${a.linha}  ${a.amostra}`);
       }
-      if (lista.length > 12) console.log(`           ... e ${lista.length - 12} a mais`);
+      if (lista.length > 12) console.log(`           ... and ${lista.length - 12} more`);
     }
   }
 
   console.log(bar);
-  console.log(`${achados.length} candidato(s) a corte. Confirme em arquivo:linha antes de apagar:`);
-  console.log('uma dessas linhas pode ser a única que orienta de verdade.');
+  console.log(`${achados.length} cut candidate(s). Confirm at file:line before deleting:`);
+  console.log('one of these lines may be the only one that really guides.');
   console.log(bar);
   process.exit(1);
 }
