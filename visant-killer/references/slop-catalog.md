@@ -583,9 +583,9 @@ cursor de seta; arrasto sem `grab`. Reports: "cursor pointer tb obviamente",
 **Conserto.** Uma regra na casca (`:is(button,[role=button],a[href],summary)
 :not(:disabled){cursor:pointer}`); `grab`/`grabbing` no que se arrasta.
 
-## Sinais novos, ainda não medidos numa rodada (47–56)
+## Sinais novos, ainda não medidos numa rodada (47–57)
 
-Lista de dez sinais de slop de design de Pedro Jaques (2026-10-28).
+Sinais de slop de design de Pedro Jaques (2026-10-28).
 Diferente das 46 acima, nenhuma tem ainda o caso de uma rodada com `arquivo:linha`:
 valem como suspeita e como teste, não como veredito. Quando uma aparecer
 num report real, ganha o caso e sobe pra cima.
@@ -671,10 +671,21 @@ Parente da 2.
 **Conserto.** Número só onde a ordem importa (passos de um processo).
 **Teste.** Troque duas seções de lugar. Se o número não muda o sentido, sai.
 
+### 57. Mono em tudo
+
+**Sintoma.** `font-mono` em eyebrow, rótulo, botão, nav, data, contador, legenda
+de card: a fonte de código vira a segunda fonte da página.
+**Conserto.** Mono só no que é código de verdade: serial, hash, ID, comando,
+trecho que se copia. O resto usa a fonte do texto, com `tabular-nums` onde
+número precisa alinhar. Generaliza a 2 (dinheiro) e a 55 (migalha de código);
+mono em caixa-alta no rótulo já é a regra `rotulo-gritado` do `ruido-scan`.
+**Teste.** Troque todo mono pela fonte do texto. O que piorou (ID, hash,
+comando) volta; o resto fica.
+
 ## Varredura rápida
 
 ```bash
-# sinais novos (47–56): candidatos, nunca veredito
+# sinais novos (47–57): candidatos, nunca veredito
 rg -c '<Badge|rounded-full[^"]*text-(xs|\[1[01]px\])' --glob '*.tsx'      # tag em tudo (47): olhe o arquivo de contagem alta
 rg '<em\b|italic' --glob '*.tsx' | rg '<h[12]|text-[4-7]xl'               # itálico na headline (48)
 rg -i 'instrument.?serif|tracking-tighter|tracking-\[-|letter-spacing: *-' --glob '*.{tsx,css}'   # (49)
@@ -683,6 +694,7 @@ rg -o '(text|bg|border)-[a-z-]+/[0-9]{1,2}\b' --glob '*.tsx' | sort | uniq -c | 
 rg -U 'border[^"]*rounded[\s\S]{0,400}border[^"]*rounded' --glob '*.tsx' # caixa dentro de caixa (53)
 rg '>\s*(~/|\$ |// )|src/app/' --glob '*.tsx'                             # migalha de código (55)
 rg '>\s*(/?0[1-9]\b|§ ?[0-9])' --glob '*.tsx'                             # seção numerada (56)
+rg -c 'font-mono' --glob '*.tsx' | sort -t: -k2 -rn | head                # mono em tudo (57): o topo é onde virou segunda fonte
 
 # vitrine de componentes (35–46): candidatos, nunca veredito
 rg -i '"(passe o (mouse|ponteiro)|mova o ponteiro|clique pra|arraste pra)' --glob '**/demos/*.tsx'   # moldura que fala (35)
