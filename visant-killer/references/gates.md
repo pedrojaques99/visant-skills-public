@@ -183,6 +183,36 @@ findings always print the new id. The repo scanners in the last four rows match 
   class (always-dark stage) and editor folders. The dark-editor rule for the
   house app is in `visant-frontend/references/ds-visantlabs-os.md`.
 
+## Spacing: two layers
+
+"The AI makes crazy spacing" is two different defects, and each one has its
+own layer. Mixing them was the first mistake of this section.
+
+**1. A value off the scale** (`p-[13px]`, `mt-[22px]`, `padding: 15px`). It
+lives in one line of the SOURCE, and its intent only exists there: in the
+rendered page, 7px of padding + 1px of border is a correct 8, and a computed
+`auto` margin comes back as 1319px. A runtime version flagged 29 values on
+linear.app, which is on the grid. So it is the repo's linter, never this skill.
+Look for one in this order; if the repo has none, propose it as a finding:
+
+| Stack | Tool | Rule |
+|---|---|---|
+| Tailwind in JSX/TSX | [eslint-plugin-tailwindcss](https://github.com/francoismassart/eslint-plugin-tailwindcss) | `no-unnecessary-arbitrary-value` (`m-[1.25rem]` becomes `m-5`), `no-arbitrary-value` to forbid all of them. v4 support is partial: needs `cssConfigPath` |
+| Tailwind + CSS, one tool | [stylelint-plugin-rhythmguard](https://www.npmjs.com/package/stylelint-plugin-rhythmguard) | `rhythmguard/use-scale`, with autofix and an ESLint entry for class strings |
+| CSS/SCSS | [stylelint-scales](https://github.com/jeddy3/stylelint-scales) | `scales/space` (`"scale": [4, 8, 12, 16, 24, 32, 48, 64], "units": ["px"]`), with autofix |
+| Biome | [`noTailwindArbitraryValue`](https://biomejs.dev/linter/rules/no-tailwind-arbitrary-value/) | nursery, information level |
+
+**2. Spacing that lies about grouping.** More space inside a group than
+between groups, three nested levels with the same gap, one card with 20px among
+24px. No linter sees it: the two numbers come from different files (a
+component's default padding against the page's `gap`) and only meet after
+layout. That is `ritmo-scan.js` (`$E`), at runtime, in the same harness as
+`corta-scan` (`$V` and `corta-url.mjs` run both and print a `spacing` line).
+It measures ink (line boxes, media, boxed regions), not CSS boxes, and only on
+vertical text stacks at component scale: calibrated to zero on linear.app,
+stripe.com and vercel.com. Its findings never fail the run: confirm each on the
+screenshot, then fix in the source.
+
 ## CI ratchet
 
 Pattern for a repo that has more debt than one round can clear: CI compares the

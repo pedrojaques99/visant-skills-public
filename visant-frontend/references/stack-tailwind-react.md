@@ -197,6 +197,12 @@ fails silently and looks like it worked. → *throughput, a11y*
 `gap-4` between zones with tighter spacing inside each is what makes the three
 groups legible without borders.
 
+The rule behind it, for any unboxed stack: **inside < between**, each level at
+least 2× the one inside it (`gap-2` inside a field, `gap-4` between fields,
+`gap-8` between sections). Never the same `space-y-*` on three levels, never an
+`mt-1` patching a gap, never `p-[13px]`. `ritmo-scan.js` (visant-killer) measures
+the first two on the open screen; the scale linter catches the third.
+
 ## Hover action rack
 
 ```jsx

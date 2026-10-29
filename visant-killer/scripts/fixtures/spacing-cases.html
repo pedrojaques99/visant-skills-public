@@ -1,0 +1,83 @@
+<!doctype html>
+<!--
+  ritmo-scan FIXTURE: one dirty case per rule, plus the negatives that keep
+  each rule from turning into noise. Every case lives in a bordered <section>,
+  so the page-level stack is boxed and never compared (common region).
+
+  EXPECTED (node scripts/corta-self-test.mjs):
+    proximidade-invertida  1   (#inv: 24px inside each group, 12px between them)
+    ritmo-chato            1   (#flat: three nested levels all 16px apart)
+    irmaos-desalinhados    2   (#drift: the card with 20px padding among 24px;
+                                #list: one 12px gap among 16px)
+
+  NEGATIVES:
+    #good   8px inside, 32px between: grouping that reads right
+    #boxed  cards with 16px inside and 12px between: a card is its own region,
+            common region beats proximity
+    #break  one 48px gap among 16px: too large to be an accident, it is a decision
+    15px / 22px paddings: off the scale, and SILENT here on purpose. A value's
+            intent only exists in the source; that is the repo linter's job
+            (references/gates.md "Spacing"). The runtime version of this rule
+            flagged 29 values on linear.app, which is on the grid.
+-->
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 16px/1.2 sans-serif; background: #0a0b0d; color: #ddd; display: flex; flex-direction: column; gap: 32px; padding: 32px 16px; }
+  section { border: 1px solid #333; padding: 16px; }
+  .col { display: flex; flex-direction: column; }
+  .card { background: #16181c; padding: 24px; }
+</style>
+<body>
+  <!-- 1 · POSITIVE: inverted proximity -->
+  <section><div id="inv" class="col" style="gap: 12px">
+    <div class="col" style="gap: 24px"><span>Plano</span><span>R$ 49 por mês</span></div>
+    <div class="col" style="gap: 24px"><span>Usuários</span><span>Até 5 pessoas</span></div>
+  </div></section>
+
+  <!-- NEGATIVE: right grouping -->
+  <section><div id="good" class="col" style="gap: 32px">
+    <div class="col" style="gap: 8px"><span>Plano</span><span>R$ 49 por mês</span></div>
+    <div class="col" style="gap: 8px"><span>Usuários</span><span>Até 5 pessoas</span></div>
+  </div></section>
+
+  <!-- NEGATIVE: boxed groups -->
+  <section><div id="boxed" class="col" style="gap: 12px">
+    <div class="col" style="gap: 16px; background: #16181c; padding: 8px"><span>Plano</span><span>R$ 49</span></div>
+    <div class="col" style="gap: 16px; background: #16181c; padding: 8px"><span>Usuários</span><span>5</span></div>
+  </div></section>
+
+  <!-- 2 · POSITIVE: flat rhythm, three levels at 16px -->
+  <section><div id="flat" class="col" style="gap: 16px">
+    <div class="col" style="gap: 16px">
+      <div class="col" style="gap: 16px"><span>Título</span><span>Subtítulo</span></div>
+      <span>Descrição</span>
+    </div>
+    <span>Rodapé</span>
+  </div></section>
+
+  <!-- 3a · POSITIVE: one card with 20px among 24px -->
+  <section><div id="drift" class="col" style="gap: 16px">
+    <div class="card"><span>Um</span></div>
+    <div class="card"><span>Dois</span></div>
+    <div class="card" style="padding: 20px"><span>Três</span></div>
+    <div class="card"><span>Quatro</span></div>
+  </div></section>
+
+  <!-- 3b · POSITIVE: one 12px gap among 16px. NEGATIVE: the 48px break -->
+  <section><div id="list">
+    <p style="margin-bottom: 16px">Item um</p>
+    <p style="margin-bottom: 12px">Item dois</p>
+    <p style="margin-bottom: 16px">Item três</p>
+    <p>Item quatro</p>
+  </div></section>
+  <section><div id="break">
+    <p style="margin-bottom: 16px">Item um</p>
+    <p style="margin-bottom: 48px">Item dois</p>
+    <p style="margin-bottom: 16px">Item três</p>
+    <p>Item quatro</p>
+  </div></section>
+
+  <!-- NEGATIVE: off the scale, the linter's job (see header) -->
+  <section><div style="padding: 15px; background: #16181c"><span>Quinze</span></div></section>
+  <section><div style="padding: 22px; background: #16181c"><span>Vinte e dois</span></div></section>
+</body>

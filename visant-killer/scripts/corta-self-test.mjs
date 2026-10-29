@@ -20,6 +20,9 @@ import { fileURLToPath } from 'node:url';
 const aqui = path.dirname(fileURLToPath(import.meta.url));
 const fixture = path.join(aqui, 'fixtures', 'clip-cases.html');
 const snippet = fs.readFileSync(path.join(aqui, 'corta-scan.js'), 'utf8');
+/* ritmo-scan rides the same browser: spacing that lies about grouping */
+const fixtureRitmo = path.join(aqui, 'fixtures', 'spacing-cases.html');
+const snippetRitmo = fs.readFileSync(path.join(aqui, 'ritmo-scan.js'), 'utf8');
 
 /*
  * `playwright-core` is resolved from the REPO, not from this skill.
@@ -83,24 +86,30 @@ await page.goto('file://' + fixture.replace(/\\/g, '/'));
    measuring earlier measures the fallback font (see references/environment.md) */
 await page.evaluate(() => document.fonts.ready);
 const achados = await page.evaluate(`${snippet}; corta('body', { verbose: false }).map(({ no, ...r }) => r)`);
+await page.goto('file://' + fixtureRitmo.replace(/\\/g, '/'));
+await page.evaluate(() => document.fonts.ready);
+const achadosRitmo = await page.evaluate(`${snippetRitmo}; ritmo('body', { verbose: false }).map(({ no, ...r }) => r)`);
 await browser.close();
 
-const esperado = { 'texto-cortado': 1, 'overlay-empilhado': 2, 'fora-do-pai': 1 };
-const contado = achados.reduce((a, x) => ((a[x.regra] = (a[x.regra] ?? 0) + 1), a), {});
-
 let falhou = 0;
-for (const [regra, n] of Object.entries(esperado)) {
-  const achou = contado[regra] ?? 0;
-  const ok = achou === n;
-  if (!ok) falhou++;
-  console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${regra.padEnd(20)} expected ${n}, found ${achou}`);
-}
-for (const regra of Object.keys(contado)) {
-  if (esperado[regra] === undefined) {
-    falhou++;
-    console.log(`  FAIL  ${regra.padEnd(20)} showed up and is not expected (${contado[regra]}x)`);
+function conferir(titulo, esperado, lista) {
+  console.log(titulo);
+  const contado = lista.reduce((a, x) => ((a[x.regra] = (a[x.regra] ?? 0) + 1), a), {});
+  for (const [regra, n] of Object.entries(esperado)) {
+    const achou = contado[regra] ?? 0;
+    const ok = achou === n;
+    if (!ok) falhou++;
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'}  ${regra.padEnd(22)} expected ${n}, found ${achou}`);
   }
+  for (const regra of Object.keys(contado)) {
+    if (esperado[regra] === undefined) {
+      falhou++;
+      console.log(`  FAIL  ${regra.padEnd(22)} showed up and is not expected (${contado[regra]}x)`);
+    }
+  }
+  for (const a of lista) console.log(`         ${a.regra}: ${a.el}: ${a.detalhe}`);
 }
-for (const a of achados) console.log(`         ${a.regra}: ${a.el}: ${a.detalhe}`);
-console.log(falhou ? `\ncorta-self-test: ${falhou} rule(s) off the expected count.` : '\ncorta-self-test: all 3 geometries match the fixture.');
+conferir('corta-scan · clip-cases.html', { 'texto-cortado': 1, 'overlay-empilhado': 2, 'fora-do-pai': 1 }, achados);
+conferir('ritmo-scan · spacing-cases.html', { 'proximidade-invertida': 1, 'ritmo-chato': 1, 'irmaos-desalinhados': 2 }, achadosRitmo);
+console.log(falhou ? `\ncorta-self-test: ${falhou} rule(s) off the expected count.` : '\ncorta-self-test: all 3 geometries and all 3 spacing rules match their fixtures.');
 process.exit(falhou ? 1 : 0);

@@ -59,7 +59,17 @@ others it is a reference and goes, or becomes a caption.
 **Cause.** A constant rhythm is the default of whoever did not decide the
 grouping.
 **Fix.** Space is what groups. Tight inside a block, open between blocks, and a
-rule only at a block boundary.
+rule only at a block boundary. Each level at least 2× the one inside it
+(8 / 16 / 32), and a card does not need it: the box already groups.
+**The four faces**, because "crazy spacing" is rarely one wrong number:
+inverted proximity (more space inside a group than between groups, so the label
+pairs with the wrong value), flat rhythm (the same gap on three levels),
+drifting siblings (one card with `p-5` among `p-6`, an `mt-1` patching a
+`gap-7`), and a value off the scale (`p-[13px]`).
+**Detector.** The first three: `ritmo-scan.js` in the browser (`ritmo()`, or the
+`spacing` line of `verify-screens` and `corta-url`). The fourth lives in the
+source, and the repo's scale linter owns it
+([gates.md](gates.md#spacing-two-layers)).
 
 ## 7. Saturated progress bar
 
@@ -787,4 +797,6 @@ all four: the defect does not live in any line. 20 lives in the sum of the
 lines; 21, BETWEEN two files; 22, in the repetition of a correct line; 23, in
 the width that only exists after the font loads. Grep takes one line at a time;
 that is why the first three are rules of `noise-scan.mjs` and the last one is
-`corta-scan.js`, which runs in the browser with the screen open.
+`corta-scan.js`, which runs in the browser with the screen open. Entry 6 is
+the same story: inside-vs-between is two numbers from two files, so
+`ritmo-scan.js` measures it after layout.

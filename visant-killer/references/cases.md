@@ -92,3 +92,16 @@ up with zero token check.
 In a real session half the initial findings came from the environment: a route
 compiling for 115s, partial hydration read as a bug, CDP cutting off at 45s. See
 [environment.md](environment.md).
+
+## "Does it fix the crazy spacing?"
+
+A question under the repo's launch post (2026-10-29), and the honest answer was
+"only by judgment": catalog 6 and question F2, no detector. `ritmo-scan.js` was
+built for it, and its first version made the classic mistake: it also judged
+values off the grid at runtime, and returned 29 on linear.app and 27 on
+stripe.com, pages that are on the grid (7px + 1px of border is 8; optical
+padding; `auto` margins computed to px). That rule left for the source linters
+that already exist. The grouping rules were narrowed by the same calibration
+(vertical text stacks, component scale, `aria-hidden` out) until the three
+reference sites gave zero, and the first real finding was on the house's own
+landing: a CTA with `mt-1` patching a `gap-7`.

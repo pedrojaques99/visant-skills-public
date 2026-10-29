@@ -33,6 +33,7 @@ Where each rule came from: [references/cases.md](references/cases.md).
 | `white-space: nowrap` in an overlay without `max-width` | `max-width: calc(100% - 12px)` and let it wrap | inside an `overflow: hidden` parent the word gets CUT, and the cut only exists after the font loads: no linter sees it |
 | a fixed highlight (`on: true`, `active: true`) in an item factory | the condition that decides (`on: q.live`) | a highlight that runs once per item lights up the whole list, and emphasis on everything is emphasis on nothing |
 | two doors for the same kind of data on one screen | one per screen, or names that say the difference (the detector only checks the same screen; a repeated name across screens is judgment) | two identical URL fields side by side writing to different stores: people choose by luck |
+| the same gap inside a group and between groups (`space-y-4` on every level) | tight inside, open between: each level at least 2× the one inside it (8 / 16 / 32) | the eye groups by distance: when the label is as far from its value as from the next block, the screen reads wrong with every token right (catalog 6) |
 | `transition-all` | `transition-colors` or an explicit list | animates what you did not ask for, layout included |
 | `duration-300`+ on an interactive element | `DUR.base` / `DUR.slow` | above ~300ms the UI feels stuck |
 | raw hex, `rgb()`, `rgba()` | HSL token (`hsl(var(--x))`) | `var(--x)` alone is not a color: the tokens store loose channels |
@@ -54,7 +55,7 @@ K=~/.claude/skills/visant-killer/scripts/killer-scan.mjs
 R=~/.claude/skills/visant-refine/scripts/refine-scan.mjs
 D=~/.claude/skills/visant-killer/scripts/dist-scan.mjs
 C=~/.claude/skills/visant-copy/scripts/copy-lint.mjs
-T=~/.claude/skills/visant-killer/scripts/corta-scan.js       # runs IN THE BROWSER (Step 5)
+T=~/.claude/skills/visant-killer/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
 V=~/.claude/skills/visant-killer/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
 # grafo.mjs is a library (import graph for --roots and repeated-door), not a CLI
 ```
@@ -185,12 +186,10 @@ Question bank per tier: [devils-advocate.md](references/devils-advocate.md).
 ## Step 5: Verification (what compiles is not what someone saw)
 
 **First, open the screen** (it fills `## Screen seen`). App behind login: `node $V` from the target repo (overflow, cut text, raw i18n
-keys, console, `/api` 4xx/5xx, empty screen, theme; paid routes locked).
-Published URL: `corta-url.mjs <base> route`. Open by hand: `$T` in the console.
-Flags and the paid-route lock: [verification.md](references/verification.md).
-Before measuring, the four signals in [environment.md](references/environment.md): route
-warmed up, hydration confirmed by a DOM mark (not `readyState`), real data
-including the worst record, node count matching the page opened by hand.
+keys, console, `/api` 4xx/5xx, empty screen, theme; paid routes locked). Published URL: `corta-url.mjs <base> route`.
+By hand: `$T`/`$E` in the console. Flags: [verification.md](references/verification.md). Before measuring, the four
+signals in [environment.md](references/environment.md): route warmed up, hydration confirmed by a DOM mark (not
+`readyState`), real data including the worst record, node count matching the page opened by hand.
 
 Then, and only then (whatever did not run goes in the report):
 
@@ -199,6 +198,7 @@ Then, and only then (whatever did not run goes in the report):
 | types and lint | `npx tsc --noEmit` and the repo's lint. **Never `next build` with dev running** (it breaks `.next`) |
 | horizontal overflow | `$V` (`estouro` column): `scrollWidth - clientWidth` **of the document** at 390px, re-measured after each fix. Not on an element: a decorative blob under `overflow-hidden` once became 64px of overflow that did not exist |
 | **cut text and stacked overlay** | `$V` (`corta` column) or `$T` in the console: a word eaten by a clipping parent, an overlay covering another in the same corner, a piece that left its box |
+| **spacing that lies** | `$V` (`spacing` column), `corta-url.mjs`, or `$E` in the console (`ritmo()`): more space inside a group than between groups, three levels with the same gap, one sibling drifting a few px. Off-scale values (15px, `p-[13px]`) are the repo's scale linter, not this ([gates.md](references/gates.md#spacing-two-layers)) |
 | distribution | does the page exist outside itself? `title`, `description`, share card, conversion event, `sitemap`, `robots` ([distribution.md](references/distribution.md)) |
 | real data | the screen with the best record and the worst; empty hides every overflow |
 | light theme | `$V --theme both`. A dark-first app breaks in light where nobody looks |
