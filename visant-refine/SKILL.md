@@ -1,6 +1,6 @@
 ---
 name: visant-refine
-description: 'visant-killer sub-skill: designs charts, gauges, sparklines, simulation sliders and metric tiles with one shared anatomy, so a screen looks designed, not assembled. Use on "add a chart", "simulator slider", "sparkline", "polish this", "adicionar chart", "gráfico", "medidor", "burilar", "refinar", "deixar mais desenhado".'
+description: 'visant-killer sub-skill: one shared anatomy for charts, gauges, sparklines, simulation sliders, metric tiles and control panels, so a screen looks designed, not assembled. Use on "add a chart", "simulator slider", "control panel", "inspector", "polish this", "gráfico", "painel de controles", "burilar", "refinar".'
 ---
 
 # Visant Refine
@@ -165,6 +165,28 @@ separate projection from fact. The minimum contract:
 
 Full contract, with the state pattern and the classic mistakes:
 [references/simulators.md](references/simulators.md).
+
+## Control panels
+
+An inspector or editor sidebar is the same anatomy at row scale: label left,
+value right in `tabular-nums`, the unit as qualifier one tone dimmer, the
+slider fill as evidence. What makes one look engineered instead of assembled:
+
+- **The control takes the shape of the data.** 2–5 options are a segmented
+  control, a point in 2D is a 3 × 3 grid, a vector is one row of fields, a
+  gradient is its bar with stops on it, a curve is the curve plus its numbers.
+  Cover the labels: if the shapes still say what they edit, it is designed.
+- **The chrome takes the shape of the state.** Reset appears in a folder header
+  only after a value changed; a dependent control exists only while its switch
+  is On; rare actions sit behind one `⋯`; help is on demand, not a caption.
+- **Depth by line, not by box.** Sticky folder headers, a dashed divider for
+  nesting, quiet rows and loud values.
+- **The mode comes before what it changes**, and every number takes drag,
+  typing and arrow keys.
+
+A dev-only tweak panel is an install (Leva, Tweakpane, DialKit), not a build.
+Full rules, the data-to-control table and the DialKit-vs-fork case that
+measured them: [references/control-panels.md](references/control-panels.md).
 
 ## Smart animation
 

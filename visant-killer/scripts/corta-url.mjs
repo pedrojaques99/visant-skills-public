@@ -35,6 +35,7 @@ function findPlaywright() {
 const pw = await import(pathToFileURL(findPlaywright()).href)
 const { chromium } = pw.default ?? pw
 const scanSrc = readFileSync(join(here, 'corta-scan.js'), 'utf8').replace(/if \(typeof module[\s\S]*$/, '')
+const ritmoSrc = readFileSync(join(here, 'ritmo-scan.js'), 'utf8').replace(/if \(typeof module[\s\S]*$/, '')
 
 const browser = await chromium.launch()
 let total = 0
@@ -50,14 +51,19 @@ for (const w of widths) {
       await new Promise((r) => setTimeout(r, 1500))
     })
     await page.addScriptTag({ content: scanSrc })
+    await page.addScriptTag({ content: ritmoSrc })
     const res = await page.evaluate(() => {
       const achados = corta('body', { verbose: false }).map((a) => `[${a.regra}] ${a.el}: ${a.detalhe}`)
       const over = document.documentElement.scrollWidth - document.documentElement.clientWidth
-      return { achados, over }
+      // spacing is printed for the eye, never counted in the exit code
+      const ritmoAchados = ritmo('body', { verbose: false }).map((a) => `[${a.regra}] ${a.el}: ${a.detalhe}`)
+      return { achados, over, ritmoAchados }
     })
     const tag = res.achados.length || res.over > 0 ? 'FOUND' : 'OK   '
     console.log(`${tag} ${String(w).padStart(4)}px ${r}  overflow=${res.over}px  findings=${res.achados.length}`)
     for (const a of res.achados.slice(0, 8)) console.log(`        ${a}`)
+    if (res.ritmoAchados.length) console.log(`        spacing: ${res.ritmoAchados.length} candidate(s)`)
+    for (const a of res.ritmoAchados.slice(0, 8)) console.log(`        ${a}`)
     total += res.achados.length + (res.over > 0 ? 1 : 0)
   }
   await page.close()

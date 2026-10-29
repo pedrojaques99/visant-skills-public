@@ -60,3 +60,28 @@ cwd, with the npx cache as backup). Without either it says `NOT TESTED`, which
 is not a pass.
 
 Per-check detail lives in `visant-frontend/references/verification.md`.
+
+## `ritmo-scan.js`: spacing that lies about grouping
+
+Same harness, same two ways (`ritmo()` in the console, or `$V` /
+`corta-url.mjs`, which print it as `spacing`). Three rules, all measured on ink
+(line boxes, media, boxed regions), never on CSS boxes:
+
+- `proximidade-invertida`: a group's inner gap is larger than the gap that
+  separates it from its neighbors. Reports the ink and the authored numbers,
+  and the fix.
+- `ritmo-chato`: three nested groups with the same gap (catalog 6).
+- `irmaos-desalinhados`: identical siblings with a different padding/gap, or one
+  gap in a regular list off by 2-8px. More room before a heading is a decision
+  and stays silent; so does a drift larger than 8px.
+
+What it separates, and the separation is the value:
+
+- a card (background, border or shadow) is its own region: common region beats
+  proximity, so boxed groups are never "inverted";
+- `aria-hidden` subtrees are illustrations drawn in DOM, not the interface;
+- a stack with a gap above 96px is page layout, not a component;
+- an off-scale value is NOT its business (see gates.md "Spacing: two layers").
+
+Locked in `scripts/fixtures/spacing-cases.html` by the same
+`corta-self-test.mjs`.

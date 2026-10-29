@@ -228,6 +228,7 @@ async function main() {
   const themes = o.theme === 'both' ? ['dark', 'light'] : [o.theme];
   const namespaces = loadNamespaces(cwd);
   const corta = fs.readFileSync(path.join(here, 'corta-scan.js'), 'utf8').replace(/if \(typeof module[\s\S]*$/, '');
+  const ritmoSrc = fs.readFileSync(path.join(here, 'ritmo-scan.js'), 'utf8').replace(/if \(typeof module[\s\S]*$/, '');
   fs.mkdirSync(o.out, { recursive: true });
 
   let token = null;
@@ -288,6 +289,7 @@ async function main() {
         await page.waitForTimeout(o.wait);
         const measure = async () => {
         await page.addScriptTag({ content: corta }).catch(() => {});
+        await page.addScriptTag({ content: ritmoSrc }).catch(() => {});
         return page.evaluate(
           ({ namespaces, rawRe }) => {
             const d = document.documentElement;
@@ -299,6 +301,13 @@ async function main() {
               );
             } catch (e) {
               c = ['corta error ' + e];
+            }
+            // spacing that lies about grouping: reported, judged on the screenshot, never fails the run
+            let ri = [];
+            try {
+              ri = (typeof ritmo === 'function' ? ritmo('body', { verbose: false }) || [] : []).map((a) => `[${a.regra}] ${a.el}: ${a.detalhe}`);
+            } catch (e) {
+              ri = ['ritmo error ' + e];
             }
             const re = new RegExp(rawRe);
             const raw = [...document.body.querySelectorAll('*')]
@@ -314,6 +323,7 @@ async function main() {
             return {
               overflow: d.scrollWidth - d.clientWidth,
               corta: c.slice(0, 8),
+              ritmo: ri.slice(0, 8),
               rawKeys: raw,
               darkClass: d.classList.contains('dark'),
               // a blank screen (lazy chunk never arrived, swallowed crash) passes overflow/clip/key checks: count text
@@ -347,7 +357,7 @@ async function main() {
         const bad = blank || m.overflow > 0 || m.corta.length || m.rawKeys.length || errors.length || !themeOk || paidBlocked.length;
         console.log(
           `${bad ? 'FOUND' : 'OK   '} ${theme.padEnd(5)} ${String(width).padStart(4)} ${route.padEnd(30)} ` +
-            `overflow=${m.overflow} clipped=${m.corta.length} rawkey=${m.rawKeys.length} error=${errors.length} ` +
+            `overflow=${m.overflow} clipped=${m.corta.length} spacing=${m.ritmo.length} rawkey=${m.rawKeys.length} error=${errors.length} ` +
             `api4xx5xx=${row.apiFail.length}${blank ? ' BLANK-SCREEN' : ''}${themeOk ? '' : ' THEME-NOT-APPLIED'}${paidBlocked.length ? ' PAID-BLOCKED=' + paidBlocked.length : ''}`
         );
       }

@@ -227,6 +227,7 @@ in different units side by side with no label corrupt the reading.
 | Working on… | Read |
 |---|---|
 | Queues, lists, editors, dashboards, admin, keyboard flow | [work-surface.md](references/work-surface.md) |
+| Inspector, editor sidebar, settings panel (which control for which data) | [work-surface.md](references/work-surface.md) "A control takes the shape of its data", then `visant-refine` control-panels.md |
 | Forms and dialogs: decluttering fields, what to do when the screen refuses | [work-surface.md](references/work-surface.md), sections "Forms: an empty field is not a field" and "What the screen says when it refuses" |
 | Client sites, landing, onboarding, pricing, upgrade paths | [acquisition-surface.md](references/acquisition-surface.md) |
 | Billing, destructive actions, data writes, confirmations | [trust-surface.md](references/trust-surface.md) |

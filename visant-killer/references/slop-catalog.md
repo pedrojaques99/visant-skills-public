@@ -59,7 +59,17 @@ others it is a reference and goes, or becomes a caption.
 **Cause.** A constant rhythm is the default of whoever did not decide the
 grouping.
 **Fix.** Space is what groups. Tight inside a block, open between blocks, and a
-rule only at a block boundary.
+rule only at a block boundary. Each level at least 2× the one inside it
+(8 / 16 / 32), and a card does not need it: the box already groups.
+**The four faces**, because "crazy spacing" is rarely one wrong number:
+inverted proximity (more space inside a group than between groups, so the label
+pairs with the wrong value), flat rhythm (the same gap on three levels),
+drifting siblings (one card with `p-5` among `p-6`, an `mt-1` patching a
+`gap-7`), and a value off the scale (`p-[13px]`).
+**Detector.** The first three: `ritmo-scan.js` in the browser (`ritmo()`, or the
+`spacing` line of `verify-screens` and `corta-url`). The fourth lives in the
+source, and the repo's scale linter owns it
+([gates.md](gates.md#spacing-two-layers)).
 
 ## 7. Saturated progress bar
 
@@ -745,6 +755,55 @@ command) comes back; the rest stays.
 **Detector.** `noise-scan`, rule `mono-everywhere` (10+ in one file, outside
 `pre`/`code`/`kbd` and ID-like content).
 
+## Signals from tool panels (58–63)
+
+From the DialKit 2.0.2 panel against its fork on
+[scaena.darkroom.engineering](https://scaena.darkroom.engineering) (2026-10-29),
+the same controls redrawn side by side. Suspicion and test, like 47–57, until a
+round gives them a `file:line`. The common thread: **every control drawn as the
+same generic row**, so the panel says nothing about its data. Rules and the
+full case: `visant-refine` [control-panels.md](../../visant-refine/references/control-panels.md).
+
+### 58. Dropdown for a handful of options
+
+**Symptom.** `<Select>` with 2–5 short items (Mode: Grid / Sphere / Spiral).
+**Fix.** Segmented control with a sliding highlight. Dropdown from 6 options or long labels up.
+**Test.** Count the items. Do they fit in the row?
+
+### 59. Two lists for one point
+
+**Symptom.** "Horizontal ▾" and "Vertical ▾" side by side (alignment, anchor, origin).
+**Fix.** A 3 × 3 grid: one click sets both, the highlight slides to the pick.
+**Test.** Is the value a position? Then the control is a place.
+
+### 60. Numbers without their unit
+
+**Symptom.** A panel of `50`, `1.0`, `16`, `0.50`: degrees, multiplier, pixels and seconds look alike.
+**Fix.** Unit after the value, one tone dimmer; values in `tabular-nums`.
+**Test.** Cover the labels: can you tell which number is a duration?
+
+### 61. A structure flattened into rows
+
+**Symptom.** "Color 1 / Stop 1 / Color 2 / Stop 2 / … / Add stop / Remove stop", or
+`Ease 0.25, 0.1, 0.25, 1` as one string.
+**Fix.** The picture of the value edited in place (bar with stops, curve with handles)
+plus a table with a `−` per row and a `+` in the header.
+**Test.** "Remove stop": which one? If the button cannot say, it is on the wrong row.
+
+### 62. Chrome that does not depend on state
+
+**Symptom.** A global "Reset" at the bottom, a caption under every control, three
+action icons on every row, a dependent control visible while its switch is Off.
+**Fix.** Reset per section, only when something changed; help on demand; rare
+actions behind one `⋯`; dependent controls only while they apply.
+**Test.** Does the panel look the same before and after the user touched it? Then the chrome says nothing.
+
+### 63. The mode below what it changes
+
+**Symptom.** A curve, a preview or a list, and only BELOW it the "Type" selector that reinterprets it.
+**Fix.** The selector first (tabs above the graph), then the picture, then the numbers.
+**Test.** Read top to bottom: do you meet the content before knowing what kind it is?
+
 ## Quick sweep
 
 ```bash
@@ -758,6 +817,12 @@ rg -U 'border[^"]*rounded[\s\S]{0,400}border[^"]*rounded' --glob '*.tsx' # box i
 rg '>\s*(~/|\$ |// )|src/app/' --glob '*.tsx'                             # code breadcrumb (55)
 rg '>\s*(/?0[1-9]\b|§ ?[0-9])' --glob '*.tsx'                             # numbered section (56)
 rg -c 'font-mono' --glob '*.tsx' | sort -t: -k2 -rn | head                # mono on everything (57): the top is where it became a second font
+
+# tool panels (58–63): candidates, never a verdict
+rg -U '<Select[\s\S]{0,600}?</Select>' --glob '*.tsx' | rg -c '<SelectItem'   # few items in a Select (58): segmented?
+rg -i '(horizontal|vertical).{0,40}<Select' --glob '*.tsx'                    # two lists for one point (59)
+rg '>\s*(Add|Remove|Adicionar|Remover) [a-z]+\s*<' --glob '*.tsx'            # add/remove away from the row (61)
+rg -i '>\s*(Reset|Resetar|Redefinir)( all| tudo)?\s*<' --glob '*.tsx'         # global reset (62)
 
 # component showcase (35–46): candidates, never a verdict
 rg -i '"(passe o (mouse|ponteiro)|mova o ponteiro|clique pra|arraste pra)' --glob '**/demos/*.tsx'   # frame that speaks (35)
@@ -787,4 +852,6 @@ all four: the defect does not live in any line. 20 lives in the sum of the
 lines; 21, BETWEEN two files; 22, in the repetition of a correct line; 23, in
 the width that only exists after the font loads. Grep takes one line at a time;
 that is why the first three are rules of `noise-scan.mjs` and the last one is
-`corta-scan.js`, which runs in the browser with the screen open.
+`corta-scan.js`, which runs in the browser with the screen open. Entry 6 is
+the same story: inside-vs-between is two numbers from two files, so
+`ritmo-scan.js` measures it after layout.
