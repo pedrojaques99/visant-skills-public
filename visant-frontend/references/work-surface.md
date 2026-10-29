@@ -363,6 +363,26 @@ A side benefit that often decides the case: the icon group shrinks and gives
 width back to the neighbor with a long label. In a narrow panel that is what
 makes the whole row fit without truncating.
 
+## A control takes the shape of its data
+
+The primitive library offers a select, a slider and an input, and an agent
+reaches for whichever is on top. The control should be chosen by the data:
+a choice among 2–5 short options is a segmented control (every option visible,
+zero clicks to learn them); a point in 2D is a grid you click once, not two
+dropdowns; a vector is one row of fields; a gradient or a curve is its own
+picture, edited in place, with the exact numbers beside it. The same move as the
+section above, one level up: the icon pays off when it IS the thing, and the
+control pays off when it IS the shape of the value.
+
+Measured on a tweak panel redrawn this way (DialKit against its fork): a
+gradient went from 11 generic rows to one bar plus a stops table, alignment
+from two lists to one click. Full table and panel rules:
+`visant-refine` [control-panels.md](../../visant-refine/references/control-panels.md).
+
+The same applies to the chrome around controls: reset, help and destructive
+actions appear when the state calls for them (a value changed, a key held, a
+menu opened), not permanently on every row.
+
 ## Render tool: preview in a fixed column, controls in another
 
 Found on a photo sequencer that stacked upload, controls (order, transition,
@@ -397,6 +417,9 @@ two mid-use, and that layout jump is exactly what the rule prevents.
 | `(Optional)` repeated across many labels | Marks the rule and leaves the exception unmarked; invert it |
 | Empty optional field rendered open | Becomes an item on the list of what you have not filled in; `+ Noun` until it has a value |
 | Fixed help text under the label explaining the format | A placeholder does the same and disappears once it stops being useful |
+| Dropdown for 2–5 short options | Hides choices that fit on screen; a segmented control shows them at zero clicks |
+| Two dropdowns for one spatial choice (horizontal + vertical alignment) | Two lists, two clicks, for one point; a 3 × 3 grid is one click |
+| One global "Reset" at the bottom of a panel | Far from what it resets and resets too much; reset per section, shown only once something changed |
 | Error alert at the end of a scrolling dialog's content | Born below the fold; it lives in the sticky footer, next to the button |
 | Button label used as the error-message fallback | "Create request" in red is no cause at all |
 | Metric grid of mostly zeros | Occupies the fold to report nothing |

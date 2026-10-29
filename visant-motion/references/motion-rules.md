@@ -57,6 +57,33 @@ Apple's two-parameter model (prefer this):
 
 Web (Motion/framer-motion): `{ type:"spring", bounce:0, duration:0.4 }` (critically damped) — add `bounce:0.2` ONLY when a flick/throw preceded it. Springs carry velocity through interruption; CSS/keyframes restart from zero.
 
+### Presets and curve editors (when the user picks the motion)
+
+From the DialKit fork on scaena.darkroom.engineering, the reference for a
+motion tweak panel:
+
+- **Name a preset by how it moves**, not by its numbers: "Snappy", "Gentle",
+  "Bouncy" with one line each ("settles fast, no overshoot"). `0.25, 0.1, 0.25, 1`
+  is the implementation, shown in fields under the curve.
+- **Three models, one selector above the graph**: Easing (cubic-bezier),
+  Time (spring by `bounce` + `duration`, Motion's `visualDuration` model) and
+  Physics (`stiffness`/`damping`/`mass`). Time is the default a designer reads;
+  Physics is for whoever is matching a native spec. The selector goes ABOVE the
+  curve: the mode reinterprets the picture, so it is read first.
+- **The curve is the control and the numbers are fields**: drag the handles, or
+  type each of the 4 bezier values in its own field. One string with 4 numbers
+  is not editable.
+- **Copy/paste a curve between transitions** from the section's `⋯` menu. Motion
+  consistency is reuse; a panel that makes each transition retype its curve
+  breeds 12 almost-equal easings (the SSoT drift this skill exists to stop).
+- **Defaults and Custom tabs**: the house tokens are the Defaults (`--ease-*`,
+  `DUR.*`); a custom curve saved by the user lives in Custom and never edits a
+  token in place.
+- **Interface motion in the panel itself**: a segmented highlight slides with a
+  shared `layoutId` (Motion), reset springs values back, a conditional control
+  slides in. All of it is UI motion: under 250ms, and none under
+  `prefers-reduced-motion`.
+
 ## Component rules
 
 - **Buttons must feel pressed:** `transform: scale(0.97)` on `:active`, ~160ms ease-out. Put it on the shared Button primitive once.
