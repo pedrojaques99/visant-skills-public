@@ -274,6 +274,22 @@ pending items isn't a plan, it's discouragement.
 
 ---
 
+## Fresh reviewer
+
+Whoever built the screen has already forgiven it. On T2 and T3, hand the review to
+a new agent:
+
+- **It gets:** the screenshots, the URL, this file and the one-line brief.
+- **It never gets:** your plan, your reasons or your draft `AUDIT.md`.
+- **First question:** does this screen answer this product, or could it belong to
+  anyone in the category?
+- **The bar for a finding is a frame.** It names the screenshot. A predicted failure
+  is not a finding, and neither is a predicted pass.
+- **It fixes nothing** and does not soften a finding because the work is nearly done.
+- It re-judges anything you marked as intentional.
+
+Answer its list in `AUDIT.md`, line by line. A clean result lists the frames it read.
+
 ## How to report the answer
 
 For each question asked, three lines in the report:

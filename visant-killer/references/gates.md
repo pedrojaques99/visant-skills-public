@@ -250,4 +250,5 @@ classification: confirm it. A repo without a readable router falls back to one
 row per UI file. The table header is read by name (`surface`/`superfície`,
 `variable`/`variável`, `route`/`rota`, `file`/`arquivo`), and the seen-screens
 section must keep the heading `## Screen seen` (or the older `## Tela vista`),
-which the script parses.
+which the script parses. `## Not checked` (or `## Não verificado`) is parsed the
+same way and has to be filled in.

@@ -6,6 +6,8 @@ tags:
   - visant
   - brand
   - ai-tools
+metadata:
+  family: marca
 ---
 
 # Visant Labs MCP
@@ -244,7 +246,15 @@ exist: `npx visantlabs login`.
   context, not JSON.
 - **creative-full** is the shortcut: it avoids chaining generate + mockup-generate
   + render by hand.
-- **Credits:** `account-usage` shows the balance. AI utilities (describe-image,
-  improve-prompt) are free.
+- **Credits:** `account-usage` shows the balance. AI utilities (describe-image, improve-prompt) are free.
 - **Scopes:** OAuth tokens enforce `read`, `write`, `generate`; generation tools
   need `generate`.
+
+## Neighbors
+
+- **[[visant-brand-populate]]**: fill a new brand
+- **[[visant-brand-sync]]**: reconcile an existing brand
+- **[[visant-methodology]]**: the method behind the fields
+- **[[visant-creative]]**: social and marketing pieces
+- **[[brand-mockup-kit]]**: a batch of mockups for a brand
+- **[[visant-mockup-creator]]**: new scene photos for the store

@@ -1,6 +1,8 @@
 ---
 name: site-reels
 description: 'Records the best scenes of a website or web app (WebGL hero, 3D, scroll) as 1080p MP4 for decks, uploads them to Figma Slides, and builds brand or product showreels in Remotion. Use on "record the site scenes", "site video for the deck", "showreel", "launch video", "gerar vídeo do site", "vídeo pro deck", "reel do produto", /site-reels.'
+metadata:
+  family: video
 ---
 
 # Site Reels: site → MP4 → deck
@@ -231,3 +233,8 @@ track grid (14 frames = 128.57 BPM). 40s max.
   `librosa.beat.beat_track` + windowed RMS (Python, optional).
 
 Origin stories, reference projects and machine-specific tips: `references/cases.md`.
+
+## Neighbors
+
+- **[[visant-video-editor]]**: footage from a camera
+- **[[visant-premiere-editor]]**: a rough cut in Premiere

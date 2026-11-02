@@ -1,6 +1,8 @@
 ---
 name: visant-video-editor
 description: 'Edits vlogs, event videos and video lessons from raw footage: breakdown, silence cuts that never clip a word, loudness and chapters, with a self-test against silent failures. Use on "edit this vlog", "cut the silence", "edit this lesson", "monta um vlog", "decupagem", "edita essa aula", "tira o silêncio do vídeo", /visant-video-editor.'
+metadata:
+  family: video
 ---
 
 # Visant Video Editor
@@ -233,3 +235,8 @@ foreground thinking it is fast.
   screencasts/lessons: safe cut boundaries in whisper timestamps, finding a bad audio event
   without confusing it with speech emphasis, and why a literal cut beats a duck.
 - **[references/cases.md](references/cases.md)**: the jobs these rules came from.
+
+## Neighbors
+
+- **[[visant-premiere-editor]]**: the rough cut inside Premiere
+- **[[site-reels]]**: recording a website; this skill starts from raw footage

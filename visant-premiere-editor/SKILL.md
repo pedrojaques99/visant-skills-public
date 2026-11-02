@@ -1,6 +1,8 @@
 ---
 name: visant-premiere-editor
 description: 'Assembles a rough cut in Premiere Pro via premiere-pro-mcp from a JSON cut plan: frame-exact cuts, markers, punch-ins, cards, b-roll, -14 LUFS delivery. Use on "build it in Premiere", "Premiere rough cut", "punch-in", "cover with b-roll", "monta no Premiere", "marcadores pra narrar", "exporta as aulas", /visant-premiere-editor.'
+metadata:
+  family: video
 ---
 
 # Visant Premiere Editor
@@ -180,3 +182,8 @@ whoever generates the plan.
 
 Measured pitfalls, with cause and fix: `references/pitfalls.md`. Read before the session's first
 import. Where the rules came from: `references/cases.md`.
+
+## Neighbors
+
+- **[[visant-video-editor]]**: cutting raw footage outside Premiere
+- **[[site-reels]]**: recording a website and Remotion reels

@@ -230,3 +230,15 @@ None of them had a linter tic, which is why they are here.
 - [ ] FAQ in the reader's voice, answer opening with the answer
 - [ ] At least one place admits a limit, and the blame starts with the author
 - [ ] Read aloud without stumbling. If the tongue trips, rewrite.
+
+## Brand glossary (Visant's own copy only)
+
+In client copy, the glossary is the client brand's, not this one.
+
+| term | what it is | where it is used |
+|---|---|---|
+| **Visionário®** | lifetime plan, one-time payment | tier, CTA, FAQ, plans subtitle |
+| **Visantista** | monthly subscriber, and the community's demonym | monthly plan, community |
+| **Visantismo** | the movement and the landing's brand | logo, nav, footer |
+| **Visant** | the agency / company | body copy, authorship |
+| ~~Fundador~~ | **retired.** It was a loose synonym for Visionário and created two brands for the same plan | do not use |

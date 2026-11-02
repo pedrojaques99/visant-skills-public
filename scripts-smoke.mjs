@@ -85,7 +85,34 @@ writeFileSync(levaFile, JSON.stringify(["Envelope A3", "Placa de Obra"]), "utf8"
 /* Foreign cwd: neither the skills repo nor the target. That is what an agent does. */
 const foreignCwd = tmpdir();
 
+/* --report end to end: a report that omits what was not seen must not pass, and
+   the one that says it must not be accused. Self-tests never reach this path. */
+const reportBase = ["# Audit", "", "## Screen seen", "", "- / 390 real data, opened fine", "", ""].join("\n");
+const reportBare = join(sandbox, "report-bare.md");
+const reportFull = join(sandbox, "report-full.md");
+writeFileSync(reportBare, reportBase, "utf8");
+writeFileSync(reportFull, [reportBase + "## Not checked", "", "- light theme", ""].join("\n"), "utf8");
+const NOT_CHECKED = /no filled "## Not checked"/;
+/* A clean target: with findings the gate stops at CLOSED and never reads the report. */
+const cleanDir = join(sandbox, "clean");
+mkdirSync(cleanDir, { recursive: true });
+writeFileSync(join(cleanDir, "A.tsx"), "export const A = () => <div>ok</div>;\n", "utf8");
+
 const CASES = [
+  {
+    name: "report-bare",
+    script: join(REPO, "visant-killer", "scripts", "killer-scan.mjs"),
+    target: cleanDir,
+    args: ["--report", reportBare],
+    expect: (out) => (NOT_CHECKED.test(out) ? null : "a report without ## Not checked was not flagged"),
+  },
+  {
+    name: "report-full",
+    script: join(REPO, "visant-killer", "scripts", "killer-scan.mjs"),
+    target: cleanDir,
+    args: ["--report", reportFull],
+    expect: (out) => (!/GATE INCOMPLETE/.test(out) ? "the gate never reached the report" : NOT_CHECKED.test(out) ? "a filled ## Not checked was flagged" : null),
+  },
   {
     name: "motion-lint",
     script: join(REPO, "visant-motion", "scripts", "motion-lint.mjs"),

@@ -237,8 +237,22 @@ function inspect(skillDir) {
  * quality": when the same territory is claimed several times, the right choice
  * stops being obvious and the cost of a wrong pick goes up. Short descriptions
  * fix dilution; only this fixes disputes.
+ *
+ * A router is not a dispute: a skill that declares `metadata.routes` hands the
+ * request on to those skills, so sharing a trigger with them has one owner.
+ * An unrelated skill on the same trigger still fires, router or not.
+ *
+ * Boundaries are checked here too. Each skill says who its neighbors are in
+ * `## Neighbors`, and a boundary only works when both sides know it: if A sends
+ * a request to B and B has never heard of A, B will happily keep the request A
+ * was meant to hand over. A skill with no section (third party) is exempt as a
+ * target; inside a repo, a skill of ours without one is flagged.
  */
-function crossCheck(results) {
+function crossCheck(results, { live = false } = {}) {
+  const routes = (r) => r.ctx?.fm?.metadata?.routes ?? r.ctx?.routes ?? [];
+  const routedBy = new Map(results.map((r) => [r.dir, new Set(routes(r))]));
+  const byDir = new Map(results.map((r) => [r.dir, r]));
+  const handsOff = (a, b) => routedBy.get(a)?.has(b) || routedBy.get(b)?.has(a);
   const owners = new Map();
   for (const r of results) {
     if (!r.ctx?.desc) continue;
@@ -250,7 +264,8 @@ function crossCheck(results) {
   }
   const findings = [];
   for (const [trigger, skills] of owners) {
-    const uniq = [...new Set(skills)];
+    const all = [...new Set(skills)];
+    const uniq = all.filter((s) => !all.some((o) => routedBy.get(o)?.has(s)));
     if (uniq.length > 1) {
       findings.push({
         rule: 'gatilho-duplicado',
@@ -260,12 +275,85 @@ function crossCheck(results) {
       });
     }
   }
+
+  /* "burilar" inside "burilar a copy": not identical, still a dispute. The short
+     trigger fires on every request the long one was written for. */
+  const triggers = [...owners.keys()];
+  for (const short of triggers) {
+    const re = new RegExp(`(?<![\\p{L}\\p{N}])${short.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}(?![\\p{L}\\p{N}])`, "u");
+    for (const long of triggers) {
+      if (short === long || !re.test(long)) continue;
+      const pairs = owners.get(short).flatMap((a) => owners.get(long).map((b) => [a, b]));
+      const clash = pairs.find(([a, b]) => a !== b && !handsOff(a, b) && !(byDir.get(a)?.ctx?.neighbors == null && byDir.get(b)?.ctx?.neighbors == null));
+      if (clash) {
+        findings.push({
+          rule: "gatilho-contido",
+          level: "WARN",
+          skill: clash[0],
+          message: `trigger "${short}" (${clash[0]}) is inside "${long}" (${clash[1]}); narrow it, or declare the hand-off in metadata.routes`,
+        });
+      }
+    }
+  }
+
+  for (const r of results) {
+    if (!r.ctx) continue;
+    const mine = r.ctx.neighbors;
+    if (mine === null && !live) {
+      findings.push({ rule: "sem-vizinhos", level: "WARN", skill: r.dir, message: "no `## Neighbors` section: nothing says where a request that is not for this skill goes" });
+    }
+    for (const n of mine ?? []) {
+      const target = byDir.get(n);
+      if (!target) {
+        /* Exists in a source repo but has no junction: a choice, not a broken reference. */
+        const inRepo = [HERE, join(HERE, "..", "visant-skills")].some((root) => existsSync(join(root, n, "SKILL.md")));
+        if (live && !inRepo) findings.push({ rule: "vizinho-fantasma", level: "ERROR", skill: r.dir, message: `neighbor [[${n}]] is not installed` });
+      } else if (target.ctx?.neighbors && !target.ctx.neighbors.has(r.dir)) {
+        findings.push({ rule: "vizinho-assimetrico", level: "ERROR", skill: r.dir, message: `names [[${n}]], but ${n} does not name it back` });
+      }
+    }
+    for (const route of routedBy.get(r.dir) ?? []) {
+      if (!mine?.has(route)) findings.push({ rule: "rota-sem-vizinho", level: "ERROR", skill: r.dir, message: `metadata.routes has ${route}, missing from \`## Neighbors\`` });
+    }
+  }
   return findings;
+}
+
+/** The skills named in `## Neighbors`, or null when there is no such section. */
+function neighborsOf(skillDir) {
+  const lines = readFileSync(join(skillDir, "SKILL.md"), "utf8").split(/\r?\n/);
+  const start = lines.findIndex((l) => /^## Neighbors\s*$/.test(l));
+  if (start < 0) return null;
+  const end = lines.findIndex((l, i) => i > start && /^#{1,2} /.test(l));
+  const section = lines.slice(start + 1, end < 0 ? undefined : end).join("\n");
+  return new Set([...section.matchAll(/\[\[([a-z0-9-]+)\]\]/g)].map((m) => m[1]));
+}
+
+/** Who does what, written from the skills themselves so it cannot drift. */
+function renderMap(results) {
+  const families = new Map();
+  for (const r of results) {
+    if (!r.ctx?.neighbors) continue;
+    const family = r.ctx.fm?.metadata?.family ?? "(sem família)";
+    if (!families.has(family)) families.set(family, []);
+    families.get(family).push(r);
+  }
+  const out = ["# Mapa das skills", "", "Gerado por `skills-doctor --map`. Não edite à mão: a fonte é o `SKILL.md` de cada skill.", ""];
+  for (const [family, skills] of [...families].sort(([a], [b]) => a.localeCompare(b))) {
+    out.push(`## ${family}`, "", "| Skill | O que faz | Vizinhas |", "|---|---|---|");
+    for (const r of skills.sort((a, b) => a.dir.localeCompare(b.dir))) {
+      const what = r.ctx.desc.split(/ (?:Use on|Use em|Use BEFORE|Use to|Use when)\b/)[0].replace(/\|/g, "\\|").trim();
+      out.push(`| \`${r.dir}\` | ${what} | ${[...r.ctx.neighbors].sort().join(", ")} |`);
+    }
+    out.push("");
+  }
+  return out.join("\n");
 }
 
 function audit(skillDir) {
   const ctx = inspect(skillDir);
   if (ctx.missing) return { dir: ctx.dir, findings: [], skipped: "no SKILL.md" };
+  ctx.neighbors = neighborsOf(skillDir);
   const findings = [];
   for (const rule of RULES) {
     for (const message of rule.check(ctx)) {
@@ -393,6 +481,48 @@ function selfTest() {
   if (noDispute.length) {
     problems.push(`gatilho-duplicado gave a false positive on distinct triggers: ${JSON.stringify(noDispute)}`);
   }
+  const routed = crossCheck([
+    { dir: "door", ctx: { desc: 'One door. Use on "audit this screen".', routes: ["a"], neighbors: new Set(["a"]) } },
+    mk("a", 'Does a thing. Use on "audit this screen".'),
+  ]);
+  if (routed.length) {
+    problems.push(`gatilho-duplicado fired on a router and the skill it routes to: ${JSON.stringify(routed)}`);
+  }
+  const outsider = crossCheck([
+    { dir: "door", ctx: { desc: 'One door. Use on "audit this screen".', routes: ["a"], neighbors: new Set(["a"]) } },
+    mk("a", 'Does a thing. Use on "audit this screen".'),
+    mk("b", 'Does another. Use on "audit this screen".'),
+  ]);
+  if (!outsider.some((f) => f.rule === "gatilho-duplicado")) {
+    problems.push("gatilho-duplicado stayed silent on a skill outside the router claiming its trigger");
+  }
+
+  /* Boundaries, both ways. */
+  const nb = (dir, desc, neighbors, extra = {}) => ({ dir, ctx: { desc, neighbors: neighbors && new Set(neighbors), ...extra } });
+  const has = (fs, rule) => fs.some((f) => f.rule === rule);
+  if (!has(crossCheck([nb("a", 'Use on "burilar".', []), nb("b", 'Use on "burilar a copy".', [])]), "gatilho-contido")) {
+    problems.push("gatilho-contido did not fire on a trigger inside another");
+  }
+  if (has(crossCheck([nb("a", 'Use on "burilar".', []), nb("b", 'Use on "burilarmos a copy".', [])]), "gatilho-contido")) {
+    problems.push("gatilho-contido fired inside a longer word");
+  }
+  if (has(crossCheck([nb("a", 'Use on "burilar".', ["b"], { routes: ["b"] }), nb("b", 'Use on "burilar a copy".', ["a"])]), "gatilho-contido")) {
+    problems.push("gatilho-contido fired on a declared hand-off");
+  }
+  if (!has(crossCheck([nb("a", "x", ["b"]), nb("b", "x", [])]), "vizinho-assimetrico")) {
+    problems.push("vizinho-assimetrico did not fire when B does not name A back");
+  }
+  if (crossCheck([nb("a", "x", ["b"]), nb("b", "x", ["a"])]).length) {
+    problems.push("a symmetric pair produced a finding");
+  }
+  if (has(crossCheck([nb("a", "x", ["third-party"]), nb("third-party", "x", null)], { live: true }), "vizinho-assimetrico")) {
+    problems.push("vizinho-assimetrico fired on a third-party skill with no section");
+  }
+  if (!has(crossCheck([nb("a", "x", null)]), "sem-vizinhos")) problems.push("sem-vizinhos did not fire inside a repo");
+  if (has(crossCheck([nb("a", "x", null)], { live: true }), "sem-vizinhos")) problems.push("sem-vizinhos fired on --live, where third parties live");
+  if (!has(crossCheck([nb("a", "x", ["ghost"])], { live: true }), "vizinho-fantasma")) problems.push("vizinho-fantasma did not fire on a skill not installed");
+  if (has(crossCheck([nb("a", "x", ["other-repo"])]), "vizinho-fantasma")) problems.push("vizinho-fantasma fired in a repo, where neighbors may live in the other repo");
+  if (!has(crossCheck([nb("a", "x", [], { routes: ["b"] }), nb("b", "x", ["a"])]), "rota-sem-vizinho")) problems.push("rota-sem-vizinho did not fire");
 
   if (problems.length) {
     console.error("skills-doctor --self-test FAILED");
@@ -451,7 +581,22 @@ if (doFix) {
 }
 
 const results = skillDirs.map(audit);
-const findings = [...results.flatMap((r) => r.findings), ...crossCheck(results)];
+const cross = crossCheck(results, { live });
+
+/* --map=<file>: writes who-does-what. --boundaries: only the rules between
+   skills, and any finding fails, because "no conflicts" has no warning level. */
+const mapPath = argv.find((a) => a.startsWith("--map="))?.slice(6);
+if (mapPath) {
+  writeFileSync(resolve(mapPath), renderMap(results), "utf8");
+  console.log(`skills-doctor --map: ${mapPath}`);
+}
+if (argv.includes("--boundaries")) {
+  for (const f of cross) console.log(`  ${f.level === "ERROR" ? "✗" : "!"} ${f.rule.padEnd(20)} ${f.skill}: ${f.message}`);
+  console.log(`skills-doctor --boundaries: ${results.length} skill(s), ${cross.length} conflict(s)`);
+  process.exit(cross.length ? 1 : 0);
+}
+
+const findings = [...results.flatMap((r) => r.findings), ...cross];
 const errors = findings.filter((f) => f.level === "ERROR");
 const warns = findings.filter((f) => f.level === "WARN");
 

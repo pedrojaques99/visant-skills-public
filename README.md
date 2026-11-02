@@ -13,6 +13,7 @@ fixtures.
 ```bash
 npx skills add pedrojaques99/visant-skills-public                       # pick from the list
 npx skills add pedrojaques99/visant-skills-public --skill visant-killer # just one
+npx skills add pedrojaques99/visant-skills-public --skill visant-design visant-killer visant-frontend visant-motion visant-refine # the interface set
 ```
 
 Or copy a skill folder into `~/.claude/skills/`. Then just ask, in English or
@@ -78,7 +79,8 @@ hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 
 | Skill | What it does | Needs |
 |---|---|---|
-| [`visant-killer`](visant-killer/SKILL.md) | **Start here.** Anti-slop UI audit: detectors as a hard gate, judgment through the skills below, a devil's advocate pass and a score | Node 20+; Playwright optional (screen checks) |
+| [`visant-design`](visant-design/SKILL.md) | **Start here.** One door: reads the ask and loads the right playbook below | the skills it routes to |
+| [`visant-killer`](visant-killer/SKILL.md) | Anti-slop UI audit: detectors as a hard gate, judgment through the skills below, a devil's advocate pass and a score | Node 20+; Playwright optional (screen checks) |
 | [`visant-frontend`](visant-frontend/SKILL.md) | Interface decisions: every element names the business variable it moves, or it goes | nothing |
 | [`visant-motion`](visant-motion/SKILL.md) | Easing/duration tokens for CSS and framer-motion, `motion-lint`, URL measurement | Node 20+ |
 | [`visant-refine`](visant-refine/SKILL.md) | Charts, gauges, sparklines, sliders and metric tiles with one shared anatomy | Node 20+ |
@@ -139,6 +141,8 @@ its own text; the summary:
 | [impeccable](https://impeccable.style) | Paul Bakaus ([pbakaus/impeccable](https://github.com/pbakaus/impeccable)) | `visant-killer` gate |
 | [revenue-centric-design](https://github.com/heliocosta-dev/revenue-centric-design) | principles by Richard ([@richardrx](https://x.com/richardrx)), packaged by heliocosta-dev | `visant-frontend`, `visant-killer` |
 | [Emil Kowalski skills](https://github.com/emilkowalski/skills) | Emil Kowalski ([animations.dev](https://animations.dev)) | `visant-motion` principles |
+| [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) | Benji Taylor | `visant-killer` fresh reviewer and `## Not checked`; `visant-frontend` demo rules; route in `visant-design` |
+| [Skullet](https://skullet.lochie.me/docs) | [lochie](https://github.com/lochie/skullet) |`visant-motion` skeleton option |
 | [agent-skills](https://github.com/vercel-labs/agent-skills) (`vercel-react-view-transitions`) | Vercel | `visant-motion` |
 | [premiere-pro-mcp](https://github.com/leancoderkavy/premiere-pro-mcp) | premiere-pro-mcp contributors | `visant-premiere-editor` |
 | [OpenTimelineIO](https://opentimeline.io) | Academy Software Foundation | `visant-premiere-editor` (FCP7 XML) |

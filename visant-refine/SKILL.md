@@ -1,6 +1,8 @@
 ---
 name: visant-refine
-description: 'visant-killer sub-skill: one shared anatomy for charts, gauges, sparklines, simulation sliders, metric tiles and control panels, so a screen looks designed, not assembled. Use on "add a chart", "simulator slider", "control panel", "inspector", "polish this", "gráfico", "painel de controles", "burilar", "refinar".'
+description: 'One shared anatomy for charts, gauges, sparklines, simulation sliders, metric tiles and control panels, so a screen looks designed, not assembled. Use on "add a chart", "simulator slider", "control panel", "inspector", "polish this", "gráfico", "painel de controles", "burilar o painel", "refinar".'
+metadata:
+  family: design
 ---
 
 # Visant Refine
@@ -214,3 +216,11 @@ written step by step (what went in, what was refused and why) in
 [references/tax-panel-case.md](references/tax-panel-case.md). Read it before
 refining any number panel, because the mistakes are the same: a saturating bar,
 projection confused with fact, and animation on the wrong data.
+
+## Neighbors
+
+- **[[visant-design]]**: the door
+- **[[visant-killer]]**: a whole-screen audit; `refine-scan` runs inside it
+- **[[visant-frontend]]**: whether the chart should exist at all
+- **[[visant-motion]]**: the timing of a value changing
+- **[[anatomy]]**: an isometric figure that explains a technical idea

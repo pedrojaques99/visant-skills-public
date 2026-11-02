@@ -1,6 +1,8 @@
 ---
 name: visant-methodology
 description: 'Visant''s official brand-building methodology: 9 stages in 3 phases and the dependency cascade between them. Use to generate or audit a full branding, or to write the prompt for one stage. Use on "Visant methodology", "full branding", "audit branding", "metodologia Visant", "branding completo", "auditar branding".'
+metadata:
+  family: marca
 ---
 
 # Visant Methodology
@@ -212,3 +214,8 @@ instead of genericness.
 | Mix Arquetípico | Combination of primary and secondary archetype |
 | Pilares | 3 values that, if violated, make the brand stop being itself |
 | Sistema Gráfico | Visual elements that let the brand be recognized without the logo |
+
+## Neighbors
+
+- **[[visant-mcp-connect]]**: the tools that run each stage
+- **[[visant-brand-sync]]**: reconcile a brand that already exists

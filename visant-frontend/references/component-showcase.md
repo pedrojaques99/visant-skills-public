@@ -24,6 +24,14 @@ Most repeated report: "badly presented", "focus on the component", "too many lab
 - **Born in its best state.** Gleam, perspective, open menu, expanded island:
   the piece already appears doing what it does. A good state hidden behind
   hover doesn't exist in the tile, on touch, or in a screenshot.
+- **The resting frame is the demo.** Most people only see one frame: the tile, a
+  screenshot, reduced motion. It has to tell the story alone, and it is never
+  caught mid-change.
+- **A loop's reset has a cause, or it is hidden.** Data does not rewind in view.
+- **The phone gets a second design, not a squeeze.** Crop closer and drop the
+  secondary object; scaling a wide demo down makes it unreadable.
+- **Edges 1 to 3px apart read as an accident.** Line them up, or part them by 8px
+  or more.
 - **Demo controls collapsed by default.** Knobs live in the piece's side panel;
   on the piece itself, at most a quiet selector.
 - **The secondary control is quieter than the piece.** A mode selector becomes

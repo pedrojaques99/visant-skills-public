@@ -1,6 +1,9 @@
 ---
 name: visant-copy
 description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visant''s spoken voice, in any repo, and runs copy-lint, which catches AI tics in PT and English copy. Use on "copy", "headline", "landing copy", "remove the AI feel", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy".'
+metadata:
+  family: texto
+  routes: [visant-headlines]
 ---
 
 # Visant Copy
@@ -178,17 +181,7 @@ When the pain needs to show (and sometimes it does), it goes in the **next
 section**, opening the mechanism. On the fold you have 5 seconds, and spending
 all five describing the problem is wasting your turn.
 
-## Brand glossary (Visant's own copy only)
-
-In client copy, the glossary is the client brand's, not this one.
-
-| term | what it is | where it is used |
-|---|---|---|
-| **Visionário®** | lifetime plan, one-time payment | tier, CTA, FAQ, plans subtitle |
-| **Visantista** | monthly subscriber, and the community's demonym | monthly plan, community |
-| **Visantismo** | the movement and the landing's brand | logo, nav, footer |
-| **Visant** | the agency / company | body copy, authorship |
-| ~~Fundador~~ | **retired.** It was a loose synonym for Visionário and created two brands for the same plan | do not use |
+Visant's own brand terms: [glossary](references/voice.md#brand-glossary-visants-own-copy-only). In client copy, the glossary is the client's.
 
 ## If the repo uses Visant's pipeline (`copy.json`)
 
@@ -251,3 +244,11 @@ carries the noun people search for ("mockups"), while the `<h1>` carries the ver
    `copy:check`. In a React/TS repo, `tsc --noEmit`.
 8. Report the before/after of the changed lines. The user approves text by
    reading text, never by reading a summary of the text.
+
+## Neighbors
+
+- **[[visant-design]]**: the layout around the words
+- **[[visant-killer]]**: a screen that looks AI-made; this skill handles text that reads AI-made
+- **[[visant-headlines]]**: a client brand's voice; this skill is Visant's voice
+- **[[visant-new-site]]**: the copy of a whole client site
+- **[[revenue-centric-design]]**: the lever behind the message; this skill writes the sentence

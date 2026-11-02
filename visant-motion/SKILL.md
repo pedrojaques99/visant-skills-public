@@ -1,6 +1,8 @@
 ---
 name: visant-motion
 description: 'Visant motion and micro-interaction system: easing/duration tokens mirrored in CSS and framer-motion, plus motion-lint and URL measurement. Use on "animation", "transition", "make it smoother", "apple-like", "loading", "skeleton", "animação", "deixa mais suave", "tela de espera", "micro-transições", /visant-motion.'
+metadata:
+  family: design
 ---
 
 # Visant Motion
@@ -94,7 +96,7 @@ Pick by **how long the wait is**, not by what's convenient:
 
 1. **Answer the click before the server does.** Press feedback + immediate state change is frame one of loading. Optimistic patch + undo (§6) beats every spinner; and if the surface closes on click, the in-button spinner can never show at all, so it's dead chrome: `visant-frontend` › [unreachable spinner](../visant-frontend/references/stack-tailwind-react.md).
 2. **Anti-flicker pair:** don't show a loader before ~300ms; once shown, hold it ~500ms. A loader that blinks reads as a bug, not as speed.
-3. **Skeleton ≈ the real layout** (same box sizes, radius, gaps) so content lands without shift. Shimmer is `linear`, infinite, ~1.2–1.6s: constant motion (§1 rule 2). It's the one legitimate `@keyframes` in the app, because nothing ever interrupts it.
+3. **Skeleton ≈ the real layout** (same box sizes, radius, gaps) so content lands without shift. Before drawing one by hand, try [skullet](https://skullet.lochie.me/docs), which measures the real layout (young, v0.0.3; it keeps shapes in `localStorage`, so call `forgetShapes()` on sign-out). Shimmer is `linear`, infinite, ~1.2–1.6s: constant motion (§1 rule 2). It's the one legitimate `@keyframes` in the app, because nothing ever interrupts it.
 4. **Never hard-swap skeleton→content.** Crossfade at `DUR.base`, tiny `y` on the first block only; everything else is already in place.
 5. **An empty state is a wait too**, waiting on the user's first data. It earns the same treatment: illustration plus the single action that ends the wait. (Whether it earns space at all is `visant-frontend`'s call, not this skill's.)
 6. **Reduced motion:** shimmer/pulse degrades to a static tint or slow opacity fade. The progress readout stays: it's information, not decoration.
@@ -234,3 +236,10 @@ Motion lives in ONE place, mirrored across JS and CSS so framer-motion and Tailw
 - **Waiting:** `assets/motion-ssot-starter/use-delayed-flag.ts` → e.g. `lib/use-delayed-flag.ts`. Every loader in the app goes through it (§4.2), so the anti-flicker pair is a shared primitive and not a thing each dev re-derives wrong.
 
 If the repo already has an equivalent, **use it**; do not create a parallel system. `node scripts/motion-lint.mjs` (§7) is what keeps the SSoT single instead of merely stated.
+
+## Neighbors
+
+- **[[visant-design]]**: the door
+- **[[visant-killer]]**: a whole-screen audit; `motion-lint` runs inside it
+- **[[visant-frontend]]**: whether the element should exist at all
+- **[[visant-refine]]**: the drawing of a progress meter or gauge; this skill owns only its timing

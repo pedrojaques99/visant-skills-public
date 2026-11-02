@@ -1,6 +1,8 @@
 ---
 name: visant-frontend
-description: 'visant-killer sub-skill: frontend decision system where every interface choice names the business variable it moves; the required deliverable is the route classification table. Use on "redesign this screen", "critique this UI", "visual hierarchy", "redesenhar tela", "criticar interface", "hierarquia visual", "cortar excesso", "empty state".'
+description: 'Frontend decision system where every interface choice names the business variable it moves; the required deliverable is the route classification table. Use on "redesign this screen", "critique this UI", "visual hierarchy", "redesenhar tela", "criticar interface", "hierarquia visual", "cortar excesso", "empty state".'
+metadata:
+  family: design
 ---
 
 # Visant Frontend
@@ -238,6 +240,14 @@ in different units side by side with no label corrupt the reading.
 | Checking the work; height budget; keyboard audit; design detector | [verification.md](references/verification.md) |
 | Running or writing a design critique | [critique.md](references/critique.md) |
 
-For persuasion mechanics on acquisition surfaces (awareness levels, decoy
-effect, GBB pricing, social proof, trial design), load the
-`revenue-centric-design` skill and cite the named lever.
+## Neighbors
+
+- **[[visant-design]]**: the door
+- **[[visant-killer]]**: judge the result; this skill decides, it does not audit
+- **[[visant-motion]]**: the timing of what was decided here
+- **[[visant-refine]]**: a chart, gauge or control panel inside the screen
+- **[[revenue-centric-design]]**: persuasion on an acquisition surface (awareness, decoy, GBB pricing, proof, trial); cite the named lever
+- **[[visant-preflight]]**: the premises of a large project, before this
+- **[[visant-new-site]]**: a whole client site from the template
+- **[[visant-registry]]**: an existing piece before writing a new one
+- **[[visant-app]]**: defects that only appear after packaging a desktop app

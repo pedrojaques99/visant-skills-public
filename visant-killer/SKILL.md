@@ -1,6 +1,8 @@
 ---
 name: visant-killer
-description: 'Single UI audit door: runs detectors as a hard gate, applies frontend/motion/refine judgment, ends with an adversarial interrogation and a score. Use on "looks AI-made", "this is slop", "kill this screen", "tá com cara de IA", "tá slop", "audita essa tela", "mata essa tela", "nível vale do silício", auditing UI before a PR.'
+description: 'Single UI audit door: runs detectors as a hard gate, applies frontend/motion/refine judgment, ends with an adversarial interrogation and a score. Use on "looks AI-made", "this is slop", "too cluttered", "tá com cara de IA", "tá slop", "tá poluído", "audita essa tela", "mata essa tela", "nível vale do silício", auditing UI before a PR.'
+metadata:
+  family: design
 ---
 
 # Visant Killer
@@ -182,6 +184,8 @@ Question bank per tier: [devils-advocate.md](references/devils-advocate.md).
   size of the proof). Naming the lever is the value.
 - One question that kills the screen beats twelve token fixes. If the honest
   answer is "this screen should not exist", write that.
+- **T2 and T3 get a reviewer who cannot read your defense:** a fresh agent with the
+  frames, never your plan or reasons ([how](references/devils-advocate.md#fresh-reviewer)).
 
 ## Step 5: Verification (what compiles is not what someone saw)
 
@@ -209,7 +213,8 @@ Then, and only then (whatever did not run goes in the report):
 ## Step 6: Report
 
 The same `AUDIT.md`, now with findings and score first, never just chat text
-([scorecard.md](references/scorecard.md)). A score is not a compliment: 100 on
+([scorecard.md](references/scorecard.md)). `## Not checked` is required: widths,
+states and data you did not see, or "nothing" with the screens that prove it. A score is not a compliment: 100 on
 the gate with a T3 and no positioning interrogation is an incomplete audit, and
 the report says so.
 
@@ -230,24 +235,20 @@ the report says so.
   Diagnosis is `file:line`, not opinion.
 - Declare done without having opened the screen: the line this whole skill
   exists to defend.
+- Clear a finding by hiding what it points at. The cause goes, not the symptom.
+- Re-run a green gate on an unchanged screen. Stop and get the fresh reviewer.
 - Apply it to a gambling, casino or betting product. Refuse and explain: it is a
   reuse condition of `revenue-centric-design`, not taste.
 
-## Credits and lineage
+Credits and lineage: [references/credits.md](references/credits.md).
 
-This skill is the door; judgment comes from the house skills it loads:
-`visant-frontend` (cut test, surfaces), `visant-motion` (`motion-lint`),
-`visant-refine` (`refine-scan`) and `visant-copy` (`copy-lint`). From outside:
+## Neighbors
 
-| What | By | How it enters here |
-|---|---|---|
-| [`impeccable`](https://impeccable.style) | Paul Bakaus ([pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache-2.0) | gate 1 of `killer-scan` (`npx impeccable detect`) |
-| [`revenue-centric-design`](https://github.com/heliocosta-dev/revenue-centric-design) | principles by Richard ([@richardrx](https://x.com/richardrx)), packaged by heliocosta-dev | ammunition for Step 4; the "RCD n" citations in `devils-advocate` |
-| [Emil Kowalski skills](https://github.com/emilkowalski/skills) (`emil-design-eng`, `apple-design`, `improve-animations`, `review-animations`) | Emil Kowalski, from [animations.dev](https://animations.dev) and Apple's *Designing Fluid Interfaces* (WWDC 2018) | via `visant-motion`: the origin of the motion principles |
-| `vercel-react-view-transitions` | Vercel ([vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)) | via `visant-motion`: route transitions |
-| `dataviz` | Anthropic (Claude skill) | via `visant-frontend`: chart correctness |
-| [shadcn/ui](https://ui.shadcn.com) and [Radix](https://www.radix-ui.com) | shadcn; WorkOS | official primitive instead of an invented component |
-| [Playwright](https://playwright.dev) | Microsoft | `corta-scan` and `verify-screens` open the real screen |
-
-A new skill this one starts using or distilling enters this table in the same
-commit.
+- **[[visant-design]]**: the door when the ask is not yet an audit
+- **[[visant-frontend]]**: decide what the screen should be; this skill judges what it is
+- **[[visant-motion]]**: how to fix what moves badly
+- **[[visant-refine]]**: how to fix a chart or panel
+- **[[visant-copy]]**: rewrite the words; this skill only flags them
+- **[[visant-preflight]]**: the entry gate; this is the exit gate
+- **[[visant-new-site]]**: the client site flow, which ends here
+- **[[visant-registry]]**: where a missing piece comes from

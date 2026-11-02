@@ -1582,6 +1582,13 @@ function gateZero(reportPath) {
     why.push('    a green gate is not a screen seen; a frozen AnimatePresence passes all of them');
   }
 
+  /* A report that only lists what was seen reads as complete. What nobody looked
+     at (a width, a theme, the worst record) has to be written down too. */
+  const notChecked = r.text.match(/^##+[ \t]*(?:Not checked|Não verificado)[^\n]*\n([\s\S]*?)(?=^##[ \t]|$(?![\s\S]))/im);
+  if (!notChecked?.[1]?.trim().replace(/^-\s*$/gm, '').trim()) {
+    why.push('no filled "## Not checked" section ("## Não verificado" also accepted): say what you did NOT see, or "nothing"');
+  }
+
   return { ok: !why.length, why, classified: r.classified, seen: r.seen };
 }
 
@@ -1644,6 +1651,12 @@ Each row carries: route, width, data state, and what happened.
 Before measuring anything, check that the page hydrated (see
 \`visant-killer/references/environment.md\`): half the findings of one session
 were the dev server lying, not the screen.
+
+-
+
+## Not checked
+
+Widths, themes, states and data you did not see. If nothing, write "nothing".
 
 -
 

@@ -1,6 +1,9 @@
 ---
 name: visant-preflight
-description: 'Preflight for a large client project: one question round with whoever owns the work, plus five premise checks (brand source of truth, loadable fonts, photo resolution, brand files, sourced numbers). Use BEFORE "new site", "redesign", "new proposal", "criar site", "redesenhar", "nova proposta", "montar campanha", "hidratar a marca".'
+description: 'Preflight for a large client project: one question round with whoever owns the work, plus five premise checks (brand source of truth, loadable fonts, photo resolution, brand files, sourced numbers). Use BEFORE "new site", "site redesign", "new proposal", "criar site", "redesenhar o site", "nova proposta", "montar campanha", "hidratar a marca".'
+metadata:
+  family: projeto
+  routes: [visant-new-site]
 ---
 
 # Visant Preflight
@@ -236,8 +239,6 @@ The preflight ends in a block in the project's `.md`:
 A ⚠ does not stop you from starting. It stops you from **pretending it does not
 exist**, and sets the order: what does not depend on the blocked item goes first.
 
----
-
 ## Golden rule
 
 **Every check here was born from a mistake that already happened.** A sixth only
@@ -246,8 +247,10 @@ comes out: a checklist that never flags trains people to sign without reading.
 
 ## Neighbors
 
+- **[[visant-design]]**: one screen, no project around it
 - **[[visant-brand-sync]]**: reconcile the vault when the preflight finds a divergence
 - **[[visant-new-site]]**: the client site flow, which starts with this preflight
 - **[[revenue-centric-design]]**: awareness stage, ICP, proof
 - **[[visant-frontend]]**: classify the surface after the preflight passed
 - **[[visant-killer]]**: the exit gate at the end; this is the entry gate
+- **[[visant-demanda]]**: graphic material for a client, not a site or big redesign
