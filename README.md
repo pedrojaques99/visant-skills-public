@@ -31,6 +31,8 @@ Portuguese: "audit this screen", "tá com cara de IA", "make this smoother",
 
 Built on the open [Agent Skills](https://agentskills.io) format. Commands use `<skill-dir>`: the folder holding that `SKILL.md`.
 
+**Tested on Claude Code only.** The skills follow the open format and validate with `skills-ref`, so other agents that read `SKILL.md` should work, but we have not run them there yet. Issues with Codex, Cursor or Gemini are welcome.
+
 ## What the killer catches
 
 A typical AI pricing card, in a shadcn project with no design lint of its own:
