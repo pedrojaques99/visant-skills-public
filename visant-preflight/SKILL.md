@@ -94,7 +94,7 @@ mid-work always arrives after the rework it would have prevented.
 The two middle ones (fonts and photos) are automated:
 
 ```bash
-node ~/.claude/skills/visant-preflight/scripts/preflight-scan.mjs \
+node ${CLAUDE_SKILL_DIR}/scripts/preflight-scan.mjs \
   --assets "<client files folder>" \
   --fonts "Display Family,Body Family" \
   --report PREFLIGHT.md
@@ -124,7 +124,7 @@ design file (Figma).
 Check in this order: **typography, colors, logo, tagline.** When they disagree,
 the folder the client received is stronger evidence than the stored field.
 
-To audit and reconcile Visant's vault, load **[[visant-brand-sync]]**.
+To audit and reconcile Visant's vault, load **[[visant-brand-sync]]** (Visant internal).
 
 > A stored typeface the brand never had shipped as three wrong typefaces over
 > months, because nobody opened the client's font folder. See
@@ -248,9 +248,9 @@ comes out: a checklist that never flags trains people to sign without reading.
 ## Neighbors
 
 - **[[visant-design]]**: one screen, no project around it
-- **[[visant-brand-sync]]**: reconcile the vault when the preflight finds a divergence
-- **[[visant-new-site]]**: the client site flow, which starts with this preflight
+- **[[visant-brand-sync]]** (Visant internal): reconcile the vault when the preflight finds a divergence
+- **[[visant-new-site]]** (Visant internal): the client site flow, which starts with this preflight
 - **[[revenue-centric-design]]**: awareness stage, ICP, proof
 - **[[visant-frontend]]**: classify the surface after the preflight passed
 - **[[visant-killer]]**: the exit gate at the end; this is the entry gate
-- **[[visant-demanda]]**: graphic material for a client, not a site or big redesign
+- **[[visant-demanda]]** (Visant internal): graphic material for a client, not a site or big redesign

@@ -53,7 +53,7 @@ A question has no exit code: when this step ended in one, a round with every
 linter at zero was called a complete pass and skipped classification entirely.
 
 ```bash
-K=~/.claude/skills/visant-killer/scripts/killer-scan.mjs
+K=${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs
 node $K --init-report AUDIT.md <target>   # one pre-filled row per route
 # fill the table, THEN fix anything
 node $K --report AUDIT.md <target>
@@ -65,7 +65,7 @@ Classifying *after* you've edited isn't classifying, it's justifying.
 
 **If the script isn't at that path, the step is still mandatory.** It is a
 convenience, not the reason for the step. Check with
-`ls ~/.claude/skills/visant-killer/scripts/killer-scan.mjs`; if it's missing
+`ls ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs`; if it's missing
 (repo not linked, skill installed alone, client environment), **write the table
 by hand** in the project's `.md`, same columns: route, class, business variable,
 what persuasion is there. One row per route, variable column never empty. A
@@ -246,8 +246,8 @@ in different units side by side with no label corrupt the reading.
 - **[[visant-killer]]**: judge the result; this skill decides, it does not audit
 - **[[visant-motion]]**: the timing of what was decided here
 - **[[visant-refine]]**: a chart, gauge or control panel inside the screen
-- **[[revenue-centric-design]]**: persuasion on an acquisition surface (awareness, decoy, GBB pricing, proof, trial); cite the named lever
+- **[[revenue-centric-design]]** (third party: `npx skills add heliocosta-dev/revenue-centric-design`): persuasion on an acquisition surface (awareness, decoy, GBB pricing, proof, trial); cite the named lever
 - **[[visant-preflight]]**: the premises of a large project, before this
-- **[[visant-new-site]]**: a whole client site from the template
-- **[[visant-registry]]**: an existing piece before writing a new one
-- **[[visant-app]]**: defects that only appear after packaging a desktop app
+- **[[visant-new-site]]** (Visant internal): a whole client site from the template
+- **[[visant-registry]]** (Visant internal): an existing piece before writing a new one; publicly, [ui.visantlabs.com](https://ui.visantlabs.com/llms.txt)
+- **[[visant-app]]** (Visant internal): defects that only appear after packaging a desktop app

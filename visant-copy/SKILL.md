@@ -85,7 +85,7 @@ Running it before delivering copy is mandatory. Plain node, no dependencies, run
 in any repo:
 
 ```bash
-L=~/.claude/skills/visant-copy/scripts/copy-lint.mjs
+L=${CLAUDE_SKILL_DIR}/scripts/copy-lint.mjs
 node $L copy.json                       # copy JSON
 node $L hero.tsx page.tsx og.tsx        # components, passed TOGETHER
 node $L README.md docs/landing.md       # markdown or plain text
@@ -249,6 +249,6 @@ carries the noun people search for ("mockups"), while the `<h1>` carries the ver
 
 - **[[visant-design]]**: the layout around the words
 - **[[visant-killer]]**: a screen that looks AI-made; this skill handles text that reads AI-made
-- **[[visant-headlines]]**: a client brand's voice; this skill is Visant's voice
-- **[[visant-new-site]]**: the copy of a whole client site
+- **[[visant-headlines]]** (Visant internal): a client brand's voice; this skill is Visant's voice
+- **[[visant-new-site]]** (Visant internal): the copy of a whole client site
 - **[[revenue-centric-design]]**: the lever behind the message; this skill writes the sentence

@@ -98,7 +98,17 @@ const cleanDir = join(sandbox, "clean");
 mkdirSync(cleanDir, { recursive: true });
 writeFileSync(join(cleanDir, "A.tsx"), "export const A = () => <div>ok</div>;\n", "utf8");
 
+const vueDir = join(sandbox, "vue");
+mkdirSync(vueDir, { recursive: true });
+writeFileSync(join(vueDir, "Pricing.vue"), "<template><h1>Hi</h1></template>\n", "utf8");
+
 const CASES = [
+  {
+    name: "killer-vue",
+    script: join(REPO, "visant-killer", "scripts", "killer-scan.mjs"),
+    target: vueDir,
+    expect: (out, code) => (code === 2 && /NOT SCANNED/.test(out) ? null : "a Vue target did not refuse: a green gate that read nothing"),
+  },
   {
     name: "report-bare",
     script: join(REPO, "visant-killer", "scripts", "killer-scan.mjs"),

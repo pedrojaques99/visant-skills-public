@@ -13,8 +13,8 @@ take.
 ## The gate
 
 ```bash
-node ~/.claude/skills/visant-killer/scripts/dist-scan.mjs <app-root>
-node ~/.claude/skills/visant-killer/scripts/dist-scan.mjs --self-test
+node <skill-dir>/scripts/dist-scan.mjs <app-root>
+node <skill-dir>/scripts/dist-scan.mjs --self-test
 ```
 
 Exit 1 on any HIGH. Always runs on acquisition surfaces (A); on B and C only the

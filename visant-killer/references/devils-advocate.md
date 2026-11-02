@@ -195,7 +195,7 @@ opinion.
 
 **F1 How much are we reinventing the wheel?**
 Before building anything, search: an existing component in the repo, an item in
-the Visant registry (`visant-registry`), an official shadcn or Radix primitive, a
+the Visant registry ([ui.visantlabs.com](https://ui.visantlabs.com/llms.txt)), an official shadcn or Radix primitive, a
 validated lib. Custom is the fallback, not the default.
 How to answer: list what was **reused** and what was **written new**, and for each
 new one the search that justified it. Two implementations of the same thing on

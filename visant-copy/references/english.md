@@ -71,7 +71,7 @@ brand into a site in a week", not "The future of brand websites".
 ## Run the linter
 
 ```bash
-node ~/.claude/skills/visant-copy/scripts/copy-lint.mjs src/ content/
+node <skill-dir>/scripts/copy-lint.mjs src/ content/
 ```
 
 Both rule sets run on every file, so a bilingual site needs one call.

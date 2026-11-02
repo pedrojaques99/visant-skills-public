@@ -20,7 +20,7 @@ loaded), because AI slop survives any linter: the problem is decision, not synta
 > form passed six gates. So `killer-scan` **refuses** "gate open" without the
 > surface table and the record of having opened the screen.
 
-Where each rule came from: [references/cases.md](references/cases.md).
+Where each rule came from: [references/cases.md](references/cases.md). **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
 
 ## Hard prohibitions (you break them while writing, not reviewing)
 
@@ -38,7 +38,7 @@ Where each rule came from: [references/cases.md](references/cases.md).
 | the same gap inside a group and between groups (`space-y-4` on every level) | tight inside, open between: each level at least 2× the one inside it (8 / 16 / 32) | the eye groups by distance: when the label is as far from its value as from the next block, the screen reads wrong with every token right (catalog 6) |
 | `transition-all` | `transition-colors` or an explicit list | animates what you did not ask for, layout included |
 | `duration-300`+ on an interactive element | `DUR.base` / `DUR.slow` | above ~300ms the UI feels stuck |
-| raw hex, `rgb()`, `rgba()` | HSL token (`hsl(var(--x))`) | `var(--x)` alone is not a color: the tokens store loose channels |
+| raw hex, `rgb()`, `rgba()` | a token from the repo's own layer | read how it stores values first: loose channels need `hsl(var(--x))`, a full color (oklch in current shadcn) is `var(--x)` |
 | component demo with a fake frame, "hover me" caption, stacked variations | the piece large and centered, **one at a time**, a quiet selector | catalog 35-38: in the tile the piece disappears behind the explanation |
 | the pretty state (glow, tilt, open menu) only on hover | born in its best state; hover intensifies | it does not exist on touch, in the tile or in a screenshot (catalog 37) |
 | clickable button/card without `cursor: pointer`; drag without `grab` | a rule in the shell (`:is(button,[role=button],a[href])`) | Tailwind v4 preflight resets the cursor (catalog 46) |
@@ -53,12 +53,12 @@ never with a mute `audit-ignore`.
 Scripts, by full path (used in every step):
 
 ```bash
-K=~/.claude/skills/visant-killer/scripts/killer-scan.mjs
-R=~/.claude/skills/visant-refine/scripts/refine-scan.mjs
-D=~/.claude/skills/visant-killer/scripts/dist-scan.mjs
-C=~/.claude/skills/visant-copy/scripts/copy-lint.mjs
-T=~/.claude/skills/visant-killer/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
-V=~/.claude/skills/visant-killer/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
+K=${CLAUDE_SKILL_DIR}/scripts/killer-scan.mjs
+R=${CLAUDE_SKILL_DIR}/../visant-refine/scripts/refine-scan.mjs
+D=${CLAUDE_SKILL_DIR}/scripts/dist-scan.mjs
+C=${CLAUDE_SKILL_DIR}/../visant-copy/scripts/copy-lint.mjs
+T=${CLAUDE_SKILL_DIR}/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
+V=${CLAUDE_SKILL_DIR}/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
 # grafo.mjs is a library (import graph for --roots and repeated-door), not a CLI
 ```
 
@@ -250,5 +250,5 @@ Credits and lineage: [references/credits.md](references/credits.md).
 - **[[visant-refine]]**: how to fix a chart or panel
 - **[[visant-copy]]**: rewrite the words; this skill only flags them
 - **[[visant-preflight]]**: the entry gate; this is the exit gate
-- **[[visant-new-site]]**: the client site flow, which ends here
-- **[[visant-registry]]**: where a missing piece comes from
+- **[[visant-new-site]]** (Visant internal): the client site flow, which ends here
+- **[[visant-registry]]** (Visant internal): where a missing piece comes from; publicly, [ui.visantlabs.com](https://ui.visantlabs.com/llms.txt)

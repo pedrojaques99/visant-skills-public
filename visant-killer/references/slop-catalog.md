@@ -268,7 +268,7 @@ silence the detector, and it forces whoever silences it to say why.
 three, the screen is explaining itself. And read the thesis, the opening and the
 first note in sequence: if all three say the same thing, two die.
 
-**Detector.** `node ~/.claude/skills/visant-killer/scripts/noise-scan.mjs <target>`.
+**Detector.** `node <skill-dir>/scripts/noise-scan.mjs <target>`.
 It runs alone and also enters the `killer-scan` scoreboard as the fourth gate.
 
 ## 21. Two doors for the same gesture

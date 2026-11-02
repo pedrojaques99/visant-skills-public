@@ -378,6 +378,6 @@ console.log(total
 console.log('');
 console.log('This is ONE detector, not the audit. It does not see the chosen form,');
 console.log('overflow at 390px, or a screen nobody opened. To close the gate:');
-console.log('  node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --report AUDIT.md <target>');
+console.log('  node <visant-killer>/scripts/killer-scan.mjs --report AUDIT.md <target>');
 console.log('-'.repeat(64));
 process.exit(total ? 1 : 0);

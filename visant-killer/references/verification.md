@@ -12,7 +12,7 @@ theme applied. Saves a screenshot and `report.json`. Run it from the target repo
 (it resolves Playwright from there):
 
 ```bash
-V=~/.claude/skills/visant-killer/scripts/verify-screens.mjs
+V=<skill-dir>/scripts/verify-screens.mjs
 node $V                                        # navConfig routes, 1366+390, dark, dev-login
 node $V --routes home,apps,references --theme both
 node $V --scan-paid                            # useEffect that calls paid AI: lock candidates
@@ -52,7 +52,7 @@ It separates three things the eye confuses, and the separation is the value:
 Locked in `scripts/fixtures/clip-cases.html`:
 
 ```bash
-node ~/.claude/skills/visant-killer/scripts/corta-self-test.mjs
+node <skill-dir>/scripts/corta-self-test.mjs
 ```
 
 Run it from the target repo (it resolves `playwright-core`/`playwright` from the

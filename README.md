@@ -13,12 +13,23 @@ fixtures.
 ```bash
 npx skills add pedrojaques99/visant-skills-public                       # pick from the list
 npx skills add pedrojaques99/visant-skills-public --skill visant-killer # just one
-npx skills add pedrojaques99/visant-skills-public --skill visant-design visant-killer visant-frontend visant-motion visant-refine # the interface set
+npx skills add pedrojaques99/visant-skills-public --skill visant-design visant-killer visant-frontend visant-motion visant-refine visant-copy # the interface set
 ```
 
 Or copy a skill folder into `~/.claude/skills/`. Then just ask, in English or
 Portuguese: "audit this screen", "tá com cara de IA", "make this smoother",
 "edit this lesson".
+
+## What works where
+
+| | React, Next (`.tsx`, `.jsx`) | Vue, Svelte, Astro, HTML |
+|---|---|---|
+| Judgment: `visant-design`, `visant-frontend`, `visant-motion`, declutter, devil's advocate | yes | yes |
+| Open-screen scans: `corta-url`, `corta-scan`, `ritmo-scan` | yes | yes |
+| `copy-lint` | yes | yes |
+| `killer-scan` and the code detectors | yes | refuses with exit 2; it never reports a zero it did not read |
+
+Works on Claude Code. Another agent has to read `${CLAUDE_SKILL_DIR}` as the skill's own folder.
 
 ## What the killer catches
 

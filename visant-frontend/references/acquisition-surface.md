@@ -69,8 +69,7 @@ never the value. Discount for it; never let it zero out the platform fee.
 Client sites are acquisition surfaces for *the client*, and the conversion
 argument is that the site reads as **that brand** rather than as a template.
 
-Two rules, both learned expensively (see the `visant-new-site` skill for the full
-workflow):
+Two rules, both learned expensively:
 
 1. **Derive the visual concept from the brand's own existing layouts**, not from
    imagination. If the brand has Figma mockups, match them: hero treatment, type

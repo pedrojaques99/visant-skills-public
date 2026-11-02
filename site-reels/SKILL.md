@@ -38,8 +38,8 @@ screencast + ffmpeg). Never screen-record.
 
 ```
 mkdir <proj>-reels && cd <proj>-reels && npm init -y && npm i puppeteer-core puppeteer-screen-recorder
-mkdir -p scripts && cp ~/.claude/skills/site-reels/scripts/{record,find-chrome}.mjs scripts/
-cp ~/.claude/skills/site-reels/scripts/scenes.example.mjs scenes.mjs   # edit the scenes
+mkdir -p scripts && cp ${CLAUDE_SKILL_DIR}/scripts/{record,find-chrome}.mjs scripts/
+cp ${CLAUDE_SKILL_DIR}/scripts/scenes.example.mjs scenes.mjs   # edit the scenes
 # in the site repo: npx next build && npx next start -p 3100   (production build: smoother WebGL)
 OUT="<output folder>/Videos" node scripts/record.mjs scenes.mjs [scene ...]
 ```
@@ -104,7 +104,7 @@ frame(page, t) (e.g. mouse) }`. Scrolling is a function of virtual time.
 
 ```
 npm i puppeteer-core timesnap && mkdir -p scripts
-cp ~/.claude/skills/site-reels/scripts/{snap,find-chrome,patch-timeweb}.mjs scripts/
+cp ${CLAUDE_SKILL_DIR}/scripts/{snap,find-chrome,patch-timeweb}.mjs scripts/
 npm pkg set scripts.postinstall="node scripts/patch-timeweb.mjs" && npm run postinstall
 FPS=60 OUT=... node scripts/snap.mjs scenes-snap.mjs [scene]
 ```

@@ -28,6 +28,17 @@ Load with the Skill tool, or read the linked file. If a playbook is missing, ins
 
 Building a whole screen, the order is fixed: **frontend** decides what exists, **refine** and **motion** shape the parts that need them, **killer** judges the result before the PR. Never start with the audit on something not built yet.
 
+## Before you say done
+
+Compiling is not seeing. If you changed the interface, this is part of the task, whichever route you took:
+
+1. Start the app and measure the real screen at phone and desktop width. It finds horizontal overflow, cut text and stacked overlays:
+   `node ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/corta-url.mjs <local-url> home --widths 390,1280`
+   If Playwright is missing: `npx playwright install chromium`, then run it again.
+2. Fix what it finds, and measure again. Overflow at 390 is a defect, not a detail.
+3. React: `node ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs <changed files>`. Fix its findings.
+4. Say which widths you measured. If you could not open it, the first line of your answer is "not opened", and the work is not done.
+
 ## Before writing a piece
 
 Check whether it already exists: the repo's own primitives first, then [@visant/ui](https://ui.visantlabs.com/llms.txt).

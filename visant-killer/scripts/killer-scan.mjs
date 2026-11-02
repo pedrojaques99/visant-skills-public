@@ -126,6 +126,32 @@ if (!selfTest) {
 }
 const uiFiles = files.filter((f) => /\.(tsx|jsx)$/.test(f));
 
+/* The detectors are calibrated on JSX. On a Vue, Svelte, Astro or plain HTML
+   target they read nothing and every line came out "[OK] zero": a green gate
+   that never looked. Say so and stop; exit 2, the same as any run that could not
+   happen. A mixed repo still scans its JSX. */
+if (!selfTest && !initReport && !uiFiles.length) {
+  const other = [];
+  const look = (p) => {
+    if (other.length >= 3 || !existsSync(p)) return;
+    if (statSync(p).isDirectory()) {
+      if (/(^|[\\/])(node_modules|dist|build|\.git|\.next|\.nuxt|\.svelte-kit)$/.test(p)) return;
+      for (const e of readdirSync(p)) look(join(p, e));
+    } else if (/\.(vue|svelte|astro|html?)$/.test(p)) other.push(p);
+  };
+  targets.forEach((t) => look(resolve(t)));
+  if (other.length) {
+    console.log('NOT SCANNED: these detectors read React JSX (.tsx, .jsx), and this target has none.');
+    console.log(`  found: ${other.map((p) => p.split(/[\\/]/).pop()).join(', ')}`);
+    console.log('  What still works on this stack:');
+    console.log('  - the judgment: references/declutter.md, references/devils-advocate.md, visant-frontend, visant-motion');
+    console.log('  - the open screen: corta-url.mjs <url>, or corta-scan.js and ritmo-scan.js in the browser console');
+    console.log('  - the words: visant-copy/scripts/copy-lint.mjs reads .vue, .svelte, .astro and .html');
+    console.log('  Report this audit as manual. A zero here would mean nothing.');
+    process.exit(2);
+  }
+}
+
 /* Copy also lives in `.ts`, and that was the gate's biggest blind spot.
  *
  * The extractor only looked at `.tsx`/`.jsx`, so a sentence written in a lib and
@@ -959,8 +985,12 @@ function extractLibCopy(file) {
 }
 
 function runCopy() {
-  const script = join(homedir(), '.claude', 'skills', 'visant-copy', 'scripts', 'copy-lint.mjs');
-  if (!existsSync(script)) return { skipped: "visant-copy's copy-lint not found", findings: [] };
+  /* Next to this skill first: `npx skills add` installs into the project, not the home. */
+  const script = [
+    join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'visant-copy', 'scripts', 'copy-lint.mjs'),
+    join(homedir(), '.claude', 'skills', 'visant-copy', 'scripts', 'copy-lint.mjs'),
+  ].find((p) => existsSync(p));
+  if (!script) return { skipped: "visant-copy's copy-lint not found (npx skills add pedrojaques99/visant-skills-public --skill visant-copy)", findings: [] };
   if (!uiFiles.length && !libFiles.length) return { skipped: 'no .tsx/.ts in the target', findings: [] };
 
   /* One JSON PER FILE, not a bag for the whole target. copy-lint's family

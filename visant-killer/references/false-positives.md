@@ -50,7 +50,7 @@ is the hit rate read at `file:line`, never the size of the list.
 Before trusting a "zero" from the copy gate, prove the extractor:
 
 ```bash
-node ~/.claude/skills/visant-killer/scripts/killer-scan.mjs --self-test
+node <skill-dir>/scripts/killer-scan.mjs --self-test
 ```
 
 It runs extraction against `scripts/fixtures/copy-extractor.tsx`, which carries

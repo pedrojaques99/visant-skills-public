@@ -24,7 +24,7 @@ something else: go back to `SKILL.md`.
 ## Step 1: Measure before you opine
 
 ```bash
-node ~/.claude/skills/visant-killer/scripts/noise-scan.mjs <target>
+node <skill-dir>/scripts/noise-scan.mjs <target>
 ```
 
 Runs on any repo with `.tsx`/`.jsx`. Bilingual (Portuguese and English). Needs
@@ -131,7 +131,7 @@ After fixing the rule, **lock the case in the fixture**:
 
 ```bash
 # add the case to scripts/fixtures/noise-cases.tsx with the EXPECTED result
-node ~/.claude/skills/visant-killer/scripts/noise-scan.mjs --self-test
+node <skill-dir>/scripts/noise-scan.mjs --self-test
 ```
 
 ## Step 6: Porting to a new repo
