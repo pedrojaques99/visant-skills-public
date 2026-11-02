@@ -50,15 +50,15 @@ contrast reference, blur in a `Dialog`, scrim over a photo). An exception goes
 ([references/gates.md](references/gates.md#written-exception-one-contract-every-scanner)),
 never with a mute `audit-ignore`.
 
-Scripts, by full path (used in every step):
+Scripts (`<skill-dir>` is the folder holding this file; replace it with the real path):
 
 ```bash
-K=${CLAUDE_SKILL_DIR}/scripts/killer-scan.mjs
-R=${CLAUDE_SKILL_DIR}/../visant-refine/scripts/refine-scan.mjs
-D=${CLAUDE_SKILL_DIR}/scripts/dist-scan.mjs
-C=${CLAUDE_SKILL_DIR}/../visant-copy/scripts/copy-lint.mjs
-T=${CLAUDE_SKILL_DIR}/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
-V=${CLAUDE_SKILL_DIR}/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
+K=<skill-dir>/scripts/killer-scan.mjs
+R=<skill-dir>/../visant-refine/scripts/refine-scan.mjs
+D=<skill-dir>/scripts/dist-scan.mjs
+C=<skill-dir>/../visant-copy/scripts/copy-lint.mjs
+T=<skill-dir>/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
+V=<skill-dir>/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
 # grafo.mjs is a library (import graph for --roots and repeated-door), not a CLI
 ```
 

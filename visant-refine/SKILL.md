@@ -36,8 +36,8 @@ Work order, always in this sequence:
    keyboard), and run both gates:
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/refine-scan.mjs <target>   # finishing layer
-node ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs --report AUDIT.md <target>
+node <skill-dir>/scripts/refine-scan.mjs <target>   # finishing layer
+node <skill-dir>/../visant-killer/scripts/killer-scan.mjs --report AUDIT.md <target>
 ```
 
 `--report` is not optional: `killer-scan` refuses to print GATE OPEN without

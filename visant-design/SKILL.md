@@ -1,47 +1,64 @@
 ---
 name: visant-design
-description: 'One door for UI, UX and interface work: audit a screen, decide hierarchy, motion, charts and panels, component demos. Routes to the right Visant playbook. Use on "ui", "ux", "interface", "redesign this screen", "looks AI-made", "make it smoother", "add a chart", "tá com cara de IA", "redesenhar tela", "deixa mais suave", /visant-design.'
+description: 'End-to-end UI/UX: removes AI slop, redesigns screens around what they must achieve, and verifies on the real screen. Use on "clean the AI slop", "improve the UI", "improve the UX", "redesign this screen", "limpa o slop", "melhora o design", "melhora a ui", "ui ux end-to-end", "tá com cara de IA", any UI or UX polish, /visant-design.'
 metadata:
   family: design
-  routes: [visant-killer, visant-frontend, visant-motion, visant-refine]
+  routes: visant-killer visant-frontend visant-motion visant-refine
 ---
 
 # Visant Design
 
-This file holds no design rules. Pick the route, load that playbook, follow it. Load only what the ask needs: each playbook costs context.
+Takes "clean the slop" or "improve the UX" to a finished screen you have looked at. Rulebooks can't see your product or your result; this process makes you see both.
 
-## Routes
+`<skill-dir>` is the folder holding this file. Other playbooks are next to it: read `../<name>/SKILL.md`. If one is missing: `npx skills add pedrojaques99/visant-skills-public --skill <name>`.
 
-| The ask | Load | It ends with |
-|---|---|---|
-| Audit, "looks AI-made", "is this good", before a PR | [visant-killer](../visant-killer/SKILL.md) | gate result, score |
-| Only "too much", "cluttered", "too many labels" | [declutter](../visant-killer/references/declutter.md) | what was cut |
-| New or redesigned screen, hierarchy, empty state, what to remove | [visant-frontend](../visant-frontend/SKILL.md) | route classification table |
-| Animation, transition, hover feel, loading, skeleton, sound | [visant-motion](../visant-motion/SKILL.md) | `motion-lint` clean |
-| Chart, gauge, sparkline, slider, metric tile, control panel | [visant-refine](../visant-refine/SKILL.md) | `refine-scan` clean |
-| Component demo, showcase, library page, mock product kit | [component-showcase](../visant-frontend/references/component-showcase.md) | one piece, large, in its best state |
-| Fake product UI for a hero or feature card, cursor demo | `stageshow`, third party; map its kit to the project's tokens and components | filmed loop, `REHEARSAL.md` |
+**Work to the end without stopping to ask.** Ask only what the code cannot answer and would change what gets built. Follow the product's own design system and components; only create a new one if nothing exists.
 
-Load with the Skill tool, or read the linked file. If a playbook is missing, install it: `npx skills add pedrojaques99/visant-skills-public --skill <name>`.
+Pick one track:
 
-## Several at once
+| The ask | Track |
+|---|---|
+| "Clean the slop", "looks AI-made", remove the tells | [Clean](#clean) |
+| "Improve", "redesign", "UI/UX end-to-end", "this looks bad" | [End to end](#end-to-end) |
+| "Audit", "review", "is this good" | [visant-killer](../visant-killer/SKILL.md), and change nothing |
+| One detail: motion, chart, panel, component demo | [Single topic](#single-topic) |
 
-Building a whole screen, the order is fixed: **frontend** decides what exists, **refine** and **motion** shape the parts that need them, **killer** judges the result before the PR. Never start with the audit on something not built yet.
+## Clean
 
-## Before you say done
+Keep the design. Remove the tells.
 
-Compiling is not seeing. If you changed the interface, this is part of the task, whichever route you took:
+1. `node <skill-dir>/scripts/check.mjs <ui paths> --url <running app>`
+2. Fix every finding at its cause. Hiding what a finding points at does not count.
+3. Read the images. Fix the tells no detector sees: decorative gradients, purple as "AI", glow, emoji as icons, cards in cards, eyebrow labels over every heading, hype words, invented numbers.
+4. Run it again until it is clean. Report what you removed.
 
-1. Start the app and measure the real screen at phone and desktop width. It finds horizontal overflow, cut text and stacked overlays:
-   `node ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/corta-url.mjs <local-url> home --widths 390,1280`
-   If Playwright is missing: `npx playwright install chromium`, then run it again.
-2. Fix what it finds, and measure again. Overflow at 390 is a defect, not a detail.
-3. React: `node ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs <changed files>`. Fix its findings.
-4. Say which widths you measured. If you could not open it, the first line of your answer is "not opened", and the work is not done.
+## End to end
 
-## Before writing a piece
+1. **See it first.** Start the app and run `check.mjs` as above. Read the screenshots before reading the code. If the app cannot start, say so and fix that first.
+2. **Name the job.** Write one line per screen: who arrives, what they came to do, which number moves. Read the file for that surface:
+   - Landing, pricing, signup, onboarding: [acquisition](../visant-frontend/references/acquisition-surface.md)
+   - Queue, table, editor, admin: [work](../visant-frontend/references/work-surface.md)
+   - Payment, permission, deletion, money: [trust](../visant-frontend/references/trust-surface.md)
+3. **Diagnose from the image.** Run [foundations.md](references/foundations.md) on the screenshot, in order. List what is wrong, biggest first.
+4. **Cut before adding.** For each element ask which decision it helps. No answer, it goes. Most screens get better by losing things.
+5. **Build.** The product's tokens and components first. Motion and data get their playbook only if this screen needs them. Write copy from what the product really does; a number you don't have stays a visible placeholder.
+6. **Look at the result.** Run `check.mjs` again and read the new screenshots at every width, next to the old ones. Ask the most exacting designer's question: what would I screenshot and send back? Fix the biggest thing and repeat, up to three rounds.
+7. **Report.** What changed and which number each change is meant to move; what you cut and why; the widths you looked at; what you did not check. A redesign is a hypothesis: say how to measure it.
 
-Check whether it already exists: the repo's own primitives first, then [@visant/ui](https://ui.visantlabs.com/llms.txt).
+If `check.mjs` says NOT VERIFIED, the first line of your answer says so. The work is not done. Stop any server you started.
+
+## Single topic
+
+| The ask | Read |
+|---|---|
+| Animation, transition, loading, skeleton | [visant-motion](../visant-motion/SKILL.md) |
+| Chart, gauge, slider, metric tile, control panel | [visant-refine](../visant-refine/SKILL.md) |
+| Hierarchy or what to remove on one screen | [visant-frontend](../visant-frontend/SKILL.md) |
+| Too cluttered, too many labels | [declutter](../visant-killer/references/declutter.md) |
+| Component demo, library page, mock product | [component-showcase](../visant-frontend/references/component-showcase.md) |
+| Fake product UI for a hero, cursor demo | `stageshow`, third party: `npx skills add benjitaylor/skills --skill stageshow` |
+
+Before writing a component, check the repo's primitives, then [@visant/ui](https://ui.visantlabs.com/llms.txt).
 
 ## Neighbors
 
@@ -49,6 +66,6 @@ Check whether it already exists: the repo's own primitives first, then [@visant/
 - **[[visant-frontend]]**: decide what should exist
 - **[[visant-motion]]**: how it moves
 - **[[visant-refine]]**: data and controls
-- **[[stageshow]]**: a fake product UI for a hero or feature card (third party: `npx skills add benjitaylor/skills --skill stageshow`)
+- **[[stageshow]]**: a fake product UI for a hero or feature card
 - **[[visant-copy]]**: the words on the screen
 - **[[visant-preflight]]**: a large client project, before any screen

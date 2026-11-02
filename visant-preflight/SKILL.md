@@ -3,7 +3,7 @@ name: visant-preflight
 description: 'Preflight for a large client project: one question round with whoever owns the work, plus five premise checks (brand source of truth, loadable fonts, photo resolution, brand files, sourced numbers). Use BEFORE "new site", "site redesign", "new proposal", "criar site", "redesenhar o site", "nova proposta", "montar campanha", "hidratar a marca".'
 metadata:
   family: projeto
-  routes: [visant-new-site]
+  routes: visant-new-site
 ---
 
 # Visant Preflight
@@ -94,7 +94,7 @@ mid-work always arrives after the rework it would have prevented.
 The two middle ones (fonts and photos) are automated:
 
 ```bash
-node ${CLAUDE_SKILL_DIR}/scripts/preflight-scan.mjs \
+node <skill-dir>/scripts/preflight-scan.mjs \
   --assets "<client files folder>" \
   --fonts "Display Family,Body Family" \
   --report PREFLIGHT.md

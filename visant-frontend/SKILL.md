@@ -53,7 +53,7 @@ A question has no exit code: when this step ended in one, a round with every
 linter at zero was called a complete pass and skipped classification entirely.
 
 ```bash
-K=${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs
+K=<skill-dir>/../visant-killer/scripts/killer-scan.mjs
 node $K --init-report AUDIT.md <target>   # one pre-filled row per route
 # fill the table, THEN fix anything
 node $K --report AUDIT.md <target>
@@ -65,7 +65,7 @@ Classifying *after* you've edited isn't classifying, it's justifying.
 
 **If the script isn't at that path, the step is still mandatory.** It is a
 convenience, not the reason for the step. Check with
-`ls ${CLAUDE_SKILL_DIR}/../visant-killer/scripts/killer-scan.mjs`; if it's missing
+`ls <skill-dir>/../visant-killer/scripts/killer-scan.mjs`; if it's missing
 (repo not linked, skill installed alone, client environment), **write the table
 by hand** in the project's `.md`, same columns: route, class, business variable,
 what persuasion is there. One row per route, variable column never empty. A

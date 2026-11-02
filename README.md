@@ -29,7 +29,7 @@ Portuguese: "audit this screen", "tá com cara de IA", "make this smoother",
 | `copy-lint` | yes | yes |
 | `killer-scan` and the code detectors | yes | refuses with exit 2; it never reports a zero it did not read |
 
-Works on Claude Code. Another agent has to read `${CLAUDE_SKILL_DIR}` as the skill's own folder.
+Built on the open [Agent Skills](https://agentskills.io) format. Commands use `<skill-dir>`: the folder holding that `SKILL.md`.
 
 ## What the killer catches
 

@@ -3,7 +3,7 @@ name: visant-copy
 description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visant''s spoken voice, in any repo, and runs copy-lint, which catches AI tics in PT and English copy. Use on "copy", "headline", "landing copy", "remove the AI feel", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy".'
 metadata:
   family: texto
-  routes: [visant-headlines]
+  routes: visant-headlines
 ---
 
 # Visant Copy
@@ -85,7 +85,7 @@ Running it before delivering copy is mandatory. Plain node, no dependencies, run
 in any repo:
 
 ```bash
-L=${CLAUDE_SKILL_DIR}/scripts/copy-lint.mjs
+L=<skill-dir>/scripts/copy-lint.mjs
 node $L copy.json                       # copy JSON
 node $L hero.tsx page.tsx og.tsx        # components, passed TOGETHER
 node $L README.md docs/landing.md       # markdown or plain text

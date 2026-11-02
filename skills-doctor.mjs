@@ -51,7 +51,7 @@ const DESC_ERROR = 500;
    loads. Above 250 lines, move it to `references/` and cite it on demand. */
 const BODY_WARN = 250;
 
-const KNOWN_KEYS = new Set(["name", "description", "license", "allowed-tools", "metadata", "tags"]);
+const KNOWN_KEYS = new Set(["name", "description", "license", "compatibility", "allowed-tools", "metadata", "tags"]);
 
 /* -------------------------------------------------------------------------- */
 /* Rules                                                                      */
@@ -156,6 +156,24 @@ const RULES = [
         : [],
   },
   {
+    id: "metadata-not-string",
+    level: "ERROR",
+    /* agentskills.io: metadata is a map from strings to strings. A list parses here
+       and fails in a stricter client, where the skill just does not exist. */
+    check: (c) =>
+      c.fm?.metadata && typeof c.fm.metadata === "object"
+        ? Object.entries(c.fm.metadata)
+            .filter(([, v]) => typeof v !== "string")
+            .map(([k]) => `metadata.${k} is not a string (agentskills.io)`)
+        : [],
+  },
+  {
+    id: "agent-locked",
+    level: "WARN",
+    /* A path only one agent understands means the skill works on one agent. */
+    check: (c) => (/CLAUDE_SKILL_DIR|~\/\.claude\/skills\//.test(c.text ?? "") ? ["uses a path only Claude Code understands; use <skill-dir>"] : []),
+  },
+  {
     id: "unknown-key",
     level: "WARN",
     check: (c) =>
@@ -249,7 +267,7 @@ function inspect(skillDir) {
  * target; inside a repo, a skill of ours without one is flagged.
  */
 function crossCheck(results, { live = false } = {}) {
-  const routes = (r) => r.ctx?.fm?.metadata?.routes ?? r.ctx?.routes ?? [];
+  const routes = (r) => (r.ctx?.fm?.metadata?.routes ? String(r.ctx.fm.metadata.routes).split(/\s+/) : r.ctx?.routes ?? []);
   const routedBy = new Map(results.map((r) => [r.dir, new Set(routes(r))]));
   const byDir = new Map(results.map((r) => [r.dir, r]));
   const handsOff = (a, b) => routedBy.get(a)?.has(b) || routedBy.get(b)?.has(a);
@@ -354,6 +372,7 @@ function audit(skillDir) {
   const ctx = inspect(skillDir);
   if (ctx.missing) return { dir: ctx.dir, findings: [], skipped: "no SKILL.md" };
   ctx.neighbors = neighborsOf(skillDir);
+  ctx.text = readFileSync(join(skillDir, "SKILL.md"), "utf8");
   const findings = [];
   for (const rule of RULES) {
     for (const message of rule.check(ctx)) {
@@ -428,6 +447,8 @@ const FIXTURES = {
     "desc-multiline": "---\nname: desc-multiline\ndescription: |\n  First line, like \"open\".\n  Second line disappears from the index.\n---\n",
     "desc-no-triggers": "---\nname: desc-no-triggers\ndescription: Does a vague, fuzzy thing with no literal trigger at all.\n---\n",
     "unknown-key": "---\nname: unknown-key\ndescription: 'Does a thing, like \"open\".'\ninvented: yes\n---\n",
+    "metadata-not-string": "---\nname: metadata-not-string\ndescription: 'Does a thing, like \"open\".'\nmetadata:\n  routes: [a, b]\n---\n",
+    "agent-locked": "---\nname: agent-locked\ndescription: 'Does a thing, like \"open\".'\n---\nnode ${CLAUDE_SKILL_DIR}/x.mjs\n",
     "body-long": `---\nname: body-long\ndescription: 'Does a thing, like \"open\".'\n---\n${"line\n".repeat(BODY_WARN + 10)}`,
   },
   /* The clean fixture is the side almost everyone forgets. It has to pass
@@ -602,7 +623,7 @@ const warns = findings.filter((f) => f.level === "WARN");
 
 if (json) {
   console.log(JSON.stringify({ scanned: results.length, errors, warns }, null, 2));
-  process.exit(errors.length ? 1 : 0);
+  process.exit(errors.length || (argv.includes("--strict") && warns.length) ? 1 : 0);
 }
 
 const bySkill = new Map();
@@ -625,4 +646,4 @@ console.log(
 if (errors.length) {
   console.log("ERROR = the skill will not be found. Fix it before trusting any audit.");
 }
-process.exit(errors.length ? 1 : 0);
+process.exit(errors.length || (argv.includes("--strict") && warns.length) ? 1 : 0);
