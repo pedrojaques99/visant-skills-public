@@ -120,7 +120,7 @@ Each SKILL.md opens with its exact requirements and how to check them.
 ## Pair it with the library
 
 The interface skills look for a finished piece before writing one:
-[**@visant/ui**](https://ui.visantlabs.com), 150+ React components in a shadcn
+[**@visant/ui**](https://ui.visantlabs.com), React components in a shadcn
 registry, already through `visant-killer`. The code lands in your project; it
 is not an npm package.
 

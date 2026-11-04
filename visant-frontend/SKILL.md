@@ -150,7 +150,7 @@ named → it does not ship. Apply this to your own recommendations too.
 
 - **No new design-system components without explicit approval.** Reuse and
   parameterize. When a piece is genuinely missing, look first in the Visant
-  library ([ui.visantlabs.com](https://ui.visantlabs.com/llms.txt): 150+ pieces
+  library ([ui.visantlabs.com](https://ui.visantlabs.com/llms.txt): pieces
   already refined and audited, e.g. `empty-state`, `segmented-control`,
   `data-table`, `side-nav`, `billing-toggle`, `cta-surface`), then the official
   primitive (`npx shadcn@latest add …` or the Radix package); never hand-roll

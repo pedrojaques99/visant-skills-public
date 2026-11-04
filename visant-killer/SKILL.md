@@ -224,7 +224,7 @@ the report says so.
   surface table blank. The score comes from the process, not the vibe.
 - Create a new design-system component without explicit permission. Reuse and
   parametrize; if a piece is missing, look first in the Visant library
-  ([ui.visantlabs.com](https://ui.visantlabs.com), 150+ audited items; index at
+  ([ui.visantlabs.com](https://ui.visantlabs.com), audited items; index at
   `/llms.txt`, sheet at `/r/<name>.md`), then the official shadcn primitive. Both
   install via `npx shadcn@latest add @visant/<name>` (registry
   `"@visant": "https://ui.visantlabs.com/r/{name}.json"` in `components.json`);
