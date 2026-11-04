@@ -151,7 +151,10 @@ Two filters make the output usable:
   and a data table scroll horizontally *on purpose*; the report must not confuse
   intentional scroll with leakage.
 
-### Getting a real 390px viewport
+### Getting a real 390px width
+
+This gets the width right and nothing else: no touch and no Safari. A gesture needs
+[a real iPhone](stack-tailwind-react.md#a-touch-gesture-that-holds).
 
 Device emulation is often unavailable (headless CDP, a locked window, `resize`
 silently ignored). CSS zoom and setting a width do not work — **media queries
@@ -186,6 +189,10 @@ another: swapping a calendar's unreadable month grid for a list view removed the
 clipped titles and introduced **+215px** of page scroll, because the list is a
 `table-layout: auto` table. The first measurement justifies the change; only the
 second one proves it. → *every variable*
+
+**Re-measure every state of the element, not only the one you fixed.** A label
+fixed in its resting state can still leave its bar when the state that holds the
+longest text comes round. List the states, then measure each one.
 
 ## Build gate
 

@@ -196,6 +196,19 @@ export function CardDeResumo() {
   return <div className="rounded-xl border bg-card/60 backdrop-blur-md p-4">resumo</div>;
 }
 
+/* An invisible range as the pointer layer: iOS Safari only answers on the thumb.
+ * EXPECTED invisible-range: 2 (the two first); keyboard-only and visible stay out. */
+export function CortinaRange({ set }) {
+  return (
+    <div>
+      <input type="range" className="absolute inset-0 opacity-0" onChange={(e) => set(e.target.value)} />
+      <input type="range" style={{ opacity: 0 }} onChange={(e) => set(e.target.value)} />
+      <input type="range" className="absolute inset-0 opacity-0 pointer-events-none" onChange={(e) => set(e.target.value)} />
+      <input type="range" className="w-full hover:opacity-0.5" onChange={(e) => set(e.target.value)} />
+    </div>
+  );
+}
+
 /* ============================================================== */
 /* THE WRITTEN EXCEPTION NEEDS A REASON                           */
 /* ============================================================== */

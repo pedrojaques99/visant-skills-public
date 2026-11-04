@@ -171,6 +171,18 @@ Some repos already ship this ready-made (for example a
 already narrows the culprit to the **outermost** element and discards what an
 ancestor clips.
 
+## Measuring production: is this the deploy you think it is?
+
+An old build answers 200 too, and a clean-looking screen can be yesterday's. Both
+mistakes below happened in one real session.
+
+- **Confirm by a value that only exists in the new commit.** A changed string, or a
+  hash the build exposes: `curl -s <url> | grep -c "<value>"`. The status code and
+  the end of the deploy log prove nothing.
+- **Read the push's exit code, not its output.** In `git push 2>&1 | tail -5` the
+  status is `tail`'s, so a rejected push reads as success. Don't pipe it, or use
+  `set -o pipefail`.
+
 ## Checklist, to paste into the report
 
 ```
@@ -180,6 +192,7 @@ ancestor clips.
 [ ] real data: best record, worst record, and backend stopped
 [ ] node count matches the page opened by hand
 [ ] overflow measured on the document, with ancestor overflow checked
+[ ] production only: deploy confirmed by a value from the new commit
 ```
 
 A finding raised without those lines checked goes into the report as a

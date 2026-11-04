@@ -11,6 +11,7 @@ export function Bad({ isPending, progress }) {
       {isPending && <Spinner />}
       <PopoverContent className="data-[state=open]:animate-in">menu</PopoverContent>
       <span style={{ transform: "scale(0)" }} />
+      <canvas ref={() => () => renderer.forceContextLoss()} />
     </div>
   );
 }

@@ -90,7 +90,8 @@ what might happen:
   what you did not want to.
 - **Conditional controls.** A control that only matters while another is On
   (Outline Width under Outline) exists only then, and slides in and out
-  (height + opacity, 150–250ms, nothing under `prefers-reduced-motion`).
+  (the `0fr → 1fr` [recipe](../../visant-motion/references/motion-rules.md#opening-without-measuring)
+  + opacity, 150–250ms, nothing under `prefers-reduced-motion`).
 - **Rare actions go behind one menu** (`⋯` in the folder header: copy, paste,
   reset; in the version picker: rename, lock, delete). Three icons per row is
   chrome paid on every row for an action used once a week.
@@ -128,6 +129,17 @@ what might happen:
 - **The mode selector comes before what it changes.** Tabs `Easing · Time ·
   Physics` above the curve, gradient type above the bar. A selector under its
   content is read after the content it reinterprets.
+- **A row that is a slider must not eat the page.** On touch the whole row is a
+  drag surface inside a panel that scrolls. Keep the vertical scroll
+  (`touch-action: pan-y`, never `touch-none` on the row; check the primitive's
+  default class), wait for the finger to show its axis, and drag relative, so the
+  value moves by the delta and never jumps to the point touched. Recipe:
+  [a touch gesture that holds](../../visant-frontend/references/stack-tailwind-react.md#a-touch-gesture-that-holds).
+- **The default has a mark.** A tick on the track at the default value shows how
+  far the current value has moved, and where the folder's reset will take it.
+- **The fill starts at zero.** When the range crosses zero (−100 to 100) the fill
+  grows from the zero tick in either direction. Filled from the left, −50 reads as
+  a quarter of something and 0 reads as half.
 - **Snapping is opt-in by modifier** (hold Cmd/Ctrl while dragging a clip, a
   stop, a handle): magnetism by default fights the user who wants 0.47.
 
@@ -148,5 +160,7 @@ the argument: rows per decision (11 → 7 for the gradient), clicks per change
 - [ ] No permanent help captions; help mode or `?`, touch door named
 - [ ] Sticky headers, dashed nesting, no box in a box
 - [ ] `:focus-visible` only; select-all on replace-whole fields; drag + type + arrows on numbers
+- [ ] Slider rows scroll the panel on touch and drag relative; run on a real iPhone or listed in `## Not checked`
+- [ ] Default marked on the track; a range that crosses zero fills from zero
 - [ ] Mode selectors above their content
 - [ ] Shown side by side with the previous version, same values

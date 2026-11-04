@@ -109,7 +109,7 @@ function conferir(titulo, esperado, lista) {
   }
   for (const a of lista) console.log(`         ${a.regra}: ${a.el}: ${a.detalhe}`);
 }
-conferir('corta-scan · clip-cases.html', { 'texto-cortado': 1, 'overlay-empilhado': 2, 'fora-do-pai': 1 }, achados);
+conferir('corta-scan · clip-cases.html', { 'texto-cortado': 1, 'overlay-empilhado': 2, 'fora-do-pai': 1, 'range-invisivel': 1 }, achados);
 conferir('ritmo-scan · spacing-cases.html', { 'proximidade-invertida': 1, 'ritmo-chato': 1, 'irmaos-desalinhados': 2 }, achadosRitmo);
-console.log(falhou ? `\ncorta-self-test: ${falhou} rule(s) off the expected count.` : '\ncorta-self-test: all 3 geometries and all 3 spacing rules match their fixtures.');
+console.log(falhou ? `\ncorta-self-test: ${falhou} rule(s) off the expected count.` : '\ncorta-self-test: all 4 geometries and all 3 spacing rules match their fixtures.');
 process.exit(falhou ? 1 : 0);

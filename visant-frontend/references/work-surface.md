@@ -111,6 +111,11 @@ revealed control over it — for example, right-pad the bottom zone so a hover
 action rack can occupy that corner without ever covering content, and without
 anything shifting when the pointer arrives.
 
+**A control that must grow cannot leave the pointer.** An icon button that opens
+into its label moves its own edge: the pointer falls out, it closes, the pointer
+is back in, and it flickers. Listen for hover on a wrapper that does not change
+size, and grow away from the pointer, from a fixed edge.
+
 **Nothing revealed only on hover may be the sole path to an action.** Pair every
 `group-hover:` with `group-focus-within:`, and keep the same action reachable
 from a menu or detail view.
@@ -383,6 +388,25 @@ The same applies to the chrome around controls: reset, help and destructive
 actions appear when the state calls for them (a value changed, a key held, a
 menu opened), not permanently on every row.
 
+## One stage, one home per control
+
+On an editor or canvas, chrome is usually counted by height and overspent by
+**scatter**: a bar at the top, a pill at the bottom, a floating group in a corner,
+each added by a different request and each fine alone. The eye has to search the
+whole stage, and the picture is covered in three places.
+
+- **Count the clusters on the stage.** More than one bar of general tools needs a
+  reason. Global tools live in one bar; settings live in the panel.
+- **The exception is a control about the thing under it** (a handle, a selection
+  toolbar). It stays next to its object and exists only while that object is
+  selected.
+- **One thing, one place.** A selector in the top bar and the same selector in the
+  panel means nobody decided. Keep one
+  ([two doors](../../visant-killer/references/slop-catalog.md#21-two-doors-for-the-same-gesture)).
+- **Sister tools share the map.** If the same control sits in the panel in one
+  tool and the top bar in another, each screen looks right and the product looks
+  wrong. Compare them side by side.
+
 ## Render tool: preview in a fixed column, controls in another
 
 Found on a photo sequencer that stacked upload, controls (order, transition,
@@ -406,6 +430,7 @@ two mid-use, and that layout jump is exactly what the rule prevents.
 
 | Pattern | Why it fails |
 |---|---|
+| Bars and floating groups scattered over the stage | The picture is covered in three places and every tool has to be hunted; one bar, one panel |
 | Gradient hero on a work surface | Acquisition instinct on class B; 88px for a title already in the tab |
 | Control stacked ABOVE the `<h1>`, repeating what the title says | The screen's subject arrives before its name, and the same information takes two heights; it belongs in the header, next to the action |
 | Three alignment axes in the same fold (title left, piece centered, action at the edge) | No anchor shares a column; on a wide screen the primary sits over 1000px from the title and the page reads as assembled |

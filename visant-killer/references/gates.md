@@ -122,6 +122,7 @@ green. One line of reason each; the full case is in the catalog.
 | `hover-lift` | `hover:-translate-y-*`, `hover:scale` > 1 (not on an icon inside its button), `whileHover` with `y<0` | 26 admin cards jumping; it does not exist on touch (31) |
 | `dot-grid` | repeated `radial-gradient`, SVG of circles, `<GridDots>` | template texture; it lived in the page shell and shipped on every route (32) |
 | `blur-on-card` | `backdrop-blur` on an in-flow element | with nothing behind it blurs nothing, it only costs GPU (18) |
+| `invisible-range` | `<input type="range">` at opacity 0 that still takes the pointer | iOS Safari answers only on the native thumb, so the piece ignores the finger while Chromium passes; give the input `pointer-events-none` and the box the handlers. Reads the tag only: opacity in a CSS class is caught on screen by `corta-scan` (`range-invisivel`) |
 
 - **Its finding is a cut candidate, not an automatic fix.** One of those lines
   may be the only one that really guides. Confirm at `file:line`.
@@ -138,7 +139,7 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
-| `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 24 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
+| `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 25 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
 | token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `raw-hex`, `raw-rgb-hsl`, `tailwind-palette` (legacy `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` still accepted) |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
 | repo `scan-ui-scale` | `EXCEÇÃO ao ui-scale/<rule>: reason` | `// ui-scale-ignore-file: <rule> — reason` | `micro-label`, `px-cru`, `peso-pesado`, `raio-sortido`, `accent-repouso`, `matiz-cru`, `opacidade-cru` |

@@ -20,6 +20,7 @@ Pick one track:
 |---|---|
 | "Clean the slop", "looks AI-made", remove the tells | [Clean](#clean) |
 | "Improve", "redesign", "UI/UX end-to-end", "this looks bad" | [End to end](#end-to-end) |
+| Several screens with no pattern between them | [Many screens](#many-screens) |
 | "Audit", "review", "is this good" | [visant-killer](../visant-killer/SKILL.md), and change nothing |
 | One detail: motion, chart, panel, component demo | [Single topic](#single-topic) |
 
@@ -45,7 +46,16 @@ Keep the design. Remove the tells.
 6. **Look at the result.** Run `check.mjs` again and read the new screenshots at every width, next to the old ones. Ask the most exacting designer's question: what would I screenshot and send back? Fix the biggest thing and repeat, up to three rounds.
 7. **Report.** What changed and which number each change is meant to move; what you cut and why; the widths you looked at; what you did not check. A redesign is a hypothesis: say how to measure it.
 
-If `check.mjs` says NOT VERIFIED, the first line of your answer says so. The work is not done. Stop any server you started.
+If `check.mjs` says NOT VERIFIED, the first line of your answer says so. The work is not done. Stop any server you started. `check.mjs` runs in Chromium: a custom touch gesture that never ran on a real iPhone goes under what you did not check.
+
+## Many screens
+
+Each screen looks right alone, so fixing them one at a time hardens the disagreement. Write the pattern first.
+
+1. **See them together.** Run `check.mjs` and put the sister screens' screenshots side by side. List what each one does differently: the same control in another place, another name, another empty state.
+2. **Write the pattern.** A short list in the repo: which control does each job, where it lives, what it is called. If a choice is really the owner's, ask once.
+3. **Change the shared piece, not each screen.** Fix or extract the one component and have the screens import it. A shared piece reaches every screen using it, so list them first and look at all of them after.
+4. **Then each screen,** from step 3 of [End to end](#end-to-end). Report the pattern with the work.
 
 ## Single topic
 

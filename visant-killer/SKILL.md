@@ -118,7 +118,7 @@ what happened. Read [environment.md](references/environment.md) first: the dev s
 for raw hex/rgb/hsl and palette classes, aware of the repo's token layer); **copy** (voice, only on
 strings that reach the eye: JSX text, `label`, `title`, `placeholder`,
 `aria-label`, `alt`); **chrome noise** (`noise-scan`: each line defensible, the
-sum unreadable). Details and the 24 noise rules: [gates.md](references/gates.md).
+sum unreadable). Details and the 25 noise rules: [gates.md](references/gates.md).
 
 **Discover the target repo's gates.** The four detectors are the floor. Look at
 `package.json` scripts named lint/audit/design/token/ui/theme/i18n/ratchet and
@@ -185,7 +185,7 @@ Question bank per tier: [devils-advocate.md](references/devils-advocate.md).
 - One question that kills the screen beats twelve token fixes. If the honest
   answer is "this screen should not exist", write that.
 - **T2 and T3 get a reviewer who cannot read your defense:** a fresh agent with the
-  frames, never your plan or reasons ([how](references/devils-advocate.md#fresh-reviewer)).
+  frames and the owner's decisions as quoted, never your plan or reasons ([how](references/devils-advocate.md#fresh-reviewer)).
 
 ## Step 5: Verification (what compiles is not what someone saw)
 
@@ -206,6 +206,8 @@ Then, and only then (whatever did not run goes in the report):
 | distribution | does the page exist outside itself? `title`, `description`, share card, conversion event, `sitemap`, `robots` ([distribution.md](references/distribution.md)) |
 | real data | the screen with the best record and the worst; empty hides every overflow |
 | light theme | `$V --theme both`. A dark-first app breaks in light where nobody looks |
+| signed out, sister tools | `$V --login none` on every route a visitor can reach (footer, header and gated actions change; the default run is logged in). Frames of tools doing the same job, side by side: the same control elsewhere or renamed ([catalog 21](references/slop-catalog.md#21-two-doors-for-the-same-gesture)) |
+| **real gesture** | a custom drag on a real iPhone. Chromium with touch emulation stays green while it breaks ([recipe](../visant-frontend/references/stack-tailwind-react.md#a-touch-gesture-that-holds)) |
 | backend failure | run with the backend down. Silent zero is the dominant lie: a failed fetch that paints "0" is indistinguishable from a real zero |
 | keyboard | `focus-visible` reaches everything hover reveals |
 | feel | DevTools, Animations, 25% speed |
@@ -213,8 +215,7 @@ Then, and only then (whatever did not run goes in the report):
 ## Step 6: Report
 
 The same `AUDIT.md`, now with findings and score first, never just chat text
-([scorecard.md](references/scorecard.md)). `## Not checked` is required: widths,
-states and data you did not see, or "nothing" with the screens that prove it. A score is not a compliment: 100 on
+([scorecard.md](references/scorecard.md)). `## Not checked` is required: widths, states and data you did not see, a custom gesture that never ran on a real iPhone, or "nothing" with the screens that prove it. A score is not a compliment: 100 on
 the gate with a T3 and no positioning interrogation is an incomplete audit, and
 the report says so.
 

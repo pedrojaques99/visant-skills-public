@@ -308,6 +308,13 @@ box) is a vocabulary defect, not a layout one, and the detector no longer
 enforces it. Auditor's question: does each name repeated across screens mean the
 same thing?
 
+**Form 3 is judgment too: sister tools.** Two tools that do the same job, each with
+the same selector in a different place, one in the top bar and the other in the
+panel. Reported in a 2026-11 round: every screen looked right alone and the
+detector had nothing to flag, since it only reads fields with a `placeholder` on
+one screen. Widening it would bring back the 25 false hits. Look at the frames
+side by side.
+
 ## 22. The highlight that highlights everything
 
 **Symptom.** Three out of three cards lit with the accent color. The whole grid

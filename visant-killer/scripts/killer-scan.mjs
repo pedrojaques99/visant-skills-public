@@ -1686,7 +1686,7 @@ were the dev server lying, not the screen.
 
 ## Not checked
 
-Widths, themes, states and data you did not see. If nothing, write "nothing".
+Widths, themes, states and data you did not see, and any custom gesture that never ran on a real iPhone. If nothing, write "nothing".
 
 -
 

@@ -9,6 +9,7 @@ Deep reference for building and auditing. Load when writing motion or running a 
 - Duration table
 - Springs (when + config)
 - Component rules
+- Opening without measuring
 - Apple fluid principles
 - Audit: 8 categories + severity + fixes
 
@@ -95,6 +96,32 @@ motion tweak panel:
 - **Stagger:** 30-80ms between items, capped total. Long stagger reads slow. Never block interaction on it.
 - **Asymmetric timing:** slow where the user decides (hold-to-delete 2s), fast where the system responds (release 200ms).
 - **Blur to mask imperfect crossfades:** `filter: blur(2px)` during the transition (keep < 20px, expensive in Safari).
+
+## Opening without measuring
+
+To open sideways or downward to a size you don't know, don't measure it in JS. A
+grid track animates from `0fr` to `1fr` and the browser does the arithmetic. In
+production in the Visant library (`chip`, `filter-bar`).
+
+```css
+.reveal { display: grid; grid-template-columns: 0fr; transition: grid-template-columns var(--dur-base) var(--ease-out); }
+.reveal[data-open="true"] { grid-template-columns: 1fr; }
+.reveal > * { min-width: 0; overflow: hidden; white-space: nowrap; } /* nowrap: text must not rewrap as it opens */
+.reveal[data-open="true"]:not([data-moving]) > * { overflow: visible; }
+```
+
+- **Clip only during the movement.** A permanent `overflow: hidden` cuts the focus
+  ring and any tooltip inside once it is open. Set `data-moving` on toggle and
+  clear it on `transitionend` and `transitioncancel`, filtered by `propertyName`
+  and `e.target === e.currentTarget`.
+- **Under `prefers-reduced-motion` skip `data-moving`.** With no transition those
+  events never fire, and it would clip forever.
+- **Closed means `inert`.** Otherwise the keyboard walks into something at width
+  zero.
+- **Downward** is the same with `grid-template-rows`, without `nowrap`.
+- **It costs layout on every frame.** That is why it is a named exception to "only
+  transform and opacity": one element at a time, never every row of a list, where
+  framer-motion's `layout` belongs. `motion-lint` does not flag it.
 
 ## Waiting & pending states
 

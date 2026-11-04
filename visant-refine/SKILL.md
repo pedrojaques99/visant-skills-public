@@ -185,6 +185,9 @@ slider fill as evidence. What makes one look engineered instead of assembled:
   nesting, quiet rows and loud values.
 - **The mode comes before what it changes**, and every number takes drag,
   typing and arrow keys.
+- **A slider row does not trap the finger.** On touch it keeps the panel's
+  vertical scroll and drags relative. The default has a mark, and a range that
+  crosses zero fills from zero.
 
 A dev-only tweak panel is an install (Leva, Tweakpane, DialKit), not a build.
 Full rules, the data-to-control table and the DialKit-vs-fork case that

@@ -31,7 +31,7 @@ Decide in this order. Full numeric catalog + severity for audits → **`referenc
 2. **Easing:** enter/exit → `EASE_OUT`. Move on-screen → `EASE_IN_OUT`. Hover/color → `ease`. Constant (marquee/shimmer/progress) → `linear`. **Never `ease-in` on UI**, with one exception (§5 rule 2).
 3. **Duration:** UI < 300ms. press 100-160 · dropdown 150-250 · modal 200-300. Route passages (§5), marketing, scroll and 3D may be long & deliberate; the ceiling is about a control answering a click.
 4. **Never `scale(0)`**: start at `scale(.95)` + opacity.
-5. **Only `transform` + `opacity`** (GPU). Never animate `width/height/margin/padding`.
+5. **Only `transform` + `opacity`** (GPU). Never animate `width/height/margin/padding`. Opening to a size you don't know is the one named exception: [`0fr → 1fr`](references/motion-rules.md#opening-without-measuring), no measuring.
 6. **Springs** only for momentum/gesture (drag, flick). A menu fade uses duration, not spring.
 7. **Interruptible** = CSS transition / spring, not `@keyframes` (which restarts from zero).
 
@@ -47,7 +47,8 @@ Decide in this order. Full numeric catalog + severity for audits → **`referenc
 8. **Amplitude, not duration, is what reads as amateur.** A delete with a big spin, overshoot and a cloud of particles was rejected as amateur; the fix kept the timing and cut the amplitude (~12° spin, row shrinks to 40%, neighbours pulled ≤ 4px, no overshoot on anything that disappears). Rule: halve the amplitude, then halve it again; good motion is barely noticed. Full case: [cases.md](references/cases.md).
 9. **One focus of motion per surface.** Queue ticking, images streaming in, an export counting %, an error shaking and a toast sliding, all at once, reads as too much happening. Sequence the states (sent → generating → ready → exporting) so only one thing moves at a time.
 10. **Born in the best state.** A tilt/gleam/perspective that only appears on hover doesn't exist on touch, in a grid thumbnail or in a screenshot. Start in the hero pose; hover intensifies, it never reveals.
-11. **Scaled stages lie to motion code.** Inside a `transform: scale` container (a component showcase, a zoomed preview): pointer deltas must be divided by the scale, `position: fixed` measures from the transformed box (portal to `body`), and R3F canvases need `resize={{ offsetSize: true }}`. Test any drag at `scale(0.5)`.
+11. **A transformed parent lies to motion code.** Any `transform`, `filter`, `perspective`, `will-change: transform` or `contain: paint` on an ancestor, even one left mid-animation, makes `position: fixed` measure from that box: a tooltip inside a panel that is sliding in lands off its trigger (portal to `body`). `<foreignObject>` inside a rotated SVG also misplaces its content in Safari: draw it in SVG or lay HTML over it. Inside a scaled stage (a component showcase, a zoomed preview), pointer deltas must also be divided by the scale, and R3F canvases need `resize={{ offsetSize: true }}`. Test any drag at `scale(0.5)`.
+12. **A parameter updates the scene, it does not rebuild it.** A slider value in the deps of the effect that creates a WebGL renderer rebuilds it on every tick, and `renderer.forceContextLoss()` in that cleanup kills the context of a canvas React keeps: the next frame is dead. Only what changes geometry regenerates; the rest arrives by method or uniform. A real rebuild gets a `key` on the canvas. Check the sister piece on the same stage (`motion-lint`: `force-context-loss`).
 
 ## 2b. Sound (SFX): analog clicks, only where the person acts
 

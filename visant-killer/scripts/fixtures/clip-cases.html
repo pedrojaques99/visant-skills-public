@@ -12,6 +12,8 @@
   piece: the top one takes < 25% of the bottom one's area and the bottom one
   has nothing interactive.
     fora-do-pai        1   (the badge that leaves the clipped card)
+    range-invisivel    1   (opacity from a CSS class, as in the real case; with
+                            pointer-events none, or visible, it stays out)
 -->
 <style>
   body { margin: 0; font: 10px monospace; background: #0a0b0d; color: #ddd; }
@@ -67,5 +69,13 @@
   <div class="fallback"><button style="margin:2px;font:inherit">abrir</button></div>
   <span class="selo">Pública</span>
 </div>
+
+<style>
+  .cortina { display: block; width: 200px; height: 80px; margin: 12px; opacity: 0; }
+  .so-teclado { pointer-events: none; }
+</style>
+<input type="range" class="cortina" aria-label="positive">
+<input type="range" class="cortina so-teclado" aria-label="keyboard only">
+<input type="range" style="display:block;width:200px;margin:12px" aria-label="visible">
 
 <div class="trilho">um trilho que rola de lado de proposito, e isso e escolha</div>

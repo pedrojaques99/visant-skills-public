@@ -66,11 +66,18 @@ page:
 | 3D canvas skewed or in a corner | R3F/three measuring the already-scaled size | `resize={{ offsetSize: true }}`; measure the container, not the window |
 | menu/select clipped when opening | dropdown inside `overflow:hidden` / `contain: paint` | portal (Radix `Portal`) or a demo box sized for the open menu |
 | piece "cutting its edges" | `preview` (natural box) smaller than the piece | the box measures the piece + breathing room |
+| piece tiny, or off center in the tile | scaling by the box, while the visible drawing is smaller or offset | measure the **painted** area, scale from its center, keep a minimum margin to the frame |
 | focus ring clipped | the piece's mask/overflow | room for the ring, focus via `box-shadow: var(--focus)` |
 
 Gate: if the showcase repo has stage checks (centering/overflow, and click,
-keyboard, drag and focus measured in pixels), run them over the whole catalog.
-In the Visant library they are `palco-check` and `interacao-check`.
+keyboard, drag, focus and touch measured in pixels), run them over the whole
+catalog. In the Visant library they are `palco-check`, `interacao-check` and
+`toque-check`. Touch runs there in Chromium, so a gesture still needs
+[a real iPhone](stack-tailwind-react.md#a-touch-gesture-that-holds).
+
+**The stage helps the demo, not the install.** A `touch-action` or a listener set
+by the showcase hides a defect the person installing the piece will get. Measure
+the piece without them at least once (`toque-check --cru`).
 
 ## 4. The shell disappears, the brand shows
 

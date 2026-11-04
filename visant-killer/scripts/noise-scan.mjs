@@ -1246,6 +1246,37 @@ REGRAS.push({
   },
 });
 
+/*
+ * An invisible native range laid over a piece as its pointer layer. Chromium
+ * jumps to the point touched, so every automated check passes; iOS Safari answers
+ * only on the native thumb, and an invisible input has none to find. Found on a
+ * real iPhone (Visant library, 2026-11). The same input with
+ * `pointer-events-none` is the right pattern: keyboard and screen reader for free,
+ * pointer handled by the box. This only reads the tag: in the real case the opacity
+ * was in a CSS class, and `corta-scan` (`range-invisivel`) is what catches that one
+ * on the open screen. The tag end is searched as `/>` because a JSX arrow
+ * function has a `>` of its own.
+ */
+REGRAS.push({
+  id: 'invisible-range',
+  descricao: '<input type="range"> at opacity 0 that still takes the pointer: iOS Safari answers only on the native thumb',
+  piso: 1,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const out = [];
+    for (const m of s.matchAll(/<input\b/g)) {
+      const fim = s.indexOf('/>', m.index);
+      if (fim === -1 || fim - m.index > 800) continue;
+      const tag = s.slice(m.index, fim);
+      if (!/\btype\s*=\s*\{?\s*["'`]range["'`]/.test(tag)) continue;
+      if (!/(?<![\w:-])opacity-0(?![\w-])|\bopacity\s*:\s*0(?![.\d])/.test(tag)) continue;
+      if (/pointer-events-none|pointerEvents\s*:\s*["'`]none/.test(tag)) continue;
+      out.push({ linha: linhaEm(s, m.index), amostra: '<input type="range"> invisible' });
+    }
+    return out;
+  },
+});
+
 /* ------------------------------------------------------------------ */
 /* design-slop signals, catalog entries 47-57 (2026-10-28)             */
 /* ------------------------------------------------------------------ */
@@ -2248,6 +2279,7 @@ function selfTest() {
     'hover-lift': 7,
     'dot-grid': 3, // <GridDots…>, repeated radial, circle SVG
     'blur-on-card': 1, // the in-flow card; sticky bar and dialog stay out
+    'invisible-range': 2, // className + inline style; pointer-events-none and a visible range stay out
     /*
      * Signals 47-57 (2026-10-28): every count below comes from signals-dirty.tsx
      * alone. signals-clean.tsx holds the legitimate twin of each block (below

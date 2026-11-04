@@ -12,7 +12,7 @@
  * SKILL.md ("the first line is opening the screen"), which said to look and
  * gave no tool to measure what to look at.
  *
- * The three things it measures, which the naked eye gets wrong:
+ * The four things it measures, which the naked eye gets wrong:
  *
  *   1. **texto-cortado** (clipped text): an element whose content is larger than
  *      its box and has no declared escape (no `text-overflow: ellipsis`, no
@@ -25,6 +25,11 @@
  *   3. **fora-do-pai** (outside the parent): an overlay that leaves the parent's
  *      clipped box: it exists in the DOM, does not exist on screen, and no test
  *      complains.
+ *   4. **range-invisivel** (invisible range): an `<input type="range">` at opacity
+ *      0, larger than a thumb, that still takes the pointer. Chromium jumps to the
+ *      point touched, so every test passes; iOS Safari answers only on the native
+ *      thumb, and there is none to find. The opacity usually lives in a CSS class,
+ *      where `noise-scan` cannot see it from the tag; this reads the computed style.
  *
  * How to run, two ways, and the second is the one that works in a repo behind login:
  *
@@ -247,6 +252,19 @@ function corta(raiz = 'body', { verbose = true } = {}) {
         no: f,
       });
     }
+  }
+
+  for (const r of root.querySelectorAll('input[type="range"]')) {
+    const s = cs(r);
+    if (+s.opacity !== 0 || s.pointerEvents === 'none' || s.display === 'none') continue;
+    const b = r.getBoundingClientRect();
+    if (b.width < 44 && b.height < 44) continue;
+    achados.push({
+      regra: 'range-invisivel',
+      el: nome(r),
+      detalhe: `invisible ${Math.round(b.width)}x${Math.round(b.height)} range taking the pointer: iOS Safari answers only on the native thumb. Give it pointer-events: none and the box the handlers`,
+      no: r,
+    });
   }
 
   if (verbose) {

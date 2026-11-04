@@ -116,6 +116,15 @@ const RULES = [
     fix: "transform (scale/translate) + opacity only. For size, animate a wrapper's transform or use FLIP/layout.",
   },
   {
+    id: "force-context-loss",
+    severity: "MEDIUM",
+    files: CODE,
+    // Legitimate on a final unmount, so it asks for a look or a written reason.
+    test: /\.forceContextLoss\s*\(/g,
+    message: "`forceContextLoss` in a cleanup that re-runs kills the canvas: the next tick of a parameter paints nothing.",
+    fix: "Parameters update the scene by method or uniform. A real rebuild gets a `key` on the canvas. Fine only when the canvas is truly leaving.",
+  },
+  {
     id: "background-position-shimmer",
     severity: "MEDIUM",
     files: ALL,

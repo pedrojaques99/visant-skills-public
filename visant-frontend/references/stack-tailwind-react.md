@@ -41,6 +41,7 @@ is what makes both themes work without a second pass.
 - [Reveal on hover — the touch-safe way](#reveal-on-hover--the-touch-safe-way)
 - [Hover action rack](#hover-action-rack)
 - [Hover-revealed selection](#hover-revealed-selection)
+- [A touch gesture that holds](#a-touch-gesture-that-holds)
 - [Controlled dialog opened from a menu](#controlled-dialog-opened-from-a-menu)
 - [Tabbed modal with one primary action](#tabbed-modal-with-one-primary-action)
 - [Close the surface before the exit ritual](#close-the-surface-before-the-exit-ritual)
@@ -248,6 +249,76 @@ The reveal branch is gated on `(hover: hover)` for the same touch reason as the
 rack. `haSelecao` (any row selected on the page) is the part that is easy to miss:
 without it, selected rows stay visible but *unselected* ones vanish, and the user
 loses the sense of what is selectable.
+
+## A touch gesture that holds
+
+For any custom drag: a slider row, a knob, a comparison curtain, a carousel. The
+browser decides within a few pixels whether a finger belongs to the page or to
+the piece. Mouse tests never reach that decision, and desktop touch emulation
+only reaches Chromium's version of it. Measured on the Visant library, 2026-11:
+every automated check green, and the gesture broken on a real iPhone.
+
+1. **Give the browser the axis the piece does not use.** A horizontal drag gets
+   `touch-action: pan-y`, a vertical one `pan-x`. `touch-none` is for a small
+   target (a thumb, a handle). On a full row or a large photo it leaves an area
+   of the page that nothing can scroll from.
+2. **Decide the axis on the first movement and hold it until release.**
+   `touch-action` alone does not hold the whole gesture on iPhone: the finger
+   drifts off the line and the page moves with the piece. `preventDefault` on
+   `touchmove` holds it, but only from the first movement, and only from a
+   non-passive listener, which React's `onTouchMove` cannot give you:
+
+   ```ts
+   // horizontal drag on `el`, which carries touch-action: pan-y
+   useEffect(() => {
+     const el = ref.current;
+     if (!el) return;
+     let x = 0, y = 0;
+     let mine: boolean | null = null;
+     const start = (e: TouchEvent) => {
+       mine = e.touches.length === 1 ? null : false; // two fingers are a pinch, never the piece's
+       x = e.touches[0].clientX;
+       y = e.touches[0].clientY;
+     };
+     const move = (e: TouchEvent) => {
+       if (mine === false) return;
+       if (mine === null) {
+         const dx = Math.abs(e.touches[0].clientX - x);
+         const dy = Math.abs(e.touches[0].clientY - y);
+         if (!dx && !dy) return;
+         mine = dx > dy;
+       }
+       if (mine && e.cancelable) e.preventDefault();
+     };
+     el.addEventListener("touchstart", start, { passive: true });
+     el.addEventListener("touchmove", move, { passive: false });
+     return () => {
+       el.removeEventListener("touchstart", start);
+       el.removeEventListener("touchmove", move);
+     };
+   }, []);
+   ```
+
+3. **On touch, nothing moves until the finger shows its axis.** Wait about 4px.
+   If it is going the page's way, let go of the gesture: someone starting to
+   scroll over the piece must not see its value jump to their finger.
+4. **Drag relative where the piece is also the scroll path.** In a panel row the
+   value moves by the finger's delta, not to the point touched.
+5. **A native range is not a pointer layer.** An invisible `<input type="range">`
+   stretched over the piece works in Chromium, which jumps to the point touched.
+   iOS Safari answers only on the native thumb, and an invisible input has no
+   thumb to find. Keep the input for keyboard and screen reader, give it
+   `pointer-events-none`, and put the pointer handlers on the box. `corta-scan`
+   measures this on the open screen (`range-invisivel`); `noise-scan` sees it only
+   when the opacity is in the tag (`invisible-range`).
+6. **No inner scroll on the page's axis inside a piece.** The finger stops the
+   page there and gets stuck. A table or kanban scrolling on the other axis is
+   fine.
+7. **The hold ships with the piece.** A global listener in the showcase's entry
+   file does not reach whoever installs the component. Measure the piece without
+   the shell around it.
+8. **Proof is a real iPhone.** Until the gesture has run on one, it stays in
+   `## Not checked`.
 
 ## Controlled dialog opened from a menu
 
