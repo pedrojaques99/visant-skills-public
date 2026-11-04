@@ -264,7 +264,7 @@ async function* walk(dir, ignores) {
   }
   for (const e of entries) {
     const full = join(dir, e.name);
-    if (ignores.some((s) => full.includes(s))) continue;
+    if (ignores.some((s) => full.replaceAll("\\", "/").includes(s.replaceAll("\\", "/")))) continue;
     if (e.isDirectory()) {
       if (isBuildDir(e.name)) continue;
       yield* walk(full, ignores);

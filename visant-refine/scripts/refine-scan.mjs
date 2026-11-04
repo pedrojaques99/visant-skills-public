@@ -87,6 +87,8 @@ const TW_PALETTE = /\b(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lim
 const RULES = [
   {
     id: 'CHART_RAW_COLOR',
+    // A primitiva de chart do shadcn cita as cores padrão do recharts em seletor, para sobrescrevê-las.
+    skipUi: true,
     /* Only in files that import recharts. Without this the rule accused three.js
        materials and SVG icons, where `color="#fff"` is no token at all: it is
        the lib's API. A detector that shouts out of scope gets switched off. */

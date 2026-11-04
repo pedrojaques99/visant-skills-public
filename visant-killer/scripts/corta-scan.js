@@ -143,8 +143,13 @@ function corta(raiz = 'body', { verbose = true } = {}) {
         if (comido > Math.max(cruzaX, cruzaY)) comido = 0;
       }
     }
-    const proprio = sobraX >= 2 || sobraY >= 2;
+    /* PATCH 1: line-height menor que ascent+descent da fonte infla scrollHeight sem cortar nada */
+    const folgaFonte = (n) => { const st = cs(n); const c = folgaFonte.c || (folgaFonte.c = document.createElement('canvas').getContext('2d')); c.font = st.fontStyle + ' ' + st.fontWeight + ' ' + st.fontSize + ' ' + st.fontFamily; const m = c.measureText('Hg'); const lh = parseFloat(st.lineHeight) || 0; return lh ? Math.max(0, (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent - lh) / 2) : 0; };
+    const fantasmaY = sobraY >= 2 && !/hidden|clip/.test(s.overflowY) && sobraY <= Math.max(folgaFonte(el), ...[...el.querySelectorAll('*')].map(folgaFonte)) + 1;
+    const proprio = sobraX >= 2 || (sobraY >= 2 && !fantasmaY);
     /* 1px is subpixel rounding, not a half word */
+    /* PATCH 2: faixa com mask-image declarou o corte (marquee com fade) */
+    if (recorta && !proprio && (cs(recorta).maskImage || cs(recorta).webkitMaskImage || 'none') !== 'none') continue;
     if (!proprio && comido < 2) continue;
     achados.push({
       regra: 'texto-cortado',
@@ -209,6 +214,8 @@ function corta(raiz = 'body', { verbose = true } = {}) {
         const INTERATIVO = 'a[href],button,input,select,textarea,[role="button"],[tabindex]:not([tabindex="-1"])';
         const temInterativo = embaixo.matches(INTERATIVO) || !!embaixo.querySelector(INTERATIVO);
         if (area(em_cima) < 0.25 * area(embaixo) && !temInterativo) continue;
+        /* Sobreposição declarada: comparador antes e depois existe para empilhar. */
+        if (em_cima.closest('[data-sobreposicao]')) continue;
         achados.push({
           regra: 'overlay-empilhado',
           el: nome(embaixo),
