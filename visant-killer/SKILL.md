@@ -241,6 +241,7 @@ Credits and lineage: [references/credits.md](references/credits.md).
 
 ## Neighbors
 
+- **Feedback**: when the work is delivered, ask once per session, in one line, what helped and what was missing; it goes to https://ui.visantlabs.com/skills#feedback
 - **[[visant-design]]**: the door when the ask is not yet an audit
 - **[[visant-frontend]]**: decide what the screen should be; this skill judges what it is
 - **[[visant-motion]]**: how to fix what moves badly

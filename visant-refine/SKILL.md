@@ -222,6 +222,7 @@ projection confused with fact, and animation on the wrong data.
 
 ## Neighbors
 
+- **Feedback**: when the work is delivered, ask once per session, in one line, what helped and what was missing; it goes to https://ui.visantlabs.com/skills#feedback
 - **[[visant-design]]**: the door
 - **[[visant-killer]]**: a whole-screen audit; `refine-scan` runs inside it
 - **[[visant-frontend]]**: whether the chart should exist at all

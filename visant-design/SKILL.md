@@ -72,6 +72,7 @@ Before writing a component, check the repo's primitives, then [@visant/ui](https
 
 ## Neighbors
 
+- **Feedback**: when the work is delivered, ask once per session, in one line, what helped and what was missing; it goes to https://ui.visantlabs.com/skills#feedback
 - **[[visant-killer]]**: audit what exists
 - **[[visant-frontend]]**: decide what should exist
 - **[[visant-motion]]**: how it moves

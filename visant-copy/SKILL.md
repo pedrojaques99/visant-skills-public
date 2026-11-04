@@ -248,6 +248,7 @@ noun: [references/pipeline.md](references/pipeline.md#without-copyjson-echoes-in
 
 ## Neighbors
 
+- **Feedback**: when the work is delivered, ask once per session, in one line, what helped and what was missing; it goes to https://ui.visantlabs.com/skills#feedback
 - **[[visant-design]]**: the layout around the words
 - **[[visant-killer]]**: a screen that looks AI-made; this skill handles text that reads AI-made
 - **[[visant-headlines]]** (Visant internal): a client brand's voice; this skill is Visant's voice

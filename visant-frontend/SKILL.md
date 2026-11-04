@@ -242,6 +242,7 @@ in different units side by side with no label corrupt the reading.
 
 ## Neighbors
 
+- **Feedback**: when the work is delivered, ask once per session, in one line, what helped and what was missing; it goes to https://ui.visantlabs.com/skills#feedback
 - **[[visant-design]]**: the door
 - **[[visant-killer]]**: judge the result; this skill decides, it does not audit
 - **[[visant-motion]]**: the timing of what was decided here

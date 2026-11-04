@@ -240,6 +240,7 @@ If the repo already has an equivalent, **use it**; do not create a parallel syst
 
 ## Neighbors
 
+- **Feedback**: when the work is delivered, ask once per session, in one line, what helped and what was missing; it goes to https://ui.visantlabs.com/skills#feedback
 - **[[visant-design]]**: the door
 - **[[visant-killer]]**: a whole-screen audit; `motion-lint` runs inside it
 - **[[visant-frontend]]**: whether the element should exist at all
