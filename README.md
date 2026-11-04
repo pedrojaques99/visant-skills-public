@@ -65,7 +65,7 @@ $ node visant-killer/scripts/killer-scan.mjs demo/src
             src/Pricing.tsx:4  opacity-ladder  text-white: /50 /70 /40 /90
 
 gates: 4/4 ran [impeccable, audit:design (fallback), copy, noise]; none skipped
-GATE CLOSED: 3 detector(s) with findings. A gate finding becomes a fix, not a proposal.
+GATE CLOSED: 3 detector(s) with findings. A confirmed finding is a defect, not a taste call: list it and ask before editing.
 ```
 
 That is only the script half. The skill then judges what no detector sees

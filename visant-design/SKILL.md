@@ -21,7 +21,7 @@ Pick one track:
 | "Clean the slop", "looks AI-made", remove the tells | [Clean](#clean) |
 | "Improve", "redesign", "UI/UX end-to-end", "this looks bad" | [End to end](#end-to-end) |
 | Several screens with no pattern between them | [Many screens](#many-screens) |
-| "Audit", "review", "is this good" | [visant-killer](../visant-killer/SKILL.md), and change nothing |
+| "Audit", "review", "is this good" | [visant-killer](../visant-killer/SKILL.md): change nothing until the user answers its closing question |
 | One detail: motion, chart, panel, component demo | [Single topic](#single-topic) |
 
 ## Clean

@@ -30,6 +30,23 @@ On a landing with copy inside the components, changing only the `<h1>` left the
 social card (`opengraph-image.tsx`) and the `<title>` selling the old promise.
 That is how those two rows went to the top of the "where echoes hide" table.
 
+## The skill was stricter than the author
+
+The voice was written from one landing, then compared with the studio's own essay,
+manifesto and post. "Para" won 22 to 0 where the skill demanded "pra", "eu" appeared
+22 times where it restricted first person, and sentences averaged 17 words against
+the stated 12. The landing was right for a landing. Hence the registers, and hence
+"copy the traits, never the slips": the same originals also carry a loose hyphen and
+three seals.
+
+## Linter green, line empty
+
+On the skills page, `Audita antes do PR` passed every rule. A visitor still had no
+idea what they would get. The same audit ran the linter over `src/`: 2,206 lines of
+output, most from generated JSON, deliberate bad samples and CLI commands. So
+`--summary`, `--skip` and the skipping of `*.generated.*` exist, and
+[audit.md](audit.md) starts from what is painted on screen.
+
 ## Quotes are not edited
 
 The linter skips keys ending in `quote`, `quote_by` or `depoimento`. A quote is a

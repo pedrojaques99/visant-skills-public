@@ -12,9 +12,7 @@ that do not replace each other: the **gate** (deterministic scripts, binary:
 AI tell, token, voice, **chrome noise**) and **judgment** (you, with the skills
 loaded), because AI slop survives any linter: the problem is decision, not syntax.
 
-> **Rule zero (from `visant-copy`):** only the fix of a confirmed defect goes
-> into the file. What passes clean stays untouched, even if it sounds flat.
-> Taste improvements go as a proposal table; the user picks line by line.
+> **Rule zero: ask before editing.** An audit changes no file until the user says so: the report comes first and ends with the question ("Corrijo estes N?"). "Corrige", "conserta" or "limpa" in the request already count as the answer, for confirmed defects only. What passes clean stays untouched, even if it sounds flat. Taste improvements go as a proposal table; the user picks line by line.
 
 > **A green gate is not a seen screen.** A frozen `AnimatePresence` in a lead
 > form passed six gates. So `killer-scan` **refuses** "gate open" without the
@@ -131,8 +129,9 @@ Side gates: `node $R <target>` when there is a chart, gauge or animation;
 without a card or converts without an event is not fixable by tokens and no UI
 detector lights up ([distribution.md](references/distribution.md)).
 
-**A failed gate becomes a fix, not a proposal, after confirming each finding at
-`file:line`** (legacy code is noisy; fixing unread lines writes bugs).
+**A failed gate is a defect, not a taste call, after confirming each finding at
+`file:line`** (legacy code is noisy; fixing unread lines writes bugs). It goes on
+the fix list in the report, and rule zero decides when it enters the file.
 
 - A confirmed false positive has ONE right fix: **repair the rule and lock the
   case in the fixture**, never an `audit-ignore` in the file (it hides the next one).
@@ -219,17 +218,14 @@ The same `AUDIT.md`, now with findings and score first, never just chat text
 the gate with a T3 and no positioning interrogation is an incomplete audit, and
 the report says so.
 
+**End by asking.** Give the confirmed defects as a numbered list with `file:line`, then one question: fix all, fix some by number, or leave them. Without anyone to answer (CI, a scheduled run), stop at the report.
+
 ## Do not
 
+- Edit a file during an audit before the user answers. An obvious defect is not an answer.
 - Declare a high score without running the script, or a "full pass" with the
   surface table blank. The score comes from the process, not the vibe.
-- Create a new design-system component without explicit permission. Reuse and
-  parametrize; if a piece is missing, look first in the Visant library
-  ([ui.visantlabs.com](https://ui.visantlabs.com), audited items; index at
-  `/llms.txt`, sheet at `/r/<name>.md`), then the official shadcn primitive. Both
-  install via `npx shadcn@latest add @visant/<name>` (registry
-  `"@visant": "https://ui.visantlabs.com/r/{name}.json"` in `components.json`);
-  say so before.
+- Create a new design-system component without explicit permission. Reuse and parametrize; if a piece is missing, look first in the [Visant library](https://ui.visantlabs.com) (index at `/llms.txt`, sheet at `/r/<name>.md`), then the official shadcn primitive. Both install via `npx shadcn@latest add @visant/<name>` (registry `"@visant": "https://ui.visantlabs.com/r/{name}.json"` in `components.json`); say so before.
 - Fix leaves before roots (Step 0, `--roots`).
 - Open a route that spends credits on load without the `verify-screens` lock.
 - Refactor on top of a reported defect without confirming it in the code.

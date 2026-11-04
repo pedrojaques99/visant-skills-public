@@ -1842,7 +1842,7 @@ const g0 = gateZero(reportPath);
 
 console.log(bar);
 if (failed) {
-  console.log(`GATE CLOSED: ${failed} detector(s) with findings. A gate finding becomes a fix, not a proposal.`);
+  console.log(`GATE CLOSED: ${failed} detector(s) with findings. A confirmed finding is a defect, not a taste call: list it and ask before editing.`);
 } else if (!g0.ok) {
   /* Detectors at zero with gate 0 open is NOT "open". This is the whole line of
      the fix: the scoreboard can no longer say the word that makes the agent stop. */

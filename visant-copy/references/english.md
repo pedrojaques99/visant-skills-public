@@ -62,6 +62,10 @@ the consequence: not "It's not a talent problem, it's an order problem" but
    done branding for years. Is there anything new here?" The answer opens by
    answering ("Yes.", "It is."), never with "Great question".
 
+The signed register exists in English too: first person, an opinion with an
+owner, a parenthesis that talks back, one long and oddly precise analogy. See
+[voice.md, section 8](voice.md#8-signed-register-from-the-originals).
+
 ## The fold names the task
 
 Same rule as in Portuguese (see SKILL.md): the H1, the `<title>` and the social

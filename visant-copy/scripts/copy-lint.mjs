@@ -6,6 +6,8 @@
  *   node copy-lint.mjs docs/COPY.md src/app/page.tsx
  *   node copy-lint.mjs --quiet copy.json          (exit code only, for CI)
  *   node copy-lint.mjs --include-comments a.tsx   (lints comments too)
+ *   node copy-lint.mjs --summary src/             (counts per rule and file, no lines)
+ *   node copy-lint.mjs --skip=amostras src/       (drops paths containing the text; repeatable)
  *
  * In .json, reads every string value and reports the KEY (which is the HTML's
  * data-copy). In any other file, reads line by line and reports the line number.
@@ -67,7 +69,9 @@ const RULES = [
   },
   {
     id: 'hyphen-as-dash',
-    re: / -{1,2} /gu,
+    /* Needs a letter on both sides: "/shots/ - .webp" and "now() - data" are code.
+       A shell line keeps its "--": "claude mcp add shadcn -- npx" is an argument. */
+    re: /(?<!\b(?:npx|npm|pnpm|bun|node|git|claude)\b[^\n]*)(?<=\p{L}[.,]?) -{1,2} (?=\p{L})/gu,
     hint: 'A loose hyphen became a dash. Make it a period or a comma.',
   },
   {
@@ -340,6 +344,8 @@ const REPEATS = [
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
 const comentarios = args.includes('--include-comments');
+const resumo = args.includes('--summary');
+const pulos = args.filter((a) => a.startsWith('--skip=')).map((a) => a.slice(7));
 /* --self-test: proves both directions, like the repo's other detectors. Every
    rule in RULES and REPEATS must fire on its bad example, and every clean
    sentence must pass all of them. A rule that went inert shows up here, not in
@@ -377,6 +383,8 @@ if (args.includes('--self-test')) {
     'credibility-seal': 'A truly authentic process with real results.',
   };
   const LIMPAS = [
+    'claude mcp add shadcn -- npx shadcn@latest mcp',
+    '/shots/ - .webp',
     'Seu site novo fica pronto em uma semana.',
     'Your new site ships in one week.',
     'Unlock account',
@@ -422,6 +430,7 @@ if (args.includes('--self-test')) {
   const run = (...f) => spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--quiet', ...f.map(fx)]).status;
   if (run('clean-code.tsx', 'clean-docs.md') !== 0) falhas.push('fixtures/clean-* flagged code or docs that are not copy');
   if (run('dirty.tsx') !== 1) falhas.push('fixtures/dirty.tsx passed: JSX text is not being linted');
+  if (spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--quiet', '--skip=dirty', fx('dirty.tsx')]).status !== 0) falhas.push('--skip did not drop the file');
   if (falhas.length) {
     console.error(`✗ copy-lint --self-test\n  ${falhas.join('\n  ')}`);
     process.exit(1);
@@ -441,7 +450,8 @@ const PULA = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', '
 function expande(alvo) {
   if (!statSync(alvo).isDirectory()) return [alvo];
   return readdirSync(alvo, { withFileTypes: true }).flatMap((e) => {
-    if (PULA.has(e.name) || e.name.startsWith('.')) return [];
+    /* Generated files are not copy anyone wrote: in one audit they were about two thirds of the findings. */
+    if (PULA.has(e.name) || e.name.startsWith('.') || e.name.includes('.generated.')) return [];
     const p = join(alvo, e.name);
     if (e.isDirectory()) return expande(p);
     return CODIGO.test(e.name) || TEXTO.test(e.name) ? [p] : [];
@@ -450,7 +460,7 @@ function expande(alvo) {
 
 const alvos = args.filter((a) => !a.startsWith('--'));
 if (!alvos.length) {
-  console.log('usage: copy-lint.mjs [--quiet] [--include-comments] <file or folder...>');
+  console.log('usage: copy-lint.mjs [--quiet] [--summary] [--skip=text] [--include-comments] <file or folder...>');
   process.exit(1);
 }
 const faltando = alvos.filter((a) => !existsSync(a));
@@ -458,7 +468,9 @@ if (faltando.length) {
   console.error(`copy-lint: does not exist: ${faltando.join(', ')}`);
   process.exit(1);
 }
-const files = alvos.flatMap(expande);
+const files = alvos.flatMap(expande).filter((f) => !pulos.some((p) => f.replaceAll('\\', '/').includes(p)));
+const porRegra = new Map();
+const porArquivoN = new Map();
 
 /* A key whose value is someone else's speech. See the note in the main loop. */
 const CHAVE_DE_CITACAO = /(^|\.)(?:quote|quote_by|depoimento)$/;
@@ -690,6 +702,11 @@ for (const file of files) {
     }
   }
 
+  if (resumo) {
+    for (const f of found) porRegra.set(f.rule.id, (porRegra.get(f.rule.id) ?? 0) + 1);
+    if (found.length) porArquivoN.set(file, found.length);
+    continue;
+  }
   if (quiet || !found.length) continue;
   console.log(`\n${file}`);
   for (const f of found) {
@@ -761,6 +778,14 @@ if (paraEco.length > 1) {
       );
     }
   }
+}
+
+if (resumo && !quiet) {
+  const ordena = (m) => [...m].sort((a, b) => b[1] - a[1]);
+  console.log('\nBy rule:');
+  for (const [id, n] of ordena(porRegra)) console.log(`  ${String(n).padStart(5)}  ${id}`);
+  console.log('\nBy file:');
+  for (const [f, n] of ordena(porArquivoN).slice(0, 15)) console.log(`  ${String(n).padStart(5)}  ${f}`);
 }
 
 /* Length warnings always print, and NEVER change the exit code. */

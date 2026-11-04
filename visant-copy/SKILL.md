@@ -1,6 +1,6 @@
 ---
 name: visant-copy
-description: 'Writes and reviews public-facing Brazilian Portuguese copy in Visant''s spoken voice, in any repo, and runs copy-lint, which catches AI tics in PT and English copy. Use on "copy", "headline", "landing copy", "remove the AI feel", "texto da landing", "reescrever a dobra", "essa copy tá confusa", "tirar cara de IA", "burilar a copy".'
+description: 'Writes, audits and reviews Brazilian Portuguese copy in Visant''s voice, from landing to signed post, and runs copy-lint, which catches AI tics in PT and English. Use on "copy", "headline", "landing copy", "audit the copy", "auditar o copy", "reescrever a dobra", "tirar cara de IA", "burilar a copy", "artigo", "newsletter", "tom de voz".'
 metadata:
   family: texto
   routes: visant-headlines
@@ -27,7 +27,22 @@ ls copy*.json 2>/dev/null; grep -nE '"copy:(lint|build|check)"' package.json
 ```
 
 Either way, never write Visant copy without going through the prohibitions
-below.
+below. **Asked to audit a page?** A clean linter says little: follow
+[references/audit.md](references/audit.md).
+
+## Pick the register first
+
+The voice is one; who is speaking changes. Decide before the first sentence.
+
+| register | pieces | who speaks | rhythm |
+|---|---|---|---|
+| **Signed** | essay, newsletter, post, thread, personal invitation | "eu", a named person with an opinion | ~17 words on average, room for a long sentence and a story |
+| **House** | landing, product line, CTA, FAQ, sales email | "a gente" or "nossa", speaking for Visant | ~12 words, punch after the long sentence |
+| **Interface** | button, label, error, caption | nobody, just the verb | as short as it stays clear |
+
+Signed is where the voice comes from, so read
+[the signed register](references/voice.md#8-signed-register-from-the-originals)
+before writing anything longer than a section, in any register.
 
 ## Rule zero: propose, never apply
 
@@ -38,6 +53,9 @@ Style improvements go as a **proposal table in the report** (key, before, after)
 and the user picks row by row. Rewriting what was already good burns trust and
 makes the user review the reviewer.
 
+**An audit changes nothing yet.** Asked to audit or review, deliver the table, tics
+included, and ask which rows to apply.
+
 **The exception is an explicit request.** "Essa copy tá confusa, tem que ser na
 pegada X" is a work order, not an invitation to debate: apply it, show the
 before/after table, and leave **one or two ONE-line alternatives** at the end, so
@@ -47,7 +65,8 @@ already gave the direction pushes the work back to them.
 ## The prohibitions
 
 Absolute. They apply to headline, body, CTA, FAQ, email, caption, alt text,
-error message, meta description. No "but here it worked" exception.
+error message, meta description. No "but here it worked" exception. The only
+one is rule 3, and context decides it: [a real reversal is not the AI tic](references/voice.md#the-one-exception-a-real-reversal).
 
 1. **Dash (— or –) never.** Period, comma, colon or parentheses.
 2. **Separator dot (`·`, alt+7) never.** Not in metadata lists, not in a CTA with
@@ -69,7 +88,7 @@ error message, meta description. No "but here it worked" exception.
    limitado". Scarcity must be countable: say the number ("este lote tem 30
    vagas", "a cota sobe a cada compra").
 10. **Credibility seal at most once per page.** "real", "de verdade", "na
-    prática", "de fato", "genuíno", "autêntico". One passes. With two, the reader
+    prática", "de fato", "genuíno", "autêntico", "honesto". One passes. With two, the reader
     counts and posts a screenshot ("trajetória real, projeto real, técnica real,
     processo real"). An adjective does not prove; numbers and scenes do.
     `Sete anos de projeto real` → `Sete anos entregando marca`.
@@ -92,26 +111,7 @@ node $L README.md docs/landing.md       # markdown or plain text
 npm run copy:lint                       # if the repo uses Visant's pipeline
 ```
 
-What it accepts, exactly:
-
-| input | how it reads | where it reports |
-|---|---|---|
-| `.json` (any structure, must be valid JSON) | every string value, at any depth | the dotted key (`hero.title`) |
-| code (`.js .jsx .ts .tsx .mjs .cjs .vue .svelte .astro`) | line by line, comments masked | `L<n>` |
-| any other text (`.md`, `.html`, `.txt`) | line by line, no masking | `L<n>` |
-
-- **Files or folders**, one or many. A folder is walked for the types above,
-  skipping `node_modules`, `.git`, `.next`, `dist`, `build`, `out`, `coverage`
-  and dot-folders.
-- Invalid JSON or a missing path stops with a one-line error and exit 1.
-- Emoji runs on every file. Semicolon and pipe separator run **only on
-  `.json`** (in `.md` the pipe is a table, in code `;` is syntax).
-- Flags: `--quiet` (exit code only, for CI), `--include-comments` (lint code
-  comments too), `--self-test` (every PT and EN rule fires, clean sentences pass).
-- **Ids are English**, `pt-`/`en-` when language-specific (`pt-not-x-but-y`,
-  `en-hype`), bare for punctuation (`em-dash`, `bullet-separator`, `semicolon`).
-  Old PT ids (`travessao`, `bolinha`) still work in config. EN hype needs a
-  marketing object: "Unlock account" passes, "unlock your potential" fails.
+Folders are walked, generated files skipped. Inputs, flags and rule ids: [references/linter.md](references/linter.md).
 
 Exit 1 with the key, the excerpt and the fix. Two warnings come **outside the
 exit code**, because good copy cannot fail on a detail:
@@ -132,17 +132,20 @@ is not a seal; the rest is semantic, so confirm at `file:line`. [Why](references
 
 ## The voice
 
-Pattern taken from Visant's e-book landing. In order of importance:
+Pattern taken from Visant's e-book landing and from what the studio publishes
+under its own name. In order of importance:
 
-1. **Spoken Brazilian, medium dose.** "pra", "a gente", "tá". No "cê", "mano",
-   "tá ligado". Short imperative: "Lê e julga", "Observa uma coisa".
+1. **Spoken Brazilian, by ear.** "para" and "pra" both live here: written lines
+   lean "para", spoken beats take "pra", "tá", "tô". Never swap one for the other
+   mechanically. No "cê", "mano", "tá ligado". Short imperative: "Lê e julga".
 2. **Short sentence after short sentence.** Average 12 words. **A verbless
    fragment is a device**, always as a punch after the long sentence: "…e a marca
    se comporta de outro jeito três meses depois. Toda vez."
 3. **Scene instead of adjective.** Never "inconsistência de marca". Write what is
    seen: "Um post fala uma coisa, o atendimento fala outra, o site parece de
    outra empresa."
-4. **Blame starts with the author.** Confess before charging: "A gente começava
+4. **Blame starts with the author, and only if it happened.** Never invent a
+   scene, memory or confession: [ask, or mark the place](references/voice.md#never-invent-the-personal-part). Confess before charging: "A gente começava
    pelo logo também. Perdeu semanas assim, até inverter a ordem." Accusing the
    reader directly ("você começa pelo logo porque é a parte divertida") only
    after the confession, if at all.
@@ -157,6 +160,11 @@ Pattern taken from Visant's e-book landing. In order of importance:
 9. **Objections in the reader's voice.** The FAQ is what the person thinks, in
    their words: "Já faço branding há anos. Vou ver algo novo?". The answer opens
    by answering ("Serve.", "É."), never with "Ótima pergunta".
+10. **Takes a position and owns it.** "Eu acho triste", then "mas não importa se
+    eu acho isso bom ou ruim". Grant the best counterargument before answering it.
+11. **The specific analogy, announced.** "Um exemplo meio tosco": the Subway order
+    with "exatamente 12 azeitonas pretas". Detail too exact to be invented is what
+    AI text lacks.
 
 Line-by-line detail, vocabulary, anglicisms, money, CTA, and the before/after
 table: [references/voice.md](references/voice.md). Read it before writing a new
@@ -181,6 +189,20 @@ When the pain needs to show (and sometimes it does), it goes in the **next
 section**, opening the mechanism. On the fold you have 5 seconds, and spending
 all five describing the problem is wasting your turn.
 
+### The product line says what the reader gets
+
+The line under a product or feature name, also invisible to every linter. It
+fails in three ways:
+
+- **Describes the mechanism from inside.** `Audita antes do PR` is correct, and
+  it asks the visitor to know what a PR is and why auditing helps. Write what
+  they walk away with: `Olho de designer para o seu Claude Code`.
+- **Lists nouns.** `Movimento e espera` names a topic. A line has a verb or a
+  gain.
+- **Promises more than the thing does.** Before writing "sozinho", "tudo",
+  "treinado" or "em minutos", open what the product really does. A claim the
+  demo beside it contradicts costs more than a flat line.
+
 Visant's own brand terms: [glossary](references/voice.md#brand-glossary-visants-own-copy-only). In client copy, the glossary is the client's.
 
 ## If the repo uses Visant's pipeline (`copy.json`)
@@ -197,32 +219,11 @@ key error, setting it up in a new repo): [references/pipeline.md](references/pip
 
 ## When there is no `copy.json` (any other repo)
 
-Outside that pipeline, **the component is the SSoT**. Do not set up a
-`copy.json` in the middle of a text task: the user asked for copy, not a new
-architecture.
-
-The risk changes shape. There is no build to sync views, so the same sentence
-exists copied in three or four places, and changing only the `<h1>` leaves the
-rest selling last month's promise. **After changing the headline, hunt the
-echoes** (social card and `<title>` are the ones most often left behind):
-
-```bash
-rg -n "trecho da frase antiga" src   # and repeat with 4 or 5 words from the middle
-```
-
-Where they hide, in order of being forgotten:
-
-| place | typical file |
-|---|---|
-| `<h1>` and lead | `components/**/hero.tsx` |
-| link card | `app/**/opengraph-image.tsx`, and the `alt` exported there |
-| `<title>` and description | `app/**/page.tsx` (and the `twitter`/`openGraph` of the same object) |
-| screenshot `alt` and `figcaption` | the same hero |
-| section that repeats the argument | `components/**/` in the same folder |
-
-Close with `npx tsc --noEmit` in TS repos: a lost comma in JSX breaks the build.
-The `<title>` is the only one that changes voice: it answers search, so it
-carries the noun people search for ("mockups"), while the `<h1>` carries the verb.
+**The component is the SSoT.** Do not set up a `copy.json` in the middle of a text
+task. The risk changes shape: the same sentence lives in three or four places, so
+**after changing the headline, hunt the echoes** with `rg`. The social card and the
+`<title>` get forgotten most. Where they hide, and why the `<title>` keeps the search
+noun: [references/pipeline.md](references/pipeline.md#without-copyjson-echoes-in-a-component-repo).
 
 ## Work order on "review/write the copy"
 

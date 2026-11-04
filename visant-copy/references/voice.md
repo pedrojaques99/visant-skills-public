@@ -11,6 +11,7 @@ Index:
 5. The tics, with the fix for each
 6. Before/after table of real fixes
 7. Delivery checklist
+8. Signed register, from the originals
 
 ---
 
@@ -20,8 +21,7 @@ Index:
 
 | instead of | write |
 |---|---|
-| para | pra |
-| nós / nossa equipe | a gente |
+| nós / nossa equipe | a gente, o time ("nossa comunidade" stays) |
 | está | tá (in body copy, not in an SEO title) |
 | utilizar, realizar | usar, fazer |
 | aprimorar, otimizar (in sales copy) | melhorar, resolver |
@@ -31,7 +31,12 @@ Index:
 | adquirir | comprar |
 | jornada, experiência | what the person does: ler, aplicar, entregar |
 
-**Colloquialism is a medium dose.** "pra", "a gente", "tá" go in. "cê", "mano",
+**"para" or "pra" is decided by ear.** Signed text leans "para" (22 to 0 in the
+excerpts measured), with "pra" in spoken turns ("daqui pra frente"). Landings use
+more "pra", because they speak to the reader in short lines. Mechanical swapping
+sounds fake both ways.
+
+**Colloquialism is a medium dose.** "a gente", "tá", "tô" go in. "cê", "mano",
 "tá ligado", "sacou" stay out: they are story-speak, age fast and come unglued
 from written text.
 
@@ -45,13 +50,14 @@ potencial máximo, eleve seu, nunca foi tão, no mundo de hoje, mercado cada vez
 mais competitivo, game changer, descubra o poder/segredo, vamos mergulhar,
 prepare-se para, imagine que, e se eu te dissesse.
 
-**First person singular ("eu") is restricted to bio, author section and
-behind-the-scenes.** In landing body copy and the mechanism, always "a gente".
-Visant has two founders, and text that speaks for the house speaks in plural.
+**First person singular ("eu") belongs to the signed register**: essay, post,
+bio, author section, behind-the-scenes. In landing body copy and the mechanism,
+always "a gente": text that speaks for the house speaks in plural.
 
 ## 2. Rhythm and punctuation
 
-- Average 12 words per sentence. A 30-word sentence needs a reason.
+- House register: average 12 words per sentence. A 30-word sentence needs a
+  reason. Signed runs longer (section 8).
 - Alternate long and short. **A verbless fragment is allowed and wanted as a
   punch**, after a sentence that carried weight, one or two per section:
   "Você passa semanas numa identidade linda, o cliente aprova, e a marca se
@@ -103,8 +109,10 @@ trabalhar com processo em vez de só feeling"), and the FAQ settles the fit.
 ## 4. How each block is written
 
 **Hero.** The eyebrow names the category (`E-book, a Metodologia Visant`). The
-title is the **consequence of the mistake**, never a promise: "Se o projeto
-começa pelo logo, ele volta pra revisão." The lead names the mistake and what the
+title **names the task** when people come to do something ("Ache o mockup certo
+sem abrir um PSD"). When the product is a method and nobody searches for a verb, it
+is the **consequence of the mistake**: "Se o projeto começa pelo logo, ele volta
+pra revisão." Never a promise. The lead names the mistake and what the
 product does about it, in two sentences. The trigger under the CTA carries zero
 risk: "Acesso na hora, leitura no navegador. 7 dias de garantia."
 
@@ -196,11 +204,11 @@ Applied on Visant's own landings. A rewrite answer key.
 | `ebook sample.lead` | Não é um teaser. É a primeira das nove… | É a primeira das nove, do jeito que está no livro… |
 | `ebook sample.p4` | …da marca. Não é slogan. Slogan é pra fora, pro público. | …da marca. Slogan é pra fora, pro público. |
 | `ebook sample.p9` | Valor negociável não é pilar. Pilar é aquilo que… | Pilar é aquilo que… Tudo que dá pra negociar fica de fora. |
-| `ebook sample.p12` | pilar bom é aquele que a marca pode fazer, não só dizer | pilar bom é aquele que a marca cumpre na prática |
+| `ebook sample.p12` | pilar bom é aquele que a marca pode fazer, não só dizer | pilar bom é aquele que a marca cumpre |
 | `ebook sample.case2_b` | socialização, não só encontrar partida | socialização em cima da partida |
 | `ebook sample.pil3_b` | o app precisa resolver, não complicar. | o app precisa resolver em dois toques. |
 | `ebook object.title` | Feito pra ler, não pra arquivar. | Cada página foi desenhada. |
-| `ebook author.title` | Sete anos de projeto real, não de teoria. | Sete anos de projeto real. |
+| `ebook author.title` | Sete anos de projeto real, não de teoria. | Sete anos entregando marca. |
 | `ebook faq.a1` | O acesso é seu, não expira. | O acesso é seu e fica. |
 | `club hero.lead` | design que fatura, não o que só enche portfólio | design que paga as contas no fim do mês |
 | `club proof.note` | Não vamos te vender promessa, a ideia é te passar o que deu certo e errado pra gente, e te ajudar com… | A gente não vende promessa. Mostra o que deu certo e o que deu errado, e entrega as ferramentas que usa todo dia. |
@@ -230,6 +238,101 @@ None of them had a linter tic, which is why they are here.
 - [ ] FAQ in the reader's voice, answer opening with the answer
 - [ ] At least one place admits a limit, and the blame starts with the author
 - [ ] Read aloud without stumbling. If the tongue trips, rewrite.
+- [ ] Signed piece: has an opinion, a concrete scene and a person at the end
+
+## 8. Signed register, from the originals
+
+Taken from what the studio publishes on the Visant Club (essay, manifesto, post).
+Measured on excerpts: average 17 words per sentence, median 15, with 7 of 64 at
+six words or fewer. The short sentence works because the long one came first.
+
+**Open by talking, not by announcing.** A connective from speech, then the claim:
+"Olha, eu acho que estamos vivendo em um momento muito peculiar". Spoken joints
+carry the argument: "Então", "Agora", "Dito isso", "Por fim", "Resumindo".
+
+**Opinion with an owner, hedged only where it is doubt.** "Eu realmente acredito",
+"eu acho bem ruim", "pode ser". Then the turn: "Mas não importa se eu acho isso bom
+ou ruim, importa que é isso que está acontecendo".
+
+**Grant the strongest counterargument, then limit it.** "É um argumento super
+válido e que eu concordo. MAS, nessa hipótese somente os ilustradores profissionais
+no topo da cadeia de habilidade serão requisitados." The concession is real: it
+changes the conclusion a little.
+
+**The parenthesis talks back.** The author interrupts themselves: "(dramático, eu
+sei)", "(como eu fiz)", "(tecnicamente você pode pedir isso no subway)". One or two
+per section. It is where the humor and the self-awareness live.
+
+**A long analogy with absurd precision, announced as silly.** "Vou usar um exemplo
+meio tosco": the Subway attendant "com um olhar de mil jardas", "exatamente 12
+azeitonas pretas e 3 azeitonas verdes". Then it returns to the point: "Essas são,
+de forma muito simplificada, as mesmas 2 opções". One per piece, carried to the end.
+
+**Memory as a scene.** Not "sempre fui criativo": "sentado no banco de trás do
+carro da minha mãe indo para a escola". Not "foi difícil no começo": "desbravar a
+mata fechada desse mercado sozinho com um facão e uma lanterna".
+
+**Repertoire as proof.** Gutenberg in 1440, Photoshop in the hands of Alexandre
+Wollner. A name and a date instead of an adjective.
+
+**CAPS for one word, rarely.** HOJE, MAS, FERRAMENTAS: the word the voice would
+lean on when speaking. One or two per piece, never in a headline.
+
+**The short form is a thought split by line breaks.** The post keeps one idea,
+each sentence on its own line, and lands on a calm sentence with no slogan:
+
+> Os seus primeiros 100 posts não são para os seus seguidores.
+> Eles são para você.
+> [...]
+> O começo é lento, mas é o mais importante.
+
+**Close with a person, and a deal.** "Sua missão é tirar 5min toda semana para ler
+algo que goste aqui. Minha missão é fazer com que essa tenha sido a sua melhor
+decisão." Then "Te vejo em uma próxima." and the signature. Say what the reader
+gets and that it is paid: "A Visant Club é reservada para os assinantes pagos".
+
+### Never invent the personal part
+
+Scene, memory, confession and "a gente também errou" only work because they
+happened. **You cannot know them.** Ask the signer for one real scene and one thing
+that went wrong. If they are not available, mark the place and deliver it open:
+`[cena real: a última vez que X]`, `[quem assina]`. An invented memory is a false
+testimonial, in the same category as an invented number. The same goes for the
+confession on a landing.
+
+### Show the move, not the phrase
+
+"Dramático, eu sei", "um exemplo meio tosco" and "Olha," are examples of a move.
+Reused, they turn into the next tic: a reader of two pieces will count them. Write
+a new parenthesis and find your own way to announce the analogy.
+
+### Copy the traits, never the slips
+
+A human can afford what AI text cannot. These appear in the originals and are not
+the voice: the loose hyphen (" - "), three credibility seals in one text, emoji in
+headings, "revolução" and "jornada", typos. The prohibitions still apply.
+
+### The one exception: a real reversal
+
+"Os seus primeiros 100 posts não são para os seus seguidores. Eles são para você."
+fails the linter, and it is the entire idea of the post. The AI tic has the same
+grammar and is the opposite move. The linter cannot tell them apart, so read the
+context:
+
+| | real reversal | AI tic |
+|---|---|---|
+| the denied half | what the reader believed before reading | a strawman nobody said |
+| the second half | changes how they see it, and the piece depends on it | a grander word for the same thing |
+| delete the negation | the idea is gone | the sentence gets stronger |
+
+- `Não é só um template, é um sistema.` Nobody thought it was only a template, and
+  "sistema" is the same thing with more ego. Tic.
+- `O meu intuito aqui não é ser alarmista, é ser realista.` The reader of a piece on
+  designers going extinct does suspect alarmism. Reversal.
+
+It stays when it passes all three. It is rare by nature: two in a piece means the
+writing has found a habit. It is most at home in signed text, and a landing needs a
+stronger reason. Say in the report which finding stayed and why.
 
 ## Brand glossary (Visant's own copy only)
 

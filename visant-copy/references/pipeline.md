@@ -148,3 +148,32 @@ written inside the component.**
 
 Before approving copy with a number, check it against these sources. Copy that
 lies about price is the only kind that causes chargebacks.
+
+## Without `copy.json`: echoes in a component repo
+
+Outside that pipeline, **the component is the SSoT**. Do not set up a
+`copy.json` in the middle of a text task: the user asked for copy, not a new
+architecture.
+
+The risk changes shape. There is no build to sync views, so the same sentence
+exists copied in three or four places, and changing only the `<h1>` leaves the
+rest selling last month's promise. **After changing the headline, hunt the
+echoes** (social card and `<title>` are the ones most often left behind):
+
+```bash
+rg -n "trecho da frase antiga" src   # and repeat with 4 or 5 words from the middle
+```
+
+Where they hide, in order of being forgotten:
+
+| place | typical file |
+|---|---|
+| `<h1>` and lead | `components/**/hero.tsx` |
+| link card | `app/**/opengraph-image.tsx`, and the `alt` exported there |
+| `<title>` and description | `app/**/page.tsx` (and the `twitter`/`openGraph` of the same object) |
+| screenshot `alt` and `figcaption` | the same hero |
+| section that repeats the argument | `components/**/` in the same folder |
+
+Close with `npx tsc --noEmit` in TS repos: a lost comma in JSX breaks the build.
+The `<title>` is the only one that changes voice: it answers search, so it
+carries the noun people search for ("mockups"), while the `<h1>` carries the verb.
