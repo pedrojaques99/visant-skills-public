@@ -716,7 +716,8 @@ do not count).
 
 **Symptom.** Every group in a `border rounded-xl` box; a box inside a box.
 **Fix.** One level of container. Group by space; a border only where there is a
-real limit (input, table, clickable area). Related to 35.
+real limit (input, table, clickable area, the main data of an operation screen).
+It forbids a box in a box, not boxes: see 64. Related to 35.
 **Test.** A box inside a box is always one too many.
 **Detector.** `noise-scan`, rule `box-in-box` (2+ in one file; fields, buttons,
 links, tags, tabs, swatches and anything inside a `fixed`/`absolute` layer
@@ -810,6 +811,14 @@ actions behind one `⋯`; dependent controls only while they apply.
 **Symptom.** A curve, a preview or a list, and only BELOW it the "Type" selector that reinterprets it.
 **Fix.** The selector first (tabs above the graph), then the picture, then the numbers.
 **Test.** Read top to bottom: do you meet the content before knowing what kind it is?
+
+### 64. Clean to the bone
+
+**Symptom.** After a cleanup: no cards, numbers at body size, a state reduced to a grey icon, six tiles turned into a sentence, a frame with a void beside it. Every detector at zero.
+**Cause.** Detectors count what is left over, so deleting always scores.
+**Fix.** Boxes back on main data, chips back on states, the column back to its width. Text that repeats becomes a drawn fact, not an ornament.
+**Test.** Before and after side by side, shown to the owner. Would they miss what went?
+**Detector.** `tela-scan.js` on the open screen, `regressao.mjs` against the previous state ([verification.md](verification.md#tela-scanjs-what-the-screen-lost)).
 
 ## Quick sweep
 

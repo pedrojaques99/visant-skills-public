@@ -105,3 +105,14 @@ that already exist. The grouping rules were narrowed by the same calibration
 (vertical text stacks, component scale, `aria-hidden` out) until the three
 reference sites gave zero, and the first real finding was on the house's own
 landing: a CTA with `mt-1` patching a `gap-7`.
+
+## "Limpo até demais"
+
+An agent applied these skills to an agent console and took out too much: costs
+lost every card, six number tiles became a sentence, a per-row "Ok" became a grey
+icon, a `max-w-5xl` left a void. The detectors said zero, and that was the bug:
+they only punish what is left over, so the score rises as the screen empties. The
+owner: "limpo até demais", "sem respiro visual", "super cheia de textos". Two rules
+were read past their scope ("depth by line" on a dashboard, "cards in cards" as
+"cards are bad"). `tela-scan.js` and `regressao.mjs` came from it, and so did the
+rule above the score: before and after side by side, shown to the owner.

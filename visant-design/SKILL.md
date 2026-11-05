@@ -30,8 +30,9 @@ Keep the design. Remove the tells.
 
 1. `node <skill-dir>/scripts/check.mjs <ui paths> --url <running app>`
 2. Fix every finding at its cause. Hiding what a finding points at does not count.
-3. Read the images. Fix the tells no detector sees: decorative gradients, purple as "AI", glow, emoji as icons, cards in cards, eyebrow labels over every heading, hype words, invented numbers.
+3. Read the images. Fix the tells no detector sees: decorative gradients, purple as "AI", glow, emoji as icons, a card nested in a card (the nesting is the tell; a card alone is not), eyebrow labels over every heading, hype words, invented numbers.
 4. Run it again until it is clean. Report what you removed.
+5. Compare before and after side by side and show the owner before shipping. The score is not the verdict: it improves with every box you delete, and a screen stripped of its cards scored zero while its owner called it "limpo até demais". `node ../visant-killer/scripts/regressao.mjs git HEAD <ui paths>` flags lost boxes, controls, chips and width.
 
 ## End to end
 
@@ -41,9 +42,9 @@ Keep the design. Remove the tells.
    - Queue, table, editor, admin: [work](../visant-frontend/references/work-surface.md)
    - Payment, permission, deletion, money: [trust](../visant-frontend/references/trust-surface.md)
 3. **Diagnose from the image.** Run [foundations.md](references/foundations.md) on the screenshot, in order. List what is wrong, biggest first.
-4. **Cut before adding.** For each element ask which decision it helps. No answer, it goes. Most screens get better by losing things.
+4. **Cut before adding.** For each element ask which decision it helps. No answer, it goes. Most screens get better by losing things, but a main number keeps its box, a state keeps its chip, an action keeps its target. Too much text becomes a drawn fact (bar, chip, icon with a tooltip), never a pile of badges.
 5. **Build.** The product's tokens and components first. Motion and data get their playbook only if this screen needs them. Write copy from what the product really does; a number you don't have stays a visible placeholder.
-6. **Look at the result.** Run `check.mjs` again and read the new screenshots at every width, next to the old ones. Ask the most exacting designer's question: what would I screenshot and send back? Fix the biggest thing and repeat, up to three rounds.
+6. **Look at the result.** Run `check.mjs` again and read the new screenshots at every width, next to the old ones, and show the owner the pair: the score is not the verdict. Ask the most exacting designer's question: what would I screenshot and send back? Fix the biggest thing and repeat, up to three rounds.
 7. **Report.** What changed and which number each change is meant to move; what you cut and why; the widths you looked at; what you did not check. A redesign is a hypothesis: say how to measure it.
 
 If `check.mjs` says NOT VERIFIED, the first line of your answer says so. The work is not done. Stop any server you started. `check.mjs` runs in Chromium: a custom touch gesture that never ran on a real iPhone goes under what you did not check.

@@ -15,6 +15,7 @@ import { readdirSync, existsSync, readFileSync, mkdirSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
+import { OUVINTES_INIT, axeSource, medirTela } from './tela-harness.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const args = process.argv.slice(2)
@@ -41,9 +42,11 @@ const scanSrc = readFileSync(join(here, 'corta-scan.js'), 'utf8').replace(/if \(
 const ritmoSrc = readFileSync(join(here, 'ritmo-scan.js'), 'utf8').replace(/if \(typeof module[\s\S]*$/, '')
 
 const browser = await chromium.launch()
+const axe = axeSource()
 let total = 0
 for (const w of widths) {
   const page = await browser.newPage({ viewport: { width: w, height: w < 768 ? 844 : 900 }, reducedMotion: 'no-preference' })
+  await page.addInitScript(OUVINTES_INIT)
   for (const r0 of routes.length ? routes : ['home']) {
     const r = r0 === 'home' ? '/' : '/' + r0.replace(/^.*?Git\//, '').replace(/^\//, '')
     /* A page that crashed has nothing to clip: it used to come back "OK, no overflow". */
@@ -66,6 +69,8 @@ for (const w of widths) {
       const ritmoAchados = ritmo('body', { verbose: false }).map((a) => `[${a.regra}] ${a.el}: ${a.detalhe}`)
       return { achados, over, ritmoAchados, text: document.body.innerText.trim().length, media: document.querySelectorAll('img,svg,canvas,video').length }
     })
+    /* what the screen lost (tela-scan) and target size / name (axe): printed for the eye, never in the exit code */
+    const leitura = await medirTela(page, { axe }).catch((e) => ({ achados: [], axe: { medido: false, motivo: e.message.split('\n')[0], achados: [] }, vitrine: false }))
     page.off('pageerror', onCrash)
     if (crashes.length) res.achados.unshift(...crashes.slice(0, 3).map((m) => `[js-crash] ${m}`))
     if (!res.text && !res.media) res.achados.unshift('[blank-page] nothing rendered: no text and no media')
@@ -81,6 +86,12 @@ for (const w of widths) {
     for (const a of res.achados.slice(0, 8)) console.log(`        ${a}`)
     if (res.ritmoAchados.length) console.log(`        spacing: ${res.ritmoAchados.length} candidate(s)`)
     for (const a of res.ritmoAchados.slice(0, 8)) console.log(`        ${a}`)
+    if (leitura.achados.length) console.log(`        screen: ${leitura.achados.length} candidate(s)`)
+    if (leitura.vitrine) console.log('        screen: showcase page, row-level rules off')
+    for (const a of leitura.achados.slice(0, 8)) console.log(`        [${a.regra}] ${a.el}: ${a.detalhe}`)
+    if (!leitura.axe.medido) console.log(`        target size, name: NOT MEASURED (${leitura.axe.motivo})`)
+    else if (leitura.axe.achados.length) console.log(`        axe: ${leitura.axe.achados.length} candidate(s)`)
+    for (const a of leitura.axe.achados.slice(0, 5)) console.log(`        [axe/${a.regra}] ${a.el}`)
     total += res.achados.length + (res.over > 0 ? 1 : 0)
   }
   await page.close()

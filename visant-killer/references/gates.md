@@ -214,6 +214,11 @@ vertical text stacks at component scale: calibrated to zero on linear.app,
 stripe.com and vercel.com. Its findings never fail the run: confirm each on the
 screenshot, then fix in the source.
 
+**The opposite failure.** Every line above punishes what is left over, so a screen
+stripped bare passes. `tela-scan.js` and `regressao.mjs` measure what it lost
+([verification.md](verification.md#tela-scanjs-what-the-screen-lost)). Their
+findings never fail the run either; `--report` asks for the side-by-side instead.
+
 ## CI ratchet
 
 Pattern for a repo that has more debt than one round can clear: CI compares the

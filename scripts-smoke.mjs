@@ -181,6 +181,7 @@ const CASES = [
 const SELF_TESTS = [
   { name: "noise-scan", script: join(REPO, "visant-killer", "scripts", "noise-scan.mjs"), args: ["--self-test"] },
   { name: "corta-scan", script: join(REPO, "visant-killer", "scripts", "corta-self-test.mjs"), args: [] },
+  { name: "tela-scan", script: join(REPO, "visant-killer", "scripts", "tela-self-test.mjs"), args: [] },
 ];
 
 let failed = 0;

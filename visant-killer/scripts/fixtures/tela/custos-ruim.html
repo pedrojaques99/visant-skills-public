@@ -1,0 +1,44 @@
+<!doctype html>
+<!--
+  tela-scan FIXTURE, the case that motivated it, with invented data: a costs and
+  health console after an agent removed every box. Wide viewport, sidebar plus a
+  left-aligned max-w column, numbers at body size, state only as a grey icon.
+
+  EXPECTED, page level (node scripts/tela-self-test.mjs):
+    vazio-lateral, metrica-sem-destaque, numeros-em-frase, tudo-igual,
+    estado-so-icone. The partner custos-bom.html holds the same data and is clean.
+-->
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Custos</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 14px/1.5 sans-serif; background: #0b0b0c; color: #d4d4d8; display: flex; min-height: 100vh; }
+  .side { width: 240px; flex: none; border-right: 1px solid #27272a; padding: 16px; }
+  .side a { display: block; color: #a1a1aa; padding: 6px 0; }
+  main { flex: 1; padding: 24px; }
+  .col { max-width: 1024px; }
+  h1 { font-size: 15px; font-weight: 400; margin-bottom: 16px; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+  .row svg { width: 16px; height: 16px; color: #71717a; }
+  section { margin-bottom: 24px; }
+</style></head>
+<body>
+  <nav class="side"><a href="#a">Conversas</a><a href="#b">Custos</a><a href="#c">Saúde</a><a href="#d">Memória</a></nav>
+  <main><div class="col">
+    <h1>Custos</h1>
+    <section>
+      <div class="row"><span>Total do período</span><span>US$ 12,40</span></div>
+      <div class="row"><span>Modelos</span><span>US$ 11,10</span></div>
+      <div class="row"><span>Transcrição</span><span>US$ 0,80</span></div>
+      <div class="row"><span>Mensagens de voz</span><span>US$ 0,50</span></div>
+    </section>
+    <section><p>Memória guarda 120 fatos, 14 pessoas, 8 projetos, 32 conversas, 5 regras e 2 índices.</p></section>
+    <section>
+      <div class="row"><span>Banco de dados</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Fila de envios</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Serviço de voz</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Armazenamento</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Agendador</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Canal de mensagens</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+    </section>
+  </div></main>
+</body></html>

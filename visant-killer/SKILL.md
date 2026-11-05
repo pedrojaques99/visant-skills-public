@@ -18,6 +18,8 @@ loaded), because AI slop survives any linter: the problem is decision, not synta
 > form passed six gates. So `killer-scan` **refuses** "gate open" without the
 > surface table and the record of having opened the screen.
 
+> **The score is not the verdict.** Removing always improves it: a screen stripped of its cards scored zero and the owner called it "limpo até demais". Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
+
 Where each rule came from: [references/cases.md](references/cases.md). **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
 
 ## Hard prohibitions (you break them while writing, not reviewing)
@@ -42,8 +44,7 @@ Where each rule came from: [references/cases.md](references/cases.md). **Stack.*
 | clickable button/card without `cursor: pointer`; drag without `grab` | a rule in the shell (`:is(button,[role=button],a[href])`) | Tailwind v4 preflight resets the cursor (catalog 46) |
 | client copy in a library piece | generic text, spoken pt-BR | the library sells to every client (catalog 42) |
 
-Exceptions exist (route transition, marketing piece, `#fff`/`#000` as a WCAG
-contrast reference, blur in a `Dialog`, scrim over a photo). An exception goes
+Exceptions exist (route transition, marketing piece, `#fff`/`#000` as a WCAG contrast reference, blur in a `Dialog`, scrim over a photo). An exception goes
 **with a written reason on the line**, in the scanner format
 ([references/gates.md](references/gates.md#written-exception-one-contract-every-scanner)),
 never with a mute `audit-ignore`.
@@ -57,6 +58,7 @@ D=<skill-dir>/scripts/dist-scan.mjs
 C=<skill-dir>/../visant-copy/scripts/copy-lint.mjs
 T=<skill-dir>/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
 V=<skill-dir>/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
+S=<skill-dir>/scripts/tela-scan.js; G=<skill-dir>/scripts/regressao.mjs  # what the screen lost; before vs after
 # grafo.mjs is a library (import graph for --roots and repeated-door), not a CLI
 ```
 
@@ -202,6 +204,7 @@ Then, and only then (whatever did not run goes in the report):
 | horizontal overflow | `$V` (`estouro` column): `scrollWidth - clientWidth` **of the document** at 390px, re-measured after each fix. Not on an element: a decorative blob under `overflow-hidden` once became 64px of overflow that did not exist |
 | **cut text and stacked overlay** | `$V` (`corta` column) or `$T` in the console: a word eaten by a clipping parent, an overlay covering another in the same corner, a piece that left its box |
 | **spacing that lies** | `$V` (`spacing` column), `corta-url.mjs`, or `$E` in the console (`ritmo()`): more space inside a group than between groups, three levels with the same gap, one sibling drifting a few px. Off-scale values (15px, `p-[13px]`) are the repo's scale linter, not this ([gates.md](references/gates.md#spacing-two-layers)) |
+| **what it lost** | `$V` or `corta-url.mjs` (`screen`, `axe`), or `$S` in the console (`tela()`). Before editing: `node $G snap <url> --out antes.json`; after: `diff`, or `node $G git <ref> <paths>`. Rules and calibration: [verification.md](references/verification.md#tela-scanjs-what-the-screen-lost) |
 | distribution | does the page exist outside itself? `title`, `description`, share card, conversion event, `sitemap`, `robots` ([distribution.md](references/distribution.md)) |
 | real data | the screen with the best record and the worst; empty hides every overflow |
 | light theme | `$V --theme both`. A dark-first app breaks in light where nobody looks |

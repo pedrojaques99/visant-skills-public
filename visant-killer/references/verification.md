@@ -85,3 +85,79 @@ What it separates, and the separation is the value:
 
 Locked in `scripts/fixtures/spacing-cases.html` by the same
 `corta-self-test.mjs`.
+
+## `tela-scan.js`: what the screen lost
+
+Every other detector punishes what is left over; a screen stripped bare passes
+them all ([the case](cases.md#limpo-até-demais)). Same harness (`tela()` in the
+console, or `screen` in `$V` and `corta-url.mjs`). Findings are candidates and
+never fail the run.
+
+| Axis | Rule | Fires at |
+|---|---|---|
+| respiro | `vazio-lateral` | one side void >= max(120px, 10% of usable) more than the other, or centered under 60% and under 800px; from 1024px, with data, not on prose or forms |
+| respiro | `blocos-colados` | two boxes 2-6px apart, or a heading 0-6px above a box |
+| respiro | `texto-denso` | a 600px band >= 34% line boxes, no surface or media in it, not prose |
+| hierarquia | `sem-ponto-de-entrada` | first viewport with nothing >= 1.3x body (1.15x if bold), no media >= 20% of it |
+| hierarquia | `metrica-sem-destaque` | 3+ main numbers, >= 60% with no size and no surface |
+| hierarquia | `numeros-em-frase` | 3+ quantities enumerated in one sentence (a caption under a real tile passes) |
+| hierarquia | `tudo-igual` | 15+ runs, >= 90% of the characters in one size and weight, zero surfaces |
+| interatividade | `acao-virou-texto` | a lone action verb with no control and no pointer |
+| interatividade | `estado-so-texto` | 3+ rows with a status word in neutral ink, no chip, dot or colored icon |
+| interatividade | `estado-so-icone` | 3+ rows whose only state is a grey icon or dot |
+| interatividade | `parece-clicavel` | pointer, `<a>` with no destination, enabled button or underlined text, with no handler; only where handlers can be read |
+| comunicacao | `texto-demais` | 150+ words off links, not prose, under 1.5 visuals per 100 words |
+| comunicacao | `rotulo-repetido` | the same short label on >= 80% of 4+ sibling rows; a row with a chart passes |
+| comunicacao | `legenda-em-toda-linha` | >= 80% of 5+ stacked rows with a quieter caption of 4+ words |
+| comunicacao | `nomes-tecnicos` | 6+ distinct identifiers listed together, not links, not facts on a row, not ticket keys |
+| comunicacao | `pilha-de-selos` | 5+ inert chips in one parent, or 3+ rows with 3+ each. The opposite failure |
+| comunicacao | `icones-decorativos` | the same neutral icon leading 5+ inert items. The opposite failure |
+
+Target size and accessible name are axe-core (`target-size`, `button-name`,
+`link-name`, `aria-command-name`), run by `tela-harness.mjs`; no axe prints NOT
+MEASURED. A page with a display-size heading (40px+) is a **showcase**: it draws
+fake product UI in plain DOM, so only `texto-denso`, `sem-ponto-de-entrada`,
+`metrica-sem-destaque` and `tudo-igual` run there, and the output says so.
+
+### `regressao.mjs`: before against after
+
+```bash
+node regressao.mjs snap <url> --out antes.json      # before editing
+node regressao.mjs snap <url> --out depois.json
+node regressao.mjs diff antes.json depois.json      # also writes lado-a-lado.html
+node regressao.mjs git HEAD src/screens             # nobody took a snapshot: same four, from source
+```
+
+`perdeu-contentor` (numbers in a box: -2 and -34%; or surfaces: -3 and -50%),
+`perdeu-controle` (-2 and -25%), `perdeu-chip` (-2 and -50%), `perdeu-largura`
+(-120px and -10% of usable). A loss can be right: `--aceito regra="why"` prints
+the reason and clears it. A snapshot holds numbers only; the screenshot beside it
+holds the screen. It aborts every request other than GET or HEAD.
+
+### Not measurable: stays with the eye
+
+Whether a box is earning its place, whether the void is a decision, whether a chip
+tells the truth, whether the drawn fact is the right one. A zero says nothing was
+measured as lost, not that the screen is good.
+
+Locked in `scripts/fixtures/tela/` by `tela-self-test.mjs`.
+
+### Calibration
+
+2026-11-05, Chrome, read-only, after scrolling to the end.
+
+| Run | Pages | Result |
+|---|---|---|
+| Default, 1440 and 1920 | linear.app, linear.app/pricing, stripe.com, stripe.com/pricing, vercel.com, vercel.com/docs, npm package page, ui.shadcn.com/examples (dashboard, tasks, mail), GitHub issue list, githubstatus.com | zero (9 of the 13 count as showcases, so this zero is partly scope) |
+| Default | news.ycombinator.com | 1 known false positive, kept: `texto-demais`. The measure is true; the site is text by design |
+| All rules forced, 1440 | shadcn examples, GitHub issue list, npm, vercel docs, stripe.com, githubstatus.com | zero: the real test |
+| All rules forced, 1440 | linear.app | 25 on its drawn product UI (`parece-clicavel` 23): why showcases exist |
+| Default, logged in, 1920 only | three screens of an agent console already rebuilt with boxes | zero; with surfaces stripped by CSS, `sem-ponto-de-entrada` and `tudo-igual` fire |
+
+What it changed: showcase scope (linear.app's 23 "dead buttons"); side columns
+inside `<main>` (a 248px "void"); sr-only text (GitHub's "unread" on every row);
+words inside a running line are not labels ("opened"); a row with a chart labels an
+axis ("90 days ago"); a centered column also needs to be under 800px
+(githubstatus.com at 1920); a caption under a real tile is detail; links do not
+count as reading (Hacker News). Most rules have only fired in fixtures so far: no
+real bad screen was available to measure, only the synthetic reproduction.

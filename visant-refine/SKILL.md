@@ -181,8 +181,10 @@ slider fill as evidence. What makes one look engineered instead of assembled:
 - **The chrome takes the shape of the state.** Reset appears in a folder header
   only after a value changed; a dependent control exists only while its switch
   is On; rare actions sit behind one `⋯`; help is on demand, not a caption.
-- **Depth by line, not by box.** Sticky folder headers, a dashed divider for
-  nesting, quiet rows and loud values.
+- **Depth by line, not by box, on a control panel.** Sticky folder headers, a
+  dashed divider for nesting, quiet rows and loud values. An operation dashboard
+  is the opposite case: main data keeps its box, or the number stops being read
+  first (it cost one a whole screen; `tela-scan` now flags it).
 - **The mode comes before what it changes**, and every number takes drag,
   typing and arrow keys.
 - **A slider row does not trap the finger.** On touch it keeps the panel's

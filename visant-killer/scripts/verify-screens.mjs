@@ -41,6 +41,8 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { OUVINTES_INIT, axeSource, medirTela } from './tela-harness.mjs';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 
 export const DEFAULT_SKIP_PAID = ['/naming'];
@@ -244,6 +246,7 @@ async function main() {
     if (!token) throw new Error(`dev-login returned no token (HTTP ${res.status})`);
   }
 
+  const axe = axeSource();
   const { chromium } = await loadPlaywright();
   const browser = await chromium.launch();
   const report = [];
@@ -259,6 +262,7 @@ async function main() {
         },
         { token, theme, key: o.themeKey }
       );
+      await ctx.addInitScript(OUVINTES_INIT);
       if (!o.allowPaid) {
         await ctx.route(PAID_API, (route) =>
           route.request().method() === 'GET' ? route.continue() : route.abort('blockedbyclient')
@@ -344,6 +348,11 @@ async function main() {
           m = await measure();
         }
         const blank = m.textLen < 20;
+        // what the screen lost, and target size / name by axe: reported, judged on the screenshot, never fails the run
+        const leitura = await medirTela(page, { axe }).catch((e) => ({ achados: [{ regra: 'tela-error', el: '', detalhe: String(e).slice(0, 120) }], axe: { medido: false, achados: [] } }));
+        m.tela = leitura.achados.slice(0, 8).map((a) => `[${a.regra}] ${a.el}: ${a.detalhe}`);
+        m.axe = leitura.axe.medido ? leitura.axe.achados.slice(0, 8).map((a) => `[${a.regra}] ${a.el}`) : null;
+        m.retrato = leitura.retrato;
         // the .dark class is applied in an app effect: on an empty screen it says nothing about the theme
         const themeOk = blank || m.darkClass === (theme === 'dark');
         const file = `${theme}-${width}${route.replace(/[/?=&]/g, '_') || '_root'}.png`;
@@ -357,7 +366,7 @@ async function main() {
         const bad = blank || m.overflow > 0 || m.corta.length || m.rawKeys.length || errors.length || !themeOk || paidBlocked.length;
         console.log(
           `${bad ? 'FOUND' : 'OK   '} ${theme.padEnd(5)} ${String(width).padStart(4)} ${route.padEnd(30)} ` +
-            `overflow=${m.overflow} clipped=${m.corta.length} spacing=${m.ritmo.length} rawkey=${m.rawKeys.length} error=${errors.length} ` +
+            `overflow=${m.overflow} clipped=${m.corta.length} spacing=${m.ritmo.length} screen=${m.tela.length} axe=${m.axe ? m.axe.length : 'NOT-MEASURED'} rawkey=${m.rawKeys.length} error=${errors.length} ` +
             `api4xx5xx=${row.apiFail.length}${blank ? ' BLANK-SCREEN' : ''}${themeOk ? '' : ' THEME-NOT-APPLIED'}${paidBlocked.length ? ' PAID-BLOCKED=' + paidBlocked.length : ''}`
         );
       }
