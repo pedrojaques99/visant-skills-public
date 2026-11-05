@@ -8,7 +8,7 @@
  *
  *   node scripts/tela-self-test.mjs
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { OUVINTES_INIT, axeSource, loadChromium, medirTela, rodarAxe, telaSrc } from './tela-harness.mjs';
@@ -58,13 +58,50 @@ const TODAS = ['vazio-lateral', 'blocos-colados', 'texto-denso', 'sem-ponto-de-e
 for (const r of TODAS) if (!vivas.has(r)) fim(false, `rule ${r} never fired in the fixture`);
 
 /* 2 · the real case, whole page */
-await page.goto(url('custos-ruim.html'));
+await page.goto(url('metrics-bad.html'));
 const ruim = await medirTela(page);
-await page.goto(url('custos-bom.html'));
+await page.goto(url('metrics-good.html'));
 const bom = await medirTela(page);
 const regrasRuim = new Set(ruim.achados.map((a) => a.regra));
-for (const r of ['vazio-lateral', 'metrica-sem-destaque', 'numeros-em-frase', 'tudo-igual', 'estado-so-icone', 'sem-ponto-de-entrada']) fim(regrasRuim.has(r), `custos-ruim fires ${r}`);
-fim(bom.achados.length === 0, `custos-bom is clean${bom.achados.length ? `  -> ${bom.achados.map((a) => `${a.regra}: ${a.detalhe}`).join('; ')}` : ''}`);
+for (const r of ['vazio-lateral', 'metrica-sem-destaque', 'numeros-em-frase', 'tudo-igual', 'estado-so-icone', 'sem-ponto-de-entrada']) fim(regrasRuim.has(r), `metrics-bad fires ${r}`);
+fim(bom.achados.length === 0, `metrics-good is clean${bom.achados.length ? `  -> ${bom.achados.map((a) => `${a.regra}: ${a.detalhe}`).join('; ')}` : ''}`);
+
+/*
+ * 2b · the same pair in other brands and languages. The rules must read structure and
+ * contrast, not one look: a design system is not a parameter of the detector.
+ */
+const cru = (f) => readFileSync(join(aqui, 'fixtures', 'tela', f), 'utf8');
+const trocar = (html, pares) => pares.reduce((h, [a, b]) => h.split(a).join(b), html);
+const CLARO = [['#0b0b0c', '#ffffff'], ['#27272a', '#e4e4e7'], ['#d4d4d8', '#27272a'], ['#a1a1aa', '#52525b'], ['#71717a', '#a1a1aa'], ['#141416', '#fafafa'], ['#18181b', '#f4f4f5'], ['#fafafa', '#09090b'], ['#052e16', '#dcfce7'], ['#4ade80', '#166534']];
+const MONO = [['#052e16', '#fafafa'], ['#4ade80', '#09090b'], ['stroke="#09090b"', 'stroke="#fafafa"']];
+const QUADRADO = [['sans-serif', 'Georgia, serif'], ['border-radius: 12px', 'border-radius: 0'], ['border-radius: 999px', 'border-radius: 0'], ['border-radius: 6px', 'border-radius: 0']];
+const traduz = (t) => [['Period total', t[0]], ['Models', t[1]], ['Transcription', t[2]], ['Voice messages', t[3]], ['Costs', t[4]], ['Storage holds 120 facts, 14 people, 8 projects, 32 threads, 5 rules and 2 indexes.', t[5]], ['$12.40', t[6]], ['$11.10', t[7]], ['$0.80', t[8]], ['$0.50', t[9]], ['lang="en"', t[10]]];
+const VARIANTES = {
+  light: CLARO,
+  monochrome: MONO,
+  'serif, square': QUADRADO,
+  'es, euro': traduz(['Total del periodo', 'Modelos', 'Transcripción', 'Mensajes de voz', 'Costes', 'Guarda 120 hechos, 14 personas, 8 proyectos, 32 hilos, 5 reglas y 2 índices.', '12,40 €', '11,10 €', '0,80 €', '0,50 €', 'lang="es"']),
+  'de, thin space': traduz(['Gesamt', 'Modelle', 'Transkription', 'Sprachnachrichten', 'Kosten', 'Speichert 120 Fakten, 14 Personen, 8 Projekte, 32 Themen, 5 Regeln und 2 Indizes.', '12,40\u00a0€', '11,10\u00a0€', '0,80\u00a0€', '0,50\u00a0€', 'lang="de"']),
+  'ar, rtl': traduz(['الإجمالي', 'النماذج', 'النسخ', 'الرسائل الصوتية', 'التكاليف', 'يحفظ 120 حقيقة، 14 شخصا، 8 مشاريع، 32 محادثة، 5 قواعد، 2 فهارس.', '١٢٫٤٠ $', '١١٫١٠ $', '٠٫٨٠ $', '٠٫٥٠ $', 'lang="ar" dir="rtl"']),
+  'ja, no spaces': traduz(['期間合計', 'モデル', '文字起こし', '音声メッセージ', '費用', '事実120件、人物14名、案件8件、会話32件、規則5件、索引2件を保存しています。', '¥1,240', '¥1,110', '¥80', '¥50', 'lang="ja"']),
+};
+const NUCLEO = ['vazio-lateral', 'metrica-sem-destaque', 'numeros-em-frase', 'estado-so-icone'];
+for (const [nome, pares] of Object.entries(VARIANTES)) {
+  await page.setContent(trocar(cru('metrics-bad.html'), pares));
+  const r = await medirTela(page);
+  const achou = new Set(r.achados.map((a) => a.regra));
+  const faltou = NUCLEO.filter((x) => !achou.has(x));
+  fim(faltou.length === 0, `${nome}: the bad screen still fires${faltou.length ? `  -> missed ${faltou.join(', ')}` : ''}`);
+  await page.setContent(trocar(cru('metrics-good.html'), pares));
+  const b = await medirTela(page);
+  fim(b.achados.length === 0, `${nome}: the good screen stays clean${b.achados.length ? `  -> ${b.achados.map((a) => a.regra).join(', ')}` : ''}`);
+}
+await page.setContent('<!doctype html><html lang="ko"><title>t</title><main><p>x</p></main></html>');
+fim((await medirTela(page)).idiomaSemLista === 'ko', 'a language without a word list says so');
+/* a strong mark is a signal in a monochrome system; a muted one is not */
+const FORTE = cru('metrics-bad.html').split('color: #71717a').join('color: #d4d4d8');
+await page.setContent(FORTE);
+fim(!(await medirTela(page)).achados.some((a) => a.regra === 'estado-so-icone'), 'an icon as strong as the text is a signal, without a hue');
 
 /* 3 · regression both ways, on the snapshots of those two screens */
 const ida = comparar(bom.retrato, ruim.retrato).map((a) => a.regra);

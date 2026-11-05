@@ -4,7 +4,7 @@
  * automatic improvement.
  *
  * Why it exists. An agent cut the cards from a costs screen, six number tiles to
- * a sentence, per-row "Ok" to a grey icon, and framed the rest in `max-w-5xl`.
+ * a sentence, per-row "Ok" to a grey icon, and framed the rest in a fixed max-width.
  * Every detector improved, because all of them count what is left over. Nothing
  * had the BEFORE. Four losses, each with an absolute and a relative floor (one
  * card less is a decision; half the screen's cards is an event):
@@ -61,10 +61,10 @@ export function comparar(a, b) {
 }
 
 /* ---------- the same four, from source, when nobody took a BEFORE snapshot ---------- */
-const RE_CONTENTOR = /<(?:Card|Panel|Tile|Surface|Stat\w*|Metric\w*)\b|className=["'`{][^"'`]*\b(?:border\b[^"'`]*\brounded|rounded(?:-\w+)?\b[^"'`]*\b(?:border\b|bg-|shadow))/g;
-const RE_CONTROLE = /<(?:button|Button|Link|select|Select|input|Input|Switch|Checkbox|Toggle\w*|Tabs?Trigger)\b|<a\s[^>]*href=/g;
+const RE_CONTENTOR = /<(?:Card|Panel|Tile|Surface|Stat\w*|Metric\w*|v-card|el-card|mat-card|n-card|ion-card)\b|(?:className|class)=["'`{][^"'`]*\b(?:border\b[^"'`]*\brounded|rounded(?:-\w+)?\b[^"'`]*\b(?:border\b|bg-|shadow))/g;
+const RE_CONTROLE = /<(?:button|Button|Link|select|Select|input|Input|Switch|Checkbox|Toggle\w*|Tabs?Trigger|v-btn|el-button|mat-button|router-link)\b|<a\s[^>]*href=/g;
 const RE_CHIP = /<(?:Badge|Chip|Pill|Tag|Status\w*)\b|\brounded-full\b[^"'`]*\b(?:px-|bg-)/g;
-const RE_MOLDURA = /\bmax-w-(?:xs|sm|md|lg|xl|[2-7]xl|screen-\w+|\[[^\]]+\])/g;
+const RE_MOLDURA = /\bmax-w-(?:xs|sm|md|lg|xl|[2-7]xl|screen-\w+|\[[^\]]+\])|\bmax-width\s*:/g;
 const contar = (s, re) => (s.match(re) || []).length;
 export const medirFonte = (s) => ({ contentores: contar(s, RE_CONTENTOR), controles: contar(s, RE_CONTROLE), chips: contar(s, RE_CHIP), molduras: contar(s, RE_MOLDURA) });
 export function compararFonte(a, b) {

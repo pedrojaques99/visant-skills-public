@@ -110,9 +110,9 @@ landing: a CTA with `mt-1` patching a `gap-7`.
 
 An agent applied these skills to an agent console and took out too much: costs
 lost every card, six number tiles became a sentence, a per-row "Ok" became a grey
-icon, a `max-w-5xl` left a void. The detectors said zero, and that was the bug:
+icon, a fixed max-width left a void. The detectors said zero, and that was the bug:
 they only punish what is left over, so the score rises as the screen empties. The
-owner: "limpo até demais", "sem respiro visual", "super cheia de textos". Two rules
+owner: "too clean", "no room to breathe", "full of text". Two rules
 were read past their scope ("depth by line" on a dashboard, "cards in cards" as
 "cards are bad"). `tela-scan.js` and `regressao.mjs` came from it, and so did the
 rule above the score: before and after side by side, shown to the owner.

@@ -18,7 +18,7 @@ loaded), because AI slop survives any linter: the problem is decision, not synta
 > form passed six gates. So `killer-scan` **refuses** "gate open" without the
 > surface table and the record of having opened the screen.
 
-> **The score is not the verdict.** Removing always improves it: a screen stripped of its cards scored zero and the owner called it "limpo até demais". Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
+> **The score is not the verdict.** Removing always improves it: a screen stripped of its cards scored zero and the owner called it "too clean". Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
 
 Where each rule came from: [references/cases.md](references/cases.md). **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
 

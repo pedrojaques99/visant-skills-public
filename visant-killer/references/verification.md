@@ -162,6 +162,8 @@ axis ("90 days ago"); a centered column also needs to be under 800px
 count as reading (Hacker News). Most rules have only fired in fixtures so far: no
 real bad screen was available to measure, only the synthetic reproduction.
 
+**Any brand, any language.** `tela-self-test` runs the bad and good pair in light, monochrome, serif with square corners, Spanish, German, Arabic right to left and Japanese. The rules read structure, contrast and locale, not one look. Two rules read words (`acao-virou-texto`, `estado-so-texto`), with lists for pt, en, es, fr, de, it; outside them the output says so instead of a clean zero. `regressao git` is a source heuristic for React, Vue, Angular and plain CSS; another stack gets fewer matches, so prefer `snap`.
+
 **Real bad screen (2026-11-05, 1920, logged in, read-only).** The same admin app in three commits: before the cleanup, the version the owner rejected, and the one rebuilt from his feedback.
 
 | Screen | Before | Rejected | Rebuilt |
@@ -172,3 +174,5 @@ real bad screen was available to measure, only the synthetic reproduction.
 | Security | not measured | `estado-so-icone`, `rotulo-repetido`, `nomes-tecnicos`, `pilha-de-selos`, `icones-decorativos` | `rotulo-repetido` |
 
 `regressao` before against rejected: `perdeu-contentor` and `perdeu-largura` on Costs and Memory, `perdeu-chip` and `perdeu-largura` on Health. Before against rebuilt: nothing on Health and Memory; on Costs, `perdeu-contentor` (24 to 11), because a prices table moved behind a disclosure. A real cut, so `--aceito` with the reason is the right exit. Two readings the owner made by eye match the rules: the old Health's redundancy, and Security's wall of tool names. Not measured here: 1440 and phone width, `regressao snap` with `--storage`.
+
+**Other languages and sites, default rules, 1440 (2026-11-05, read-only).** Zero: shadcn examples, githubstatus, npm, Vercel docs, es.wikipedia, spiegel.de. Candidates, kept and not tuned away: GitHub's public issue list `legenda-em-toda-linha`, rakuten.co.jp `metrica-sem-destaque`, Hacker News `sem-ponto-de-entrada`. A finding is a candidate: a dense site can be dense by decision.

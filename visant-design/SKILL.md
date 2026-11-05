@@ -32,7 +32,7 @@ Keep the design. Remove the tells.
 2. Fix every finding at its cause. Hiding what a finding points at does not count.
 3. Read the images. Fix the tells no detector sees: decorative gradients, purple as "AI", glow, emoji as icons, a card nested in a card (the nesting is the tell; a card alone is not), eyebrow labels over every heading, hype words, invented numbers.
 4. Run it again until it is clean. Report what you removed.
-5. Compare before and after side by side and show the owner before shipping. The score is not the verdict: it improves with every box you delete, and a screen stripped of its cards scored zero while its owner called it "limpo até demais". `node ../visant-killer/scripts/regressao.mjs git HEAD <ui paths>` flags lost boxes, controls, chips and width.
+5. Compare before and after side by side and show the owner before shipping. The score is not the verdict: it improves with every box you delete, and a screen stripped of its cards scored zero while its owner called it "too clean". `node ../visant-killer/scripts/regressao.mjs git HEAD <ui paths>` flags lost boxes, controls, chips and width.
 
 ## End to end
 
@@ -42,7 +42,7 @@ Keep the design. Remove the tells.
    - Queue, table, editor, admin: [work](../visant-frontend/references/work-surface.md)
    - Payment, permission, deletion, money: [trust](../visant-frontend/references/trust-surface.md)
 3. **Diagnose from the image.** Run [foundations.md](references/foundations.md) on the screenshot, in order. List what is wrong, biggest first.
-4. **Cut before adding.** For each element ask which decision it helps. No answer, it goes. Most screens get better by losing things, but a main number keeps its box, a state keeps its chip, an action keeps its target. Too much text becomes a drawn fact (bar, chip, icon with a tooltip), never a pile of badges.
+4. **Cut before adding.** For each element ask which decision it helps. No answer, it goes. Most screens get better by losing things, but a main number keeps its emphasis (box, scale, rule: whatever the brand's system uses), a state keeps a visible signal, an action keeps its target. Too much text becomes a drawn fact (bar, chip, icon with a tooltip), never a pile of badges.
 5. **Build.** The product's tokens and components first. Motion and data get their playbook only if this screen needs them. Write copy from what the product really does; a number you don't have stays a visible placeholder.
 6. **Look at the result.** Run `check.mjs` again and read the new screenshots at every width, next to the old ones, and show the owner the pair: the score is not the verdict. Ask the most exacting designer's question: what would I screenshot and send back? Fix the biggest thing and repeat, up to three rounds.
 7. **Report.** What changed and which number each change is meant to move; what you cut and why; the widths you looked at; what you did not check. A redesign is a hypothesis: say how to measure it.

@@ -72,7 +72,7 @@ export async function medirTela(page, { raiz = null, axe = axeSource(), tudo = f
   await page.evaluate(`${telaSrc()};window.tela=tela;window.retrato=retrato;1`);
   const out = await page.evaluate(({ r, tudo }) => {
     const a = tela(r || undefined, { verbose: false, tudo }) || [];
-    return { achados: a.map(({ no, ...x }) => x), naoMedido: a.naoMedido || 0, vitrine: !!a.vitrine, retrato: retrato(r || undefined, { tudo }) };
+    return { achados: a.map(({ no, ...x }) => x), naoMedido: a.naoMedido || 0, vitrine: !!a.vitrine, idiomaSemLista: a.idiomaSemLista || null, retrato: retrato(r || undefined, { tudo }) };
   }, { r: raiz, tudo });
   out.axe = await rodarAxe(page, { raiz, axe });
   return out;

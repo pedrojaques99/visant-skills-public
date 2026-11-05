@@ -4,10 +4,10 @@
  * Why it exists. An agent applied these skills to an agent console (three
  * screens: health, costs, memory) and took out too much. Costs lost every card.
  * Six number tiles in memory became one sentence. The per-row "Ok" in health
- * became a grey icon. A `max-w-5xl` frame left the screen squeezed, with a void
+ * became a grey icon. A fixed max-width frame left the screen squeezed, with a void
  * on the right. Every detector said zero, because every detector punishes what
  * is LEFT OVER, so the score improves the more you delete. The owner looked and
- * said "limpo até demais", "sem respiro visual", "super cheia de textos". This
+ * said "too clean", "no room to breathe", "full of text". This
  * file measures that opposite failure, on four axes, and also the failure in
  * the other direction (a stack of badges), so it cannot push toward ornament.
  *
@@ -16,7 +16,7 @@
  *                        one side void >= max(120px, 10% of usable) more than
  *                        the other, or a centered column under 60% AND under
  *                        800px. Silent under 1024px, on prose and on forms (a
- *                        measure is a reason). Case: the max-w-5xl frame.
+ *                        measure is a reason). Case: the fixed max-width frame.
  *   blocos-colados       two boxes 2-6px apart, or a heading 0-6px above a box.
  *                        Touching (<= 1px) is a deliberate seam and stays out.
  *   texto-denso          a 600px band >= 34% covered by line boxes, with no
@@ -256,7 +256,9 @@ function _telaMedir(raiz, { tudo = false } = {}) {
     }
   }
   const totalChars = corridas.reduce((a, c) => a + c.texto.length, 0);
-  const palavrasDe = (t) => t.split(/\s+/).filter(Boolean).length;
+  /* Word boundaries by locale: Japanese or Thai have no spaces to split on. */
+  const segmentador = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(document.documentElement.lang || undefined, { granularity: 'word' }) : null;
+  const palavrasDe = (t) => (segmentador ? [...segmentador.segment(t)].filter((p) => p.isWordLike).length : t.split(/\s+/).filter(Boolean).length);
   const palavras = corridas.reduce((a, c) => a + palavrasDe(c.texto), 0);
   /*
    * Reading text: paragraphs of 25+ words. Not `article`, which wraps whole pages,
@@ -292,7 +294,7 @@ function _telaMedir(raiz, { tudo = false } = {}) {
    * the interface: 23 "dead buttons" on a page with none. A big NUMBER does not
    * count, a dashboard may have one. Showcases keep respiro and hierarquia.
    */
-  const vitrine = !tudo && corridas.some((c) => c.tam >= 40 && c.el.closest('h1,h2') && /[A-Za-zÀ-ÿ]{3}/.test(c.texto));
+  const vitrine = !tudo && corridas.some((c) => c.tam >= 40 && c.el.closest('h1,h2') && /\p{L}{3}/u.test(c.texto));
 
   /* ---------------------------------------------------------------- */
   /* controls, media, chips, numbers                                  */
@@ -329,7 +331,8 @@ function _telaMedir(raiz, { tudo = false } = {}) {
   const selos = todos.filter(seloDe);
   const selosInertes = selos.filter((el) => !interativo(el));
 
-  const NUMERO = /^[~≈+\-−]?\s*(?:R\$|US\$|\$|€|£)?\s*\d[\d.,]*(?:\s?(?:%|k|K|M|B|mil|mi|bi|h|min|ms|s|d|GB|MB|KB|TB|x|tokens?|\/[a-zà-ú]+))?\+?$/;
+  /* Any currency, any digit system, any short unit: a brand's locale is not a parameter. */
+  const NUMERO = /^[~≈+\-−]?\s*(?:\p{Lu}{3}\s|\p{L}{0,3}\p{Sc})?\s*\p{Nd}[\p{Nd}.,٬٫'’\u00a0\u202f ]*(?:\s?(?:%|٪|\p{Sc}|\p{L}{1,3}\.?|tokens?|\/\p{L}+))?\+?$/u;
   const NAO_NUMERO = /^\d{4}$|^0\d$|^\d{1,2}[/:]\d{1,2}|^\d{4}-\d{2}|^v?\d+\.\d+\.\d+$/;
   const TABELA = 'table,[role="table"],[role="grid"],[role="row"],[role="cell"],[role="rowgroup"],pre,code,time,button,a[href],select,input,label,[role="tab"],[role="option"]';
   const ehNumero = (t) => t.length <= 16 && NUMERO.test(t) && !NAO_NUMERO.test(t);
@@ -458,7 +461,8 @@ function _telaMedir(raiz, { tudo = false } = {}) {
   /* leaf texts of an item, as {texto, c} */
   const corridasDe = (item) => corridas.filter((c) => item.contains(c.el));
 
-  const ESTADO = /^(ok|ativo|ativa|inativo|inativa|online|offline|erro|falhou|falha|pendente|concluído|concluido|sucesso|aviso|atenção|atencao|healthy|unhealthy|down|up|degradado|degraded|active|inactive|error|failed|pending|success|warning|paused|pausado|running|rodando|stopped|parado|live|ready|pronto|normal|operational|operacional)$/i;
+  /* Word lists exist only for pt, en, es, fr, de, it. Other languages: reported as not measured, never as clean. */
+  const ESTADO = /^(ok|okay|ativo|ativa|inativo|inativa|online|offline|erro|falhou|falha|pendente|concluído|concluido|sucesso|aviso|atenção|atencao|degradado|pausado|rodando|parado|pronto|operacional|healthy|unhealthy|down|up|degraded|active|inactive|error|failed|pending|success|warning|paused|running|stopped|live|ready|normal|operational|activo|activa|inactivo|fallo|fallido|pendiente|completado|éxito|exito|advertencia|detenido|listo|actif|inactif|erreur|échec|echec|en attente|réussi|reussi|avertissement|arrêté|arrete|prêt|pret|aktiv|inaktiv|fehler|fehlgeschlagen|ausstehend|erfolgreich|warnung|pausiert|gestoppt|bereit|attivo|inattivo|errore|fallito|in attesa|riuscito|avviso|fermato)$/iu;
   const NOME_ESTADO = /check|circle-?x|x-?circle|alert|warn|status|success|error|fail|shield/i;
   const NOME_NAVEGA = /chevron|caret|arrow|external|menu|more|dots|ellipsis/i;
   const corSinal = (el) => {
@@ -479,8 +483,17 @@ function _telaMedir(raiz, { tudo = false } = {}) {
       if (r.width < 4 || r.width > 14 || Math.abs(r.width - r.height) > 2) return false;
       return !transparente(cs(el).backgroundColor);
     });
+  /* A monochrome brand signals by contrast, not by hue: a mark as strong as the row's text is a signal; a muted one is not. */
+  const luz = (c) => { const [r, g, b] = rgba(c); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const marcaForte = (svg, item) => {
+    const texto = corridas.find((c) => item.contains(c.el));
+    if (!texto) return false;
+    const fundo = luz(fundoDe(item));
+    const tinta = [cs(svg).color, ...[...svg.querySelectorAll('*')].flatMap((n) => [cs(n).stroke, cs(n).fill])].filter((c) => c && c !== 'none' && !transparente(c));
+    return tinta.some((c) => Math.abs(luz(c) - fundo) >= Math.abs(luz(texto.cor) - fundo) * 0.9);
+  };
   const sinalNaLinha = (item) =>
-    [...item.querySelectorAll('svg')].some((s) => vis(s) && iconeCromatico(s)) ||
+    [...item.querySelectorAll('svg')].some((s) => vis(s) && (iconeCromatico(s) || marcaForte(s, item))) ||
     pontos(item).some((d) => cromatica(cs(d).backgroundColor));
 
   /* ---------------------------------------------------------------- */
@@ -612,7 +625,7 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
       `${semDestaque.length} of ${m.metricas.length} main numbers at body size with no surface around them. Fix: give the main numbers a tile (operation dashboards keep the box on main data) or real size`);
   }
   /* quantities enumerated in one sentence: the tiles that became a line */
-  const QTD = /(?:R\$|US\$|\$|€)?\s?\d[\d.,]*\s?(?:%|[A-Za-zÀ-ÿ]{1,14})?/g;
+  const QTD = /(?:\p{L}{0,3}\p{Sc})?\s?\p{Nd}[\p{Nd}.,٬٫]*\s?(?:%|٪|\p{Sc}|\p{L}{1,14})?/gu;
   const vistos = new Set();
   /* off on a showcase: a price like "3,99% + R$ 0,39" is one fact (stripe.com/pricing) */
   for (const c of m.vitrine ? [] : corridas) {
@@ -623,12 +636,12 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
     if (t.length > 240 || t.length < 12) continue;
     /* dates and times read as numbers and are not quantities */
     const limpo = t.replace(/\d{1,4}[-/:.]\d{1,2}(?:[-/:.]\d{1,4})*/g, ' ');
-    const partes = limpo.split(/\s*[,;·•|]\s*|\s+e\s+|\s+and\s+/).filter(Boolean);
-    const comNumero = partes.filter((p) => (p.match(QTD) || []).some((x) => /\d/.test(x)) && m.palavrasDe(p) <= 5);
-    /* calibration: a caption under a real tile ("42 mensagens, 3 modelos") is detail, the tile already leads */
+    const partes = limpo.split(/\s*[,;·•|、，،؛]\s*|\s+(?:e|y|i|et|und|and|en|og|och)\s+|\s+و/u).filter(Boolean);
+    const comNumero = partes.filter((p) => (p.match(QTD) || []).some((x) => /\p{Nd}/u.test(x)) && m.palavrasDe(p) <= 5);
+    /* calibration: a caption under a real tile ("42 messages, 3 models") is detail, the tile already leads */
     const lidera = m.metricas.some((x) => x.destaque);
     if (comNumero.length >= 3 && comNumero.length >= partes.length * 0.6 && !(m.emSuperficie(bloco) && lidera)) {
-      add('hierarquia', 'numeros-em-frase', bloco, `${comNumero.length} quantities enumerated in one sentence: nothing can be compared at a glance. Fix: one tile per quantity, or keep only the one that decides`);
+      add('hierarquia', 'numeros-em-frase', bloco, `${comNumero.length} quantities enumerated in one sentence: nothing can be compared at a glance. Fix: give each quantity its own place in the design system's pattern, or keep only the one that decides`);
     }
   }
   if (corridas.length >= 15 && m.superficies.length === 0) {
@@ -645,7 +658,7 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
   /* ---- INTERATIVIDADE ---- */
   let naoMedido = 0;
   if (!m.vitrine) {
-  const ACAO = /^(editar|excluir|apagar|remover|salvar|cancelar|abrir|ver detalhes|ver mais|ver tudo|adicionar|copiar|baixar|exportar|duplicar|tentar de novo|tentar novamente|reiniciar|edit|delete|remove|save|cancel|view details|view all|view more|copy|download|export|retry|restart|refresh)$/i;
+  const ACAO = /^(editar|excluir|apagar|remover|salvar|cancelar|abrir|ver detalhes|ver mais|ver tudo|adicionar|copiar|baixar|exportar|duplicar|tentar de novo|tentar novamente|reiniciar|edit|delete|remove|save|cancel|open|view details|view all|view more|add|copy|download|export|duplicate|retry|restart|refresh|eliminar|borrar|guardar|ver todo|añadir|agregar|descargar|reintentar|modifier|supprimer|enregistrer|annuler|ouvrir|voir plus|voir tout|ajouter|copier|télécharger|exporter|réessayer|bearbeiten|löschen|entfernen|speichern|abbrechen|öffnen|mehr anzeigen|alle anzeigen|hinzufügen|kopieren|herunterladen|exportieren|wiederholen|modifica|elimina|rimuovi|salva|annulla|apri|vedi tutto|aggiungi|copia|scarica|esporta|riprova)$/iu;
   const ponteiro = (el) => cs(el).cursor === 'pointer';
   for (const c of corridas) {
     if (!ACAO.test(c.texto) || m.interativo(c.el) || ponteiro(c.el) || c.el.closest('h1,h2,h3,h4,h5,h6,label,th,pre,code')) continue;
@@ -660,7 +673,7 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
       return !m.seloDe(cor.el) && !m.seloDe(cor.el.parentElement) && !m.cromatica(cor.cor) && !m.sinalNaLinha(it);
     });
     if (comEstado.length >= 3) {
-      add('interatividade', 'estado-so-texto', g.pai, `${comEstado.length} rows carry their state as a neutral word. A scan cannot find the odd one. Fix: a chip or a colored dot, by the existing status token`);
+      add('interatividade', 'estado-so-texto', g.pai, `${comEstado.length} rows carry their state as a neutral word. A scan cannot find the odd one. Fix: the status pattern of the design system (chip, dot, icon with contrast), not a neutral word`);
     }
     /* rows whose only state is a grey mark */
     const soIcone = g.itens.filter((it) => {
@@ -679,7 +692,7 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
       return svgsLinha.length === 1 && rr.right - ri.right <= 32 && ri.width <= 28;
     });
     if (soIcone.length >= 3 && soIcone.length >= g.itens.length * 0.6) {
-      add('interatividade', 'estado-so-icone', g.pai, `${soIcone.length} rows with state only as a grey mark: no word, no chip, no color. Fix: restore the chip with the state's color, the icon alone says nothing`);
+      add('interatividade', 'estado-so-icone', g.pai, `${soIcone.length} rows with state only as a grey mark: no word, no chip, no contrast. Fix: the status pattern of the design system; a muted icon alone says nothing`);
     }
   }
   /* looks clickable, does nothing */
@@ -839,6 +852,9 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
   }
   achados.naoMedido = naoMedido;
   achados.vitrine = m.vitrine;
+  /* acao-virou-texto and estado-so-texto read words: outside these languages they cannot fire, and that is not a pass */
+  const idioma = (document.documentElement.lang || '').slice(0, 2).toLowerCase();
+  achados.idiomaSemLista = idioma && !['pt', 'en', 'es', 'fr', 'de', 'it'].includes(idioma) ? idioma : null;
   return achados;
 }
 

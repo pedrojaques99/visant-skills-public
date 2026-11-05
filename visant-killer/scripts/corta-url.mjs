@@ -87,6 +87,7 @@ for (const w of widths) {
     if (res.ritmoAchados.length) console.log(`        spacing: ${res.ritmoAchados.length} candidate(s)`)
     for (const a of res.ritmoAchados.slice(0, 8)) console.log(`        ${a}`)
     if (leitura.achados.length) console.log(`        screen: ${leitura.achados.length} candidate(s)`)
+    if (leitura.idiomaSemLista) console.log(`        screen: no word list for "${leitura.idiomaSemLista}": acao-virou-texto and estado-so-texto NOT MEASURED`);
     if (leitura.vitrine) console.log('        screen: showcase page, row-level rules off')
     for (const a of leitura.achados.slice(0, 8)) console.log(`        [${a.regra}] ${a.el}: ${a.detalhe}`)
     if (!leitura.axe.medido) console.log(`        target size, name: NOT MEASURED (${leitura.axe.motivo})`)
