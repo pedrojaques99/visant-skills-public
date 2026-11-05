@@ -1,0 +1,204 @@
+<!doctype html>
+<!--
+  tela-scan FIXTURE: every rule both ways. Each <section> is measured on its own
+  and declares exactly what it must return in data-espera. `{}` is a negative:
+  the case that keeps the rule from turning into noise. All data is invented.
+
+  node scripts/tela-self-test.mjs
+-->
+<html lang="pt-BR"><head><meta charset="utf-8"><title>tela-scan cases</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 14px/1.5 sans-serif; background: #0b0b0c; color: #d4d4d8; }
+  section { width: 1200px; margin: 0 0 40px; min-height: 80px; position: relative; }
+  .card { background: #141416; border: 1px solid #27272a; border-radius: 12px; padding: 16px; }
+  .num { font-size: 26px; font-weight: 600; display: block; color: #fafafa; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .chip { display: inline-block; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: #27272a; color: #d4d4d8; }
+  .ok { background: #052e16; color: #4ade80; }
+  .muted { color: #a1a1aa; font-size: 12px; }
+  h2 { font-size: 22px; font-weight: 600; margin-bottom: 12px; }
+  svg.i { width: 16px; height: 16px; color: #71717a; flex: none; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #71717a; }
+  .dotok { background: #22c55e; }
+  p { max-width: 640px; margin-bottom: 8px; }
+  button { padding: 6px 12px; border: 1px solid #27272a; background: #18181b; color: #d4d4d8; }
+</style></head>
+<body>
+
+<!-- RESPIRO · vazio-lateral -->
+<section data-caso="frame on the left, void on the right" data-espera='{"vazio-lateral":1}'>
+  <div style="max-width:800px"><h2>Painel</h2><div class="grid"><div class="card"><span>Uso</span><span class="num">12</span></div><div class="card"><span>Erros</span><span class="num">3</span></div><div class="card"><span>Fila</span><span class="num">8</span></div></div></div>
+</section>
+<section data-caso="narrow, centered, with data" data-espera='{"vazio-lateral":1}'>
+  <div style="max-width:560px;margin:0 auto"><h2>Painel</h2><div class="grid"><div class="card"><span>Uso</span><span class="num">12</span></div><div class="card"><span>Erros</span><span class="num">3</span></div><div class="card"><span>Fila</span><span class="num">8</span></div></div></div>
+</section>
+<section data-caso="NEG: data takes the column" data-espera='{}'>
+  <h2>Painel</h2><div class="grid"><div class="card"><span>Uso</span><span class="num">12</span></div><div class="card"><span>Erros</span><span class="num">3</span></div><div class="card"><span>Fila</span><span class="num">8</span></div></div>
+</section>
+<section data-caso="NEG: an article has a measure, and that is the reason" data-espera='{}'>
+  <div style="max-width:640px"><h2>Como calculamos o custo</h2>
+  <p>Cada mensagem passa por um modelo, e o preço depende de quantos caracteres entram e saem dele, além do tempo de transcrição quando a mensagem chega em voz, o que muda bastante de um dia para o outro.</p>
+  <p>O total do período soma tudo isso sem arredondar, então a conta fecha com a fatura do fornecedor mesmo quando a cotação do dia muda no meio do mês e o valor em reais sobe sem que nada tenha mudado aqui.</p></div>
+</section>
+<section data-caso="NEG: a form is narrow on purpose" data-espera='{}'>
+  <div style="max-width:420px"><h2>Conta</h2><div class="row"><label for="n1">Nome</label><input id="n1"></div><div class="row"><label for="n2">E-mail</label><input id="n2"></div><div class="row"><label for="n3">Empresa</label><input id="n3"></div></div>
+</section>
+
+<!-- RESPIRO · blocos-colados -->
+<section data-caso="two boxes 4px apart" data-espera='{"blocos-colados":1}'>
+  <h2 style="margin-bottom:12px">Painel</h2><div style="display:flex;flex-direction:column;gap:4px"><div class="card" style="min-height:60px">Primeiro bloco</div><div class="card" style="min-height:60px">Segundo bloco</div></div>
+</section>
+ <section data-caso="heading glued to its box" data-espera='{"blocos-colados":1}'>
+  <h2 style="margin-bottom:2px">Painel</h2><div class="card" style="min-height:60px">Primeiro bloco</div>
+</section>
+<section data-caso="NEG: 12px between boxes" data-espera='{}'>
+  <h2>Painel</h2><div style="display:flex;flex-direction:column;gap:12px"><div class="card" style="min-height:60px">Primeiro bloco</div><div class="card" style="min-height:60px">Segundo bloco</div></div>
+</section>
+<section data-caso="NEG: a 1px seam is a joined table of tiles" data-espera='{}'>
+  <h2 style="margin-bottom:12px">Painel</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px"><div class="card" style="min-height:60px;border-radius:0">Primeiro</div><div class="card" style="min-height:60px;border-radius:0">Segundo</div></div>
+</section>
+
+<!-- RESPIRO · texto-denso -->
+<section data-caso="wall of small fragments" data-espera='{"texto-denso":1,"tudo-igual":1,"texto-demais":1}' data-denso="1"></section>
+
+<!-- HIERARQUIA · sem-ponto-de-entrada -->
+<section data-caso="nothing bigger than anything" data-espera='{"sem-ponto-de-entrada":1}'>
+  <div class="grid"><div class="card">Entrada um</div><div class="card">Entrada dois</div><div class="card">Entrada três</div><div class="card">Entrada quatro</div><div class="card">Entrada cinco</div><div class="card">Entrada seis</div></div>
+</section>
+<section data-caso="NEG: a title leads" data-espera='{}'>
+  <h2>Entradas</h2><div class="grid"><div class="card">Entrada um</div><div class="card">Entrada dois</div><div class="card">Entrada três</div><div class="card">Entrada quatro</div><div class="card">Entrada cinco</div><div class="card">Entrada seis</div></div>
+</section>
+
+<!-- HIERARQUIA · metrica-sem-destaque -->
+<section data-caso="numbers at body size, no box" data-espera='{"metrica-sem-destaque":1}'>
+  <h2>Hoje</h2><div class="row" style="width:100%"><div><span>Mensagens</span> <span>1.204</span></div><div><span>Falhas</span> <span>38</span></div><div><span>Fila</span> <span>12</span></div><div><span>Gasto</span> <span>US$ 3,20</span></div></div>
+</section>
+<section data-caso="NEG: same numbers in tiles" data-espera='{}'>
+  <h2>Hoje</h2><div class="grid"><div class="card"><span>Mensagens</span><span class="num">1.204</span></div><div class="card"><span>Falhas</span><span class="num">38</span></div><div class="card"><span>Fila</span><span class="num">12</span></div></div>
+</section>
+<section data-caso="NEG: numbers with real size and no box (line layout is valid)" data-espera='{}'>
+  <h2>Hoje</h2><div class="row"><div><span>Mensagens</span><span class="num">1.204</span></div><div><span>Falhas</span><span class="num">38</span></div><div><span>Fila</span><span class="num">12</span></div></div>
+</section>
+<section data-caso="NEG: a table of numbers is a table" data-espera='{}'>
+  <h2>Por dia</h2><table style="width:100%"><thead><tr><th>Dia</th><th>Total</th></tr></thead><tbody><tr><td>Seg</td><td>12</td></tr><tr><td>Ter</td><td>38</td></tr><tr><td>Qua</td><td>41</td></tr></tbody></table>
+</section>
+
+<!-- HIERARQUIA · numeros-em-frase -->
+<section data-caso="six tiles became one line" data-espera='{"numeros-em-frase":1}'>
+  <h2>Memória</h2><p>Guarda 120 fatos, 14 pessoas, 8 projetos, 32 conversas, 5 regras e 2 índices.</p>
+</section>
+<section data-caso="NEG: a sentence with one number, and dates do not count" data-espera='{}'>
+  <h2>Memória</h2><p>Atualizada em 12/03/2026 às 14:20, com 120 fatos revisados pela equipe.</p>
+</section>
+
+<!-- HIERARQUIA · tudo-igual -->
+<section data-caso="flat: one size, one weight, no surface" data-espera='{"tudo-igual":1}' data-gera="igual"></section>
+<section data-caso="NEG: same list inside a surface" data-espera='{}' data-gera="igual-caixa"></section>
+
+<!-- INTERATIVIDADE · acao-virou-texto -->
+<section data-caso="the verb lost its button" data-espera='{"acao-virou-texto":1}'>
+  <h2>Regras</h2><div class="card"><div class="row"><span>Responder fora do horário</span><span>Editar</span></div></div>
+</section>
+<section data-caso="NEG: a real button" data-espera='{}'>
+  <h2>Regras</h2><div class="card"><div class="row"><span>Responder fora do horário</span><button type="button" onclick="void 0">Editar</button></div></div>
+</section>
+
+<!-- INTERATIVIDADE · estado-so-texto -->
+<section data-caso="state as neutral words" data-espera='{"estado-so-texto":1}'>
+  <h2>Serviços</h2><div class="card"><div class="row"><span>Banco</span><span>Ok</span></div><div class="row"><span>Fila</span><span>Ok</span></div><div class="row"><span>Voz</span><span>Erro</span></div></div>
+</section>
+<section data-caso="NEG: chip with color" data-espera='{}'>
+  <h2>Serviços</h2><div class="card"><div class="row"><span>Banco</span><span class="chip ok">Ok</span></div><div class="row"><span>Fila</span><span class="chip ok">Ok</span></div><div class="row"><span>Voz</span><span class="chip ok">Ok</span></div></div>
+</section>
+<section data-caso="NEG: word plus a colored dot" data-espera='{}'>
+  <h2>Serviços</h2><div class="card"><div class="row"><span>Banco</span><div><span class="dot dotok"></span> <span>Ok</span></div></div><div class="row"><span>Fila</span><div><span class="dot dotok"></span> <span>Ok</span></div></div><div class="row"><span>Voz</span><div><span class="dot dotok"></span> <span>Ok</span></div></div></div>
+</section>
+
+<!-- INTERATIVIDADE · estado-so-icone -->
+<section data-caso="grey icon, the health rows" data-espera='{"estado-so-icone":1}'>
+  <h2>Saúde</h2><div class="card"><div class="row"><span>Banco</span><svg class="i lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div><div class="row"><span>Fila</span><svg class="i lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div><div class="row"><span>Voz</span><svg class="i lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div></div>
+</section>
+<section data-caso="grey dot" data-espera='{"estado-so-icone":1}'>
+  <h2>Saúde</h2><div class="card"><div class="row"><span>Banco</span><span class="dot"></span></div><div class="row"><span>Fila</span><span class="dot"></span></div><div class="row"><span>Voz</span><span class="dot"></span></div></div>
+</section>
+<section data-caso="NEG: colored icon says the state" data-espera='{}'>
+  <h2>Saúde</h2><div class="card"><div class="row"><span>Banco</span><svg class="i lucide-circle-check" style="color:#22c55e" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div><div class="row"><span>Fila</span><svg class="i lucide-circle-check" style="color:#22c55e" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div><div class="row"><span>Voz</span><svg class="i lucide-circle-check" style="color:#22c55e" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div></div>
+</section>
+<section data-caso="NEG: a grey chevron on a row that opens is navigation" data-espera='{}'>
+  <h2>Pastas</h2><div class="card"><a class="row" href="#1"><span>Banco</span><svg class="i lucide-chevron-right" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg></a><a class="row" href="#2"><span>Fila</span><svg class="i lucide-chevron-right" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg></a><a class="row" href="#3"><span>Voz</span><svg class="i lucide-chevron-right" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg></a></div>
+</section>
+
+<!-- INTERATIVIDADE · parece-clicavel -->
+<section data-caso="pointer, link with no destination, button with nothing bound, underlined text" data-espera='{"parece-clicavel":4}'>
+  <h2>Ações</h2><div class="card"><div style="cursor:pointer">Abrir painel de saúde</div><a>Ir para a fila</a> <button type="button">Sincronizar</button> <span style="text-decoration:underline">Ver histórico</span></div>
+</section>
+<section data-caso="NEG: handlers exist, by listener, attribute and React props" data-espera='{}'>
+  <h2>Ações</h2><div class="card"><div id="l1" style="cursor:pointer">Abrir painel de saúde</div><button type="button" id="l2">Sincronizar</button> <button type="button" onclick="void 0">Atualizar</button> <a href="#fila">Ir para a fila</a> <button type="button" disabled>Bloqueado</button></div>
+</section>
+
+<!-- COMUNICACAO · texto-demais -->
+<section data-caso="many words, nothing drawn" data-espera='{"texto-demais":1}' data-gera="texto"></section>
+<section data-caso="NEG: an essay is prose" data-espera='{}' data-gera="ensaio"></section>
+
+<!-- COMUNICACAO · rotulo-repetido -->
+<section data-caso="the same label on every row" data-espera='{"rotulo-repetido":1}'>
+  <h2>Modelos</h2><div class="card"><div class="row"><span>Modelo rápido</span><span>Custo por uso</span><span class="num">12</span></div><div class="row"><span>Modelo médio</span><span>Custo por uso</span><span class="num">18</span></div><div class="row"><span>Modelo grande</span><span>Custo por uso</span><span class="num">44</span></div><div class="row"><span>Modelo local</span><span>Custo por uso</span><span class="num">2</span></div></div>
+</section>
+<section data-caso="NEG: one header, values on rows" data-espera='{}'>
+  <h2>Modelos</h2><div class="card"><div class="row muted"><span>Modelo</span><span>Custo por uso</span></div><div class="row"><span>Modelo rápido</span><span class="num">12</span></div><div class="row"><span>Modelo médio</span><span class="num">18</span></div><div class="row"><span>Modelo grande</span><span class="num">44</span></div><div class="row"><span>Modelo local</span><span class="num">2</span></div></div>
+</section>
+<section data-caso="NEG: a word inside a running line is not a label" data-espera='{}'>
+  <h2>Pedidos</h2><div class="card"><div>Pedido de Ana <i>aberto</i> ontem</div><div>Pedido de Bia <i>aberto</i> hoje</div><div>Pedido de Caio <i>aberto</i> agora</div><div>Pedido de Davi <i>aberto</i> cedo</div></div>
+</section>
+
+<!-- COMUNICACAO · legenda-em-toda-linha -->
+<section data-caso="a caption on every row" data-espera='{"legenda-em-toda-linha":1}' data-gera="legenda"></section>
+<section data-caso="NEG: captions on the rows that need one" data-espera='{}' data-gera="legenda-rara"></section>
+
+<!-- COMUNICACAO · nomes-tecnicos -->
+<section data-caso="a list of identifiers" data-espera='{"nomes-tecnicos":1}'>
+  <h2>Ferramentas</h2><div class="card"><div><span>read_file</span>, <span>write_file</span>, <span>list-dir</span>, <span>send_message</span>, <span>searchMemory</span>, <span>fetch.url</span></div></div>
+</section>
+<section data-caso="NEG: identifiers as data on rows, and ticket keys" data-espera='{}'>
+  <h2>Modelos</h2><div class="card"><div class="row"><span>model-small-1</span><span>Rápido</span><span class="chip ok">Ok</span></div><div class="row"><span>model-mid-2</span><span>Médio</span><span class="chip ok">Ok</span></div><div class="row"><span>model-big-3</span><span>Grande</span><span class="chip ok">Ok</span></div><div class="row"><span>ENG-1</span><span>Pedido</span><span class="chip ok">Ok</span></div><div class="row"><span>ENG-2</span><span>Pedido</span><span class="chip ok">Ok</span></div><div class="row"><span>ENG-3</span><span>Pedido</span><span class="chip ok">Ok</span></div></div>
+</section>
+
+<!-- COMUNICACAO · pilha-de-selos, the opposite -->
+<section data-caso="five inert chips in one place" data-espera='{"pilha-de-selos":1}'>
+  <h2>Plano</h2><div class="card"><div><span class="chip">Novo</span> <span class="chip">Beta</span> <span class="chip">IA</span> <span class="chip">Pro</span> <span class="chip">Equipe</span></div></div>
+</section>
+<section data-caso="three chips on every row" data-espera='{"pilha-de-selos":1}'>
+  <h2>Pedidos</h2><div class="card"><div class="row"><span>Pedido um</span><div><span class="chip">Novo</span> <span class="chip">Beta</span> <span class="chip">IA</span></div></div><div class="row"><span>Pedido dois</span><div><span class="chip">Novo</span> <span class="chip">Beta</span> <span class="chip">IA</span></div></div><div class="row"><span>Pedido três</span><div><span class="chip">Novo</span> <span class="chip">Beta</span> <span class="chip">IA</span></div></div></div>
+</section>
+<section data-caso="NEG: one chip per row, and clickable chips are filters" data-espera='{}'>
+  <h2>Pedidos</h2><div class="card"><div><button type="button" onclick="void 0">Todos</button> <button type="button" onclick="void 0">Novos</button> <button type="button" onclick="void 0">Beta</button> <button type="button" onclick="void 0">IA</button> <button type="button" onclick="void 0">Pro</button></div><div class="row"><span>Pedido um</span><span class="chip ok">Ok</span></div><div class="row"><span>Pedido dois</span><span class="chip ok">Ok</span></div><div class="row"><span>Pedido três</span><span class="chip ok">Ok</span></div></div>
+</section>
+
+<!-- COMUNICACAO · icones-decorativos, the opposite -->
+<section data-caso="the same grey icon on every item" data-espera='{"icones-decorativos":1}' data-gera="icones"></section>
+<section data-caso="NEG: a different icon per kind" data-espera='{}' data-gera="icones-variados"></section>
+
+<script>
+  const repete = (n, f) => Array.from({ length: n }, (_, i) => f(i)).join('');
+  const ICONE = (d) => `<svg class="i" viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="${d}"/></svg>`;
+  const gera = {
+    igual: () => `<h2>Itens</h2>` + repete(16, (i) => `<div>Linha número ${'abcdefghijklmnop'[i]} da lista de itens</div>`),
+    'igual-caixa': () => `<h2>Itens</h2><div class="card">` + repete(16, (i) => `<div>Linha número ${'abcdefghijklmnop'[i]} da lista de itens</div>`) + `</div>`,
+    texto: () => `<h2>Regras</h2><div class="card">` + repete(14, (i) => `<div style="margin:0 0 8px"><b>Regra ${'abcdefghijklmn'[i]}</b> <span>responde dentro do horário e encaminha o resto para o time.</span></div>`) + `</div>`,
+    ensaio: () => `<h2>Como funciona</h2>` + repete(4, () => `<p>O assistente lê a conversa inteira antes de responder, procura o que já foi combinado com aquela pessoa e só então escreve, e quando não tem certeza pergunta em vez de inventar uma resposta que depois alguém teria de desfazer com calma.</p>`),
+    legenda: () => `<h2>Canais</h2><div class="card">` + repete(5, (i) => `<div style="padding:4px 0"><div>Canal ${'abcde'[i]}</div><div class="muted">recebe as mensagens e encaminha para a fila</div></div>`) + `</div>`,
+    'legenda-rara': () => `<h2>Canais</h2><div class="card">` + repete(5, (i) => `<div style="padding:4px 0"><div>Canal ${'abcde'[i]}</div><div class="muted">${i === 0 ? 'recebe as mensagens e encaminha para a fila' : ['voz', 'texto', 'foto', 'vídeo'][i - 1]}</div></div>`) + `</div>`,
+    icones: () => `<h2>Lista</h2><div class="card">` + repete(5, (i) => `<div class="row" style="justify-content:flex-start;gap:8px">${ICONE('M2 2h12v12H2z')}<span>Item ${'abcde'[i]}</span></div>`) + `</div>`,
+    'icones-variados': () => `<h2>Lista</h2><div class="card">` + repete(5, (i) => `<div class="row" style="justify-content:flex-start;gap:8px">${ICONE(`M${i + 2} 2h${i + 3}v12H2z`)}<span>Item ${'abcde'[i]}</span></div>`) + `</div>`,
+  };
+  for (const s of document.querySelectorAll('section[data-gera]')) s.innerHTML = gera[s.dataset.gera]();
+  for (const s of document.querySelectorAll('section[data-denso]')) {
+    s.style.width = '700px';
+    s.innerHTML = `<h2>Tudo</h2>` + repete(40, () => `<div style="font-size:12px;line-height:14px">Fragmento curto de texto que ocupa a linha inteira da coluna sem parar nem deixar nenhum respiro para o olho descansar</div>`);
+  }
+  document.getElementById('l1').addEventListener('click', () => {});
+  document.getElementById('l2')['__reactProps$fixture'] = { onClick() {} };
+</script>
+</body></html>

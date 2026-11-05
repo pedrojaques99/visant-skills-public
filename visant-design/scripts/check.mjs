@@ -107,5 +107,6 @@ if (findings) {
   process.exit(1);
 }
 console.log('VERDICT: the checks are clean. Now read the screenshots: a clean check is not a good screen.');
+console.log('If you edited this screen: before and after side by side, shown to the owner (visant-killer/scripts/regressao.mjs).');
 console.log('Chromium is not an iPhone: a custom touch gesture stays under what you did not check until it ran on one.');
 process.exit(0);

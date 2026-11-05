@@ -25,7 +25,7 @@ Portuguese: "audit this screen", "tá com cara de IA", "make this smoother",
 | | React, Next (`.tsx`, `.jsx`) | Vue, Svelte, Astro, HTML |
 |---|---|---|
 | Judgment: `visant-design`, `visant-frontend`, `visant-motion`, declutter, devil's advocate | yes | yes |
-| Open-screen scans: `corta-url`, `corta-scan`, `ritmo-scan` | yes | yes |
+| Open-screen scans: `corta-url`, `corta-scan`, `ritmo-scan`, `tela-scan`, `regressao` | yes | yes |
 | `copy-lint` | yes | yes |
 | `killer-scan` and the code detectors | yes | refuses with exit 2; it never reports a zero it did not read |
 
@@ -93,7 +93,7 @@ hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 | Skill | What it does | Needs |
 |---|---|---|
 | [`visant-design`](visant-design/SKILL.md) | **Start here.** One door: reads the ask and loads the right playbook below | the skills it routes to |
-| [`visant-killer`](visant-killer/SKILL.md) | Anti-slop UI audit: detectors as a hard gate, judgment through the skills below, a devil's advocate pass and a score | Node 20+; Playwright optional (screen checks) |
+| [`visant-killer`](visant-killer/SKILL.md) | Anti-slop UI audit: detectors as a hard gate, judgment through the skills below, a devil's advocate pass and a score. `tela-scan` and `regressao` measure what a screen lost, because removing is not automatically better | Node 20+; Playwright optional (screen checks); axe-core optional (target size, name) |
 | [`visant-frontend`](visant-frontend/SKILL.md) | Interface decisions: every element names the business variable it moves, or it goes | nothing |
 | [`visant-motion`](visant-motion/SKILL.md) | Easing/duration tokens for CSS and framer-motion, `motion-lint`, URL measurement | Node 20+ |
 | [`visant-refine`](visant-refine/SKILL.md) | Charts, gauges, sparklines, sliders and metric tiles with one shared anatomy | Node 20+ |
@@ -139,6 +139,8 @@ Node 20+, no build step.
 npm install
 npm test                                              # every detector's self-test, both ways
 node visant-killer/scripts/killer-scan.mjs <app/src>  # the whole gate, from any folder
+node visant-killer/scripts/corta-url.mjs <url> home   # clipping, spacing, what the screen lost, axe
+node visant-killer/scripts/regressao.mjs diff antes.json depois.json  # lost boxes, controls, chips, width
 node visant-motion/scripts/motion-lint.mjs <app>
 node visant-copy/scripts/copy-lint.mjs <file-or-folder>
 bash visant-video-editor/scripts/self-test.sh         # needs ffmpeg

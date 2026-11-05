@@ -30,7 +30,7 @@ Gestalt is why a screen with every token right can still read wrong.
 
 - **Proximity.** A label must be closer to its value than to the next group. Each level out is about twice the gap of the level inside it (8, 16, 32).
 - **Similarity.** Things that look the same must behave the same. A blue word that is not a link is a lie.
-- **Common region.** Before adding a box, try space alone. A card inside a card is almost always one box too many.
+- **Common region.** Before adding a box, try space alone. A card inside a card is almost always one box too many. That forbids nesting, not cards: main data on an operation screen keeps its box.
 - **Alignment.** Every element shares an edge with something. Count the distinct left edges: fewer is calmer.
 
 ## 4. Type

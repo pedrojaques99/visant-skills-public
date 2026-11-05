@@ -1,0 +1,44 @@
+<!doctype html>
+<!--
+  tela-scan FIXTURE, the case that motivated it, with invented data: a costs and
+  health console after an agent removed every box. Wide viewport, sidebar plus a
+  left-aligned max-w column, numbers at body size, state only as a grey icon.
+
+  EXPECTED, page level (node scripts/tela-self-test.mjs):
+    vazio-lateral, metrica-sem-destaque, numeros-em-frase, tudo-igual,
+    estado-so-icone. The partner metrics-good.html holds the same data and is clean.
+-->
+<html lang="en"><head><meta charset="utf-8"><title>Costs</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 14px/1.5 sans-serif; background: #0b0b0c; color: #d4d4d8; display: flex; min-height: 100vh; }
+  .side { width: 240px; flex: none; border-right: 1px solid #27272a; padding: 16px; }
+  .side a { display: block; color: #a1a1aa; padding: 6px 0; }
+  main { flex: 1; padding: 24px; }
+  .col { max-width: 1024px; }
+  h1 { font-size: 15px; font-weight: 400; margin-bottom: 16px; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+  .row svg { width: 16px; height: 16px; color: #71717a; }
+  section { margin-bottom: 24px; }
+</style></head>
+<body>
+  <nav class="side"><a href="#a">Threads</a><a href="#b">Costs</a><a href="#c">Health</a><a href="#d">Storage</a></nav>
+  <main><div class="col">
+    <h1>Costs</h1>
+    <section>
+      <div class="row"><span>Period total</span><span>$12.40</span></div>
+      <div class="row"><span>Models</span><span>$11.10</span></div>
+      <div class="row"><span>Transcription</span><span>$0.80</span></div>
+      <div class="row"><span>Voice messages</span><span>$0.50</span></div>
+    </section>
+    <section><p>Storage holds 120 facts, 14 people, 8 projects, 32 threads, 5 rules and 2 indexes.</p></section>
+    <section>
+      <div class="row"><span>Database</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Send queue</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Voice service</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Storage</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Scheduler</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+      <div class="row"><span>Message channel</span><svg class="lucide lucide-circle-check" viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="7"/></svg></div>
+    </section>
+  </div></main>
+</body></html>

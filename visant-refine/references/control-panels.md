@@ -106,6 +106,10 @@ what might happen:
 
 ## 4. Depth by line and tone, not by box
 
+Scope: this section is for a panel of controls. A dashboard of operation (costs,
+health, memory) keeps a box on its main data; applied there, this rule removed
+every card and left a flat page of text.
+
 - **Sticky folder headers that stack**, not only the panel title, with a short
   gradient fade at the top and bottom edges of the scroll: you always know which
   folder the row under your pointer belongs to, and the fade says "there is

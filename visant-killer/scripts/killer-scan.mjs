@@ -145,7 +145,7 @@ if (!selfTest && !initReport && !uiFiles.length) {
     console.log(`  found: ${other.map((p) => p.split(/[\\/]/).pop()).join(', ')}`);
     console.log('  What still works on this stack:');
     console.log('  - the judgment: references/declutter.md, references/devils-advocate.md, visant-frontend, visant-motion');
-    console.log('  - the open screen: corta-url.mjs <url>, or corta-scan.js and ritmo-scan.js in the browser console');
+    console.log('  - the open screen: corta-url.mjs <url>, or corta-scan.js, ritmo-scan.js and tela-scan.js in the browser console');
     console.log('  - the words: visant-copy/scripts/copy-lint.mjs reads .vue, .svelte, .astro and .html');
     console.log('  Report this audit as manual. A zero here would mean nothing.');
     process.exit(2);
@@ -1619,6 +1619,14 @@ function gateZero(reportPath) {
     why.push('no filled "## Not checked" section ("## Não verificado" also accepted): say what you did NOT see, or "nothing"');
   }
 
+  /* The score improves the more you delete: a screen stripped of its cards passed
+     every detector, and the owner was the one who saw it. The report has to say the
+     two states were compared by eye, or that nothing was edited. */
+  const beforeAfter = r.text.match(/^##+[ \t]*(?:Before and after|Antes e depois)[^\n]*\n([\s\S]*?)(?=^##[ \t]|$(?![\s\S]))/im);
+  if (!beforeAfter?.[1]?.trim().replace(/^-\s*$/gm, '').trim()) {
+    why.push('no filled "## Before and after" section ("## Antes e depois" also accepted): side by side and shown to the owner, or "nothing edited"');
+  }
+
   return { ok: !why.length, why, classified: r.classified, seen: r.seen };
 }
 
@@ -1687,6 +1695,12 @@ were the dev server lying, not the screen.
 ## Not checked
 
 Widths, themes, states and data you did not see, and any custom gesture that never ran on a real iPhone. If nothing, write "nothing".
+
+-
+
+## Before and after
+
+The score is not the verdict. Screens compared side by side (\`regressao.mjs\`), what the owner said when shown, and every loss accepted with its reason. If no file changed, write "nothing edited".
 
 -
 

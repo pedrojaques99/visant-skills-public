@@ -1,0 +1,56 @@
+<!doctype html>
+<!--
+  tela-scan FIXTURE: the same invented data as metrics-bad.html, with the boxes
+  back. EXPECTED: zero findings. The regression runs metrics-good -> metrics-bad
+  and must report perdeu-contentor, perdeu-controle, perdeu-chip, perdeu-largura;
+  the other way it must report nothing.
+-->
+<html lang="en"><head><meta charset="utf-8"><title>Costs</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font: 14px/1.5 sans-serif; background: #0b0b0c; color: #d4d4d8; display: flex; min-height: 100vh; }
+  .side { width: 240px; flex: none; border-right: 1px solid #27272a; padding: 16px; }
+  .side a { display: block; color: #a1a1aa; padding: 6px 0; }
+  main { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+  h1 { font-size: 22px; font-weight: 600; }
+  .head { display: flex; justify-content: space-between; align-items: center; }
+  .tabs button { padding: 6px 12px; background: #18181b; color: #d4d4d8; border: 1px solid #27272a; border-radius: 6px; cursor: pointer; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .card { background: #141416; border: 1px solid #27272a; border-radius: 12px; padding: 16px; }
+  .num { font-size: 26px; font-weight: 600; color: #fafafa; display: block; }
+  .muted { color: #a1a1aa; font-size: 12px; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+  .chip { display: inline-block; font-size: 12px; line-height: 18px; padding: 1px 8px; border-radius: 999px; background: #052e16; color: #4ade80; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+</style></head>
+<body>
+  <nav class="side"><a href="#a">Threads</a><a href="#b">Costs</a><a href="#c">Health</a><a href="#d">Storage</a></nav>
+  <main>
+    <div class="head"><h1>Costs</h1><div class="tabs"><button type="button" onclick="void 0">7 days</button> <button type="button" onclick="void 0">30 days</button> <button type="button" onclick="void 0">Exportar</button></div></div>
+    <div class="tiles">
+      <div class="card"><span class="muted">Period total</span><span class="num">$12.40</span></div>
+      <div class="card"><span class="muted">Models</span><span class="num">$11.10</span></div>
+      <div class="card"><span class="muted">Transcription</span><span class="num">$0.80</span></div>
+      <div class="card"><span class="muted">Voice messages</span><span class="num">$0.50</span></div>
+    </div>
+    <div class="tiles">
+      <div class="card"><span class="muted">Facts</span><span class="num">120</span></div>
+      <div class="card"><span class="muted">People</span><span class="num">14</span></div>
+      <div class="card"><span class="muted">Projects</span><span class="num">8</span></div>
+      <div class="card"><span class="muted">Threads</span><span class="num">32</span></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="row"><span>Database</span><span class="chip">Ok</span></div>
+        <div class="row"><span>Send queue</span><span class="chip">Ok</span></div>
+        <div class="row"><span>Voice service</span><span class="chip">Ok</span></div>
+        <div class="row"><span>Storage</span><span class="chip">Ok</span></div>
+        <div class="row"><span>Scheduler</span><span class="chip">Ok</span></div>
+        <div class="row"><span>Message channel</span><span class="chip">Ok</span></div>
+      </div>
+      <div class="card"><span class="muted">Usage in recent days</span>
+        <svg width="100%" height="120" viewBox="0 0 400 120" role="img" aria-label="usage"><polyline points="0,100 100,60 200,70 300,30 400,40" fill="none" stroke="#4ade80" stroke-width="2"/></svg>
+      </div>
+    </div>
+  </main>
+</body></html>
