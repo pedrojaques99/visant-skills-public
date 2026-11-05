@@ -161,3 +161,14 @@ axis ("90 days ago"); a centered column also needs to be under 800px
 (githubstatus.com at 1920); a caption under a real tile is detail; links do not
 count as reading (Hacker News). Most rules have only fired in fixtures so far: no
 real bad screen was available to measure, only the synthetic reproduction.
+
+**Real bad screen (2026-11-05, 1920, logged in, read-only).** The same admin app in three commits: before the cleanup, the version the owner rejected, and the one rebuilt from his feedback.
+
+| Screen | Before | Rejected | Rebuilt |
+|---|---|---|---|
+| Costs | 0 | `vazio-lateral`, `metrica-sem-destaque`, `numeros-em-frase` | 0 |
+| Health | `legenda-em-toda-linha`, `icones-decorativos` | those two, `vazio-lateral`, `estado-so-icone` | 0 |
+| Memory | 0 | `vazio-lateral`, `numeros-em-frase` | 0 |
+| Security | not measured | `estado-so-icone`, `rotulo-repetido`, `nomes-tecnicos`, `pilha-de-selos`, `icones-decorativos` | `rotulo-repetido` |
+
+`regressao` before against rejected: `perdeu-contentor` and `perdeu-largura` on Costs and Memory, `perdeu-chip` and `perdeu-largura` on Health. Before against rebuilt: nothing on Health and Memory; on Costs, `perdeu-contentor` (24 to 11), because a prices table moved behind a disclosure. A real cut, so `--aceito` with the reason is the right exit. Two readings the owner made by eye match the rules: the old Health's redundancy, and Security's wall of tool names. Not measured here: 1440 and phone width, `regressao snap` with `--storage`.
