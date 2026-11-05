@@ -441,6 +441,19 @@ export function LigaJogo({ struct }: { struct: (p: Record<string, unknown>) => v
   return <button onClick={() => setJogo('gartic')}>jogo</button>;
 }
 
+/* A highlight behind a ternary is the condition that decides, not a fixed one:
+ * it is the fix this rule asks for. Real case: visant/ui, the mockup studio.
+ * EXPECTED highlight-at-rest: zero. */
+export function LigaFocoNoClose({ setCena }: { setCena: (f: (c: Cena2) => Cena2) => void }) {
+  const escolher = (id: string) =>
+    setCena((c) => ({
+      ...c,
+      foco: id === 'close' ? { ...c.foco, ativo: true } : c.foco,
+    }));
+  return <button onClick={() => escolher('close')}>close</button>;
+}
+type Cena2 = { foco: { ativo: boolean } };
+
 /* A TS GENERIC closes with `>` and opens with `<` just like a tag: two generics
  * on neighboring lines make the extractor read the CODE between them as a screen
  * sentence. The chunk has balanced parentheses and no reserved word: it got past

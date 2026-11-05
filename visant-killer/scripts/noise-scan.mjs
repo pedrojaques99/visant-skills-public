@@ -1801,6 +1801,10 @@ REGRAS.push({
         if (i < 0) return false;
         let j = i - 1;
         while (j >= 0 && /\s/.test(src[j])) j--;
+        /* `cond ? { ...x, on: true } : x`: the condition already decides, which
+           is exactly the fix this rule asks for. Confirmed false positive in
+           visant/ui mockups/Estudio.tsx, `foco: id === "close" ? {...} : foco`. */
+        if (nivel === 0 && src[j] === '?') return true;
         if (src[j] === '(') {
           j--;
           while (j >= 0 && /\s/.test(src[j])) j--;
