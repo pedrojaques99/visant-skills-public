@@ -166,6 +166,11 @@ under its own name. In order of importance:
     with "exatamente 12 azeitonas pretas". Detail too exact to be invented is what
     AI text lacks.
 
+For a long signed piece, follow the skeleton in
+[voice.md §9](references/voice.md#9-structure-of-a-signed-piece-the-skeleton). For text that passes the
+linter and still reads like AI, hunt the tells in [§10](references/voice.md#10-linguistics-what-makes-it-sound-brazilian).
+For a script that will be read aloud, [§11](references/voice.md#11-spoken-scripts-video-narration).
+
 Line-by-line detail, vocabulary, anglicisms, money, CTA, and the before/after
 table: [references/voice.md](references/voice.md). Read it before writing a new
 piece or rewriting a whole section.

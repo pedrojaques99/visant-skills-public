@@ -174,11 +174,21 @@ const RULES = [
   {
     id: 'pt-llm-connector',
     family: 'connector',
+    /* "Por fim," saiu em 2026-11-05: é junta falada do texto assinado da casa
+       ("Por fim, esse é só o início dessa conversa"), voice.md §10. */
     re: rx(
-      `(?:^|\\n)\\s*(?:Al[ée]m\\s+disso|Por\\s+fim|Em\\s+resumo|` +
+      `(?:^|\\n)\\s*(?:Al[ée]m\\s+disso|Em\\s+resumo|` +
         `Vale\\s+(?:a\\s+pena\\s+)?(?:lembrar|ressaltar|destacar)|Em\\s+outras\\s+palavras)${R}`
     ),
     hint: 'AI-essay connector ("Além disso", "Em resumo"). Start the sentence with the subject.',
+  },
+  {
+    id: 'pt-fragment-ladder',
+    /* Três frases seguidas de até 2 palavras ("Simples. Rápido. Brasileiro.") é a escadinha que
+       denuncia texto de IA (voice.md §10). Uma batida curta depois da frase longa continua valendo:
+       só dispara na terceira seguida. */
+    re: /(?:^|[.!?]\s+)(?:[\p{L}][\p{L}'-]*(?:\s[\p{L}'-]+)?[.!?]\s+){2}[\p{L}][\p{L}'-]*(?:\s[\p{L}'-]+)?[.!?](?=\s|$)/gu,
+    hint: 'Fragment ladder (three verbless beats in a row) reads as AI. Keep one sentence with a verb and at most one short punch after it.',
   },
 
   /* ---------- English ----------
@@ -371,6 +381,7 @@ if (args.includes('--self-test')) {
     emoji: 'Seu site novo 🚀',
     semicolon: 'Rápido; bonito.',
     'pt-llm-connector': 'Além disso, entregamos rápido.',
+    'pt-fragment-ladder': 'A gente fez o bloco. Simples. Rápido. Brasileiro.',
     'en-not-about': "Branding isn't about logos, it's about trust.",
     'en-not-x-but-y': "It's not a website, it's a sales machine.",
     'en-not-just': 'Not just a template, but a system.',
@@ -383,6 +394,9 @@ if (args.includes('--self-test')) {
     'credibility-seal': 'A truly authentic process with real results.',
   };
   const LIMPAS = [
+    'Por fim, esse é só o início dessa conversa.',
+    'Juntaram a primeira sílaba de cada nome pra batizar o bloco. Cobogó.',
+    'Eram três sócios. Coimbra, Boeckmann e Góis.',
     'claude mcp add shadcn -- npx shadcn@latest mcp',
     '/shots/ - .webp',
     'Seu site novo fica pronto em uma semana.',

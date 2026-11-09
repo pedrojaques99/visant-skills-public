@@ -334,6 +334,76 @@ It stays when it passes all three. It is rare by nature: two in a piece means th
 writing has found a habit. It is most at home in signed text, and a landing needs a
 stronger reason. Say in the report which finding stayed and why.
 
+## 9. Structure of a signed piece (the skeleton)
+
+Taken from "O que vai sobrar para o designer de hoje?" (Pedro Xavier, Visant Club). The
+order is the argument: each block earns the next one. Use it for essays, newsletters and
+long posts. A short post keeps only steps 1, 2 and 10.
+
+| # | Block | How it is done in the original |
+|---|---|---|
+| 1 | **Open talking, wide, with the reader inside** | "Olha, eu acho que estamos vivendo em um momento muito peculiar". Then a list of who the reader may be, closed by "ninguém escapa". |
+| 2 | **Thesis with an owner, exaggeration admitted** | "eu realmente acredito que o designer gráfico de hoje será extinto (dramático, eu sei)". |
+| 3 | **Cut the thesis down to size** | "Mas a parte importante da última frase é o designer de HOJE." The CAPS word is the one that carries the cut. |
+| 4 | **A word to the reader, in parentheses** | "(Esse assunto é polêmico, eu sei. Mas tente tirar um tempo pra pensar sobre isso com uma mente aberta, assim como eu tento fazer)". |
+| 5 | **Section titles are the reader's question** | "O que vai sobrar para o designer de hoje?", "O que é certo daqui pra frente?". Never a noun label like "Contexto". |
+| 6 | **List with the reason inside each item** | Numbered, each item names the thing and, in the same line, why or what it means: "(Quando digo manual = sem usar ajuda de IA de qualquer forma, fazendo tudo na unha)". |
+| 7 | **Take a side against your own forecast** | "essa previsão não significa que eu ache isso bom. Na verdade, eu acho bem ruim. Eu acho triste que..." |
+| 8 | **Grant the best objection, then limit it** | "É um argumento super válido e que eu concordo. MAS..." and the limit comes with a picture (the pyramid: base, intermediate, top). |
+| 9 | **Turn with "Dito isso," into what to do** | The second list is the useful one, and it is longer than the first. |
+| 10 | **Humble image, then the analogy** | "Tô só molhando o mindinho do pé na superfície de um mar profundo". Then the analogy announced as silly, carried to absurd detail, brought back to the point. |
+| 11 | **Close with repertoire and advice** | "Por fim," a plain advice, proved with a name and a date (Gutenberg in 1440, Photoshop in the hands of Alexandre Wollner). |
+| 12 | **Invite, ask, sign** | What the reader gets, that it is paid, a request to comment, "Te vejo em uma próxima." and the signature. |
+
+**Measured in the original:** about 17 words per sentence, 1 parenthesis every 150 to 200 words,
+2 CAPS words in the whole piece, 3 section titles, 2 numbered lists, 1 analogy. The first person
+shows up in every block.
+
+## 10. Linguistics: what makes it sound Brazilian
+
+The voice is built from small, countable things. AI text lacks most of them at once, which is
+why it reads "neutral" even when it passes the linter.
+
+**Spoken joints that carry the argument** (from the original): "Olha,", "Então,", "Porém agora,",
+"Mas", "Agora,", "Dito isso,", "Na verdade,", "Por fim,". One per paragraph at most, at the start.
+
+**Idioms used straight, without quotes or apology:** "deixa as duas últimas no chinelo", "fazendo
+tudo na unha", "código é uma das áreas que a IA mais manda bem", "saber vender o seu peixe",
+"olho no olho", "molhando o mindinho do pé", "um olhar de mil jardas", "pegar uma das melhores
+ondas". One every few paragraphs. Never invent one that does not exist in Portuguese.
+
+**Contractions by ear:** "tô", "tá", "pra" in the spoken beats, "para" in the explaining lines,
+both in the same text. Future with "vai": "vai sobrar", "vai conseguir", never "irá".
+
+**Hedges where it is really doubt:** "pode ser que", "talvez", "certamente surgirão outros",
+"provavelmente estará mal-humorado". Certainty is spent on the claim, doubt on the forecast.
+
+**Precision that sounds lived:** "exatamente 12 azeitonas pretas e 3 azeitonas verdes",
+"2 esguichadas circulares", "2022 a 2026". Numbers stay raw and odd.
+
+**What AI does instead (the tells to hunt by eye, the linter catches only the first):**
+
+| Tell | Example | Fix |
+|---|---|---|
+| Fragment ladder | "Simples. Rápido. Brasileiro." | One sentence with a verb, then at most one fragment as a punch. |
+| The triad with fixed rhythm | "segura o sol, deixa o vento cruzar e a luz entrar em pedaços" | Two things, or three with different lengths and a joint ("e tem um detalhe:"). |
+| One-word poetic closer | "Respirando." at the end of the piece | End on a plain sentence with a subject and a verb. |
+| Titles in a series of "O X" | "O calor", "O nome", "A ideia", "O parente" | A place, a date, a name or the reader's question: "Recife, anos 20", "Co, bo, gó". |
+| Abstract adjective | "icônico", "atemporal", "único" | The scene or the number that would make it true. |
+| No owner | Text that could be signed by anyone | A position with "eu acho", and its limit. |
+| Over-tidy lists | Every item the same length and shape | Items of different sizes, each with its own reason. |
+
+## 11. Spoken scripts (video narration)
+
+Same voice, said out loud. Sentences shorter (about 12 words), the parenthesis becomes an aside
+in the voice ("e olha, isso é chute meu"), lists become a sequence with joints ("Depois", "E
+aí"), and every number is written the way it is said ("anos 20", "quase cem anos").
+
+**The best reference is the narrator's own recording.** When the person improvises while
+recording, the improvised line is the voice. Compare the transcription with the script after
+every recording, and carry the improvised turns ("Aí três sócios resolveram isso", "e tem um
+detalhe:", "te dando mais respiro") into the next script.
+
 ## Brand glossary (Visant's own copy only)
 
 In client copy, the glossary is the client brand's, not this one.
