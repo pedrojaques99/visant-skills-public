@@ -1,6 +1,6 @@
 ---
 name: site-reels
-description: 'Records the best scenes of a website or web app (WebGL hero, 3D, scroll) as 1080p MP4 for decks, uploads them to Figma Slides, and builds brand or product showreels in Remotion. Use on "record the site scenes", "site video for the deck", "showreel", "launch video", "gerar vídeo do site", "vídeo pro deck", "reel do produto", /site-reels.'
+description: 'Records the best scenes of a website or web app (WebGL hero, 3D, scroll) as 1080p MP4 for decks, uploads them to Figma Slides, and builds brand or product showreels in Remotion or HyperFrames (code-only logo reveal + branding burst). Use on "record the site scenes", "site video for the deck", "showreel", "launch video", "gerar vídeo do site", "vídeo pro deck", "reel do produto", /site-reels.'
 metadata:
   family: video
 ---
@@ -178,6 +178,44 @@ with brand data in `brand.ts`.
   then white and extract alpha by difference (ImageMagick). Never return base64 through
   `use_figma` (blows the context).
 
+## Brand film in HyperFrames (code-only: logo reveal + branding burst)
+
+Validated on Clube® (24.7s, 1920×1080, 30fps). Use when the brief is "logo reveal / branding film
+like the Kargul reference" and the identity must feel built, not slid in. Remotion plates above
+stay for site recordings; this is for fully designed films.
+
+**Structure that worked** (one language, hard cuts on a beat grid, no labels):
+1. **Logo reveal, 3–4 camera angles** on the real vector: extract anchors/handles from the SVG
+   (`svg-pathdata`), draw outline by `pathLength` dash (set `pathLength` as an attribute, not a
+   GSAP property), then anchors, fill, solid. Camera = CSS 3D (`perspective`) over a perspective
+   grid; change angle on beats, never just slide in.
+2. **Burst of applied identity**: each screen a different layout (full, split, giant word, ticker,
+   palette, track, checker, circuit, b-roll). **Never repeat a mockup**; if the idea runs out,
+   shorten the film. B-roll only as duotone (brand ink + accent via ffmpeg) with the logo on top.
+3. **Bento scene** with real brand media (the spinning 3D emblem video, colorkeyed over the card)
+   and animated bits (runner on a path skeletonized from the image, pings on nodes).
+4. **End card with depth, not a static hold**: after the hit, extruded logo (8 offset copies,
+   darker tint), slow push-in + 3D sway (`transformPerspective`, rotationY −12→12), drifting
+   light + vignette, ® pop. Never leave the last 3s still.
+
+**Tempo**: map the film to a beat grid (`plan.json`, ramp ~100→138 BPM); scenes, wipes and the
+final hit snap to it. Sound (SFX, break track, stems as Studio lanes, levels) lives in
+[[sound-design-de-sfx-para-motion]]; render, loudness and delivery in
+[[render-e-entrega-de-reels-hyperframes]].
+
+**Workflow rules**:
+- The generator (`montar.mjs`) writes `index.html` + scene files; once the user edits in the
+  Studio, **never regenerate over it**. Diff first (normalize `data-hf-id`, style spacing):
+  back up, regenerate, report real differences per scene, restore. Edit the single scene file
+  and mirror the change in the generator.
+- Grain: coarse and slow (`opacity ~.28`); fine grain made a 248MB file. CRF 22.
+- Lint traps: no video nested in a timed wrapper, don't tween `letterSpacing`, nested `.clip`
+  must be visible, no duplicate `<img>` discovery, media must not run past EOF.
+- Check with `hyperframes check`, then `snapshot --at` at the last 3s and each scene change and
+  **look** at the contact sheet; render only after.
+- Feedback that shaped it: too long on b-roll, repeated mockups, empty screens, heavy grain,
+  intrusive cut sounds, keyboard SFX rejected (use mouse clicks/drags + engine).
+
 ## Product showreel (real app filmed)
 
 Screens are filmed for real (Playwright + CDP screencast at 2x, steps
@@ -238,3 +276,5 @@ Origin stories, reference projects and machine-specific tips: `references/cases.
 
 - **[[visant-video-editor]]**: footage from a camera
 - **[[visant-premiere-editor]]**: a rough cut in Premiere
+- **[[sound-design-de-sfx-para-motion]]**: SFX, break track and stems for the film
+- **[[render-e-entrega-de-reels-hyperframes]]**: HyperFrames render, check and delivery

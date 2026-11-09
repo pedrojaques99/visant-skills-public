@@ -41,3 +41,11 @@ and are not shipped; they only say where the reference implementation lived.
   of `Invoke-History`. Use unique names.
 - CC0 track that worked: Free Music Archive, John Bartmann (CC0 album). The MP3 comes from the
   `fileUrl` in the track page HTML.
+
+## Clube® (2026-11): brand film in HyperFrames
+
+24.7s 16:9, logo drawn from real vector in 4 camera angles, 21-cut branding burst, bento with the
+real emblem video, extruded end card with 3D sway. Project: `jaques-sh/studio-hf/clube`
+(`montar.mjs` generates scenes; Studio edits live in `index.html` and `cena-rajada`).
+Delivered v6 in `Shared/Transfers/clube-video-v6-final`. Pending before public release: confirm
+the licence of the BT Breakz and VHULTO packs used in the soundtrack/hit.
