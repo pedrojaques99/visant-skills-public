@@ -1,1 +1,11 @@
 node_modules/
+
+# working/planning notes, not part of the shipped skills
+/FEEDBACK-*.md
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*

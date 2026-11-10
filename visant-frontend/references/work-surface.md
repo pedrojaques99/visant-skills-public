@@ -12,6 +12,7 @@ items got processed. Every rule below moves one of the two.
 - [Hiding](#hiding)
 - [Grouping by spacing](#grouping-by-spacing)
 - [Hover](#hover)
+- [Side panel (non-blocking inspector)](#side-panel-non-blocking-inspector)
 - [Keyboard](#keyboard)
 - [Defaults and ordering](#defaults-and-ordering)
 - [Empty and absent](#empty-and-absent)
@@ -133,6 +134,33 @@ is active — otherwise the user loses sight of what they already marked.
 Quick actions on hover are usually the single largest throughput win available:
 copying a phone number, opening a link, or firing a message without leaving the
 list removes an entire open-modal-and-return cycle per item.
+
+## Side panel (non-blocking inspector)
+
+When the task is **triaging a queue** (leads, tickets, item review), a
+centred `Dialog` is the wrong control: it takes the list out of view and
+forces a close-and-reopen per item. The pattern (Linear, inboxes) is a side
+panel (`Sheet`/Drawer) that never blocks the background:
+
+- **Switching items never closes the panel.** Clicking another row swaps the
+  panel's content in place, with no close-then-open transition. If the panel
+  "blinks" on every click, it's a dialog in disguise, not an inspector.
+- **Resizable border.** A discrete drag handle on the panel's left edge,
+  `col-resize` cursor; preferred width persisted in `localStorage` (the same
+  pattern as any other persisted UI preference). Double-clicking the handle
+  toggles between a default width (quick read) and an expanded one (e.g.
+  ~580px ↔ ~880px, tune to the content's real density).
+- **`J`/`K` (or `↓`/`↑`) navigation between queue items**, reusing the
+  **guard order already defined in [Keyboard](#keyboard)** — focus inside
+  `input`/`textarea`/editable always wins over the shortcut; don't duplicate
+  those four rules here, just inherit them.
+- **The variable this moves is throughput**: every item reviewed without
+  reopening a modal is one click (and one animation round-trip) fewer per
+  item — the same framing as the rest of this section.
+
+A pin opened on a map or canvas uses this same panel to show the clicked
+point's detail — see [spatial-surface.md](spatial-surface.md) — instead of
+inventing a second detail component.
 
 ## Keyboard
 
