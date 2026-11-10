@@ -109,12 +109,46 @@ trabalhar com processo em vez de só feeling"), and the FAQ settles the fit.
 ## 4. How each block is written
 
 **Hero.** The eyebrow names the category (`E-book, a Metodologia Visant`). The
-title **names the task** when people come to do something ("Ache o mockup certo
-sem abrir um PSD"). When the product is a method and nobody searches for a verb, it
-is the **consequence of the mistake**: "Se o projeto começa pelo logo, ele volta
-pra revisão." Never a promise. The lead names the mistake and what the
+title **names the task**, never a promise — see
+[The fold names the task, not the state](#the-fold-names-the-task-not-the-state)
+below. The lead names the mistake and what the
 product does about it, in two sentences. The trigger under the CTA carries zero
 risk: "Acesso na hora, leitura no navegador. 7 dias de garantia."
+
+### The fold names the task, not the state
+
+Applies to the H1, the `<title>` and the social card, and it is the most
+expensive mistake because it passes every linter.
+
+State copy describes the reader's world and leaves them to work out what they
+gain: "Você tem centenas de mockups parados no disco." It is correct, real pain,
+and asks for nothing. Task copy names the verb the person came to do: "Ache o
+mockup certo sem abrir um PSD." When the product is a method and nobody
+searches for a verb, use the **consequence of the mistake** instead: "Se o
+projeto começa pelo logo, ele volta pra revisão."
+
+The test is one question: **which verb would the reader type into Google?** If
+the headline lacks that verb, it talks about the state. And beware the wrong
+task: before writing, check which step really hurts (example in
+[cases.md](cases.md)).
+
+When the pain needs to show (and sometimes it does), it goes in the **next
+section**, opening the mechanism. On the fold you have 5 seconds, and spending
+all five describing the problem is wasting your turn.
+
+### The product line says what the reader gets
+
+The line under a product or feature name, also invisible to every linter. It
+fails in three ways:
+
+- **Describes the mechanism from inside.** `Audita antes do PR` is correct, and
+  it asks the visitor to know what a PR is and why auditing helps. Write what
+  they walk away with: `Olho de designer para o seu Claude Code`.
+- **Lists nouns.** `Movimento e espera` names a topic. A line has a verb or a
+  gain.
+- **Promises more than the thing does.** Before writing "sozinho", "tudo",
+  "treinado" or "em minutos", open what the product really does. A claim the
+  demo beside it contradicts costs more than a flat line.
 
 **Mechanism.** The causal chain with a repeated subject (the page's anaphora).
 The repetition shows the chaining without having to say "chained".

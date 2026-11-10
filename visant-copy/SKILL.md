@@ -175,38 +175,17 @@ Line-by-line detail, vocabulary, anglicisms, money, CTA, and the before/after
 table: [references/voice.md](references/voice.md). Read it before writing a new
 piece or rewriting a whole section.
 
-### The fold names the TASK, not the state
+### The fold and the product line: two mistakes invisible to every linter
 
-Applies to the H1, the `<title>` and the social card, and it is the most
-expensive mistake because it passes every linter.
+**The fold (H1, `<title>`, social card) names the TASK, not the state.** State
+copy describes the reader's world and leaves them to work out the gain; task
+copy names the verb they came to do. Test: **which verb would the reader type
+into Google?** Full test, examples and the wrong-task trap:
+[voice.md → The fold names the task](references/voice.md#the-fold-names-the-task-not-the-state).
 
-State copy describes the reader's world and leaves them to work out what they
-gain: "Você tem centenas de mockups parados no disco." It is correct, real pain,
-and asks for nothing. Task copy names the verb the person came to do: "Ache o
-mockup certo sem abrir um PSD."
-
-The test is one question: **which verb would the reader type into Google?** If
-the headline lacks that verb, it talks about the state. And beware the wrong
-task: before writing, check which step really hurts (example in
-[references/cases.md](references/cases.md)).
-
-When the pain needs to show (and sometimes it does), it goes in the **next
-section**, opening the mechanism. On the fold you have 5 seconds, and spending
-all five describing the problem is wasting your turn.
-
-### The product line says what the reader gets
-
-The line under a product or feature name, also invisible to every linter. It
-fails in three ways:
-
-- **Describes the mechanism from inside.** `Audita antes do PR` is correct, and
-  it asks the visitor to know what a PR is and why auditing helps. Write what
-  they walk away with: `Olho de designer para o seu Claude Code`.
-- **Lists nouns.** `Movimento e espera` names a topic. A line has a verb or a
-  gain.
-- **Promises more than the thing does.** Before writing "sozinho", "tudo",
-  "treinado" or "em minutos", open what the product really does. A claim the
-  demo beside it contradicts costs more than a flat line.
+**The product line says what the reader gets**, not the mechanism from inside,
+a list of nouns, or a promise the demo beside it contradicts. Full failure
+modes: [voice.md → The product line](references/voice.md#the-product-line-says-what-the-reader-gets).
 
 Visant's own brand terms: [glossary](references/voice.md#brand-glossary-visants-own-copy-only). In client copy, the glossary is the client's.
 
