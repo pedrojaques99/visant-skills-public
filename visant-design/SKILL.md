@@ -40,6 +40,7 @@ Keep the design. Remove the tells.
 2. **Name the job.** Write one line per screen: who arrives, what they came to do, which number moves. Read the file for that surface:
    - Landing, pricing, signup, onboarding: [acquisition](../visant-frontend/references/acquisition-surface.md)
    - Queue, table, editor, admin: [work](../visant-frontend/references/work-surface.md)
+   - Canvas, map, free-form/spatial editor: [spatial](../visant-frontend/references/spatial-surface.md)
    - Payment, permission, deletion, money: [trust](../visant-frontend/references/trust-surface.md)
 3. **Diagnose from the image.** Run [foundations.md](references/foundations.md) on the screenshot, in order. List what is wrong, biggest first.
 4. **Cut before adding.** For each element ask which decision it helps. No answer, it goes. Most screens get better by losing things, but a main number keeps its emphasis (box, scale, rule: whatever the brand's system uses), a state keeps a visible signal, an action keeps its target. Too much text becomes a drawn fact (bar, chip, icon with a tooltip), never a pile of badges.
