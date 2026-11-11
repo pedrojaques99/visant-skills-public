@@ -14,6 +14,10 @@
  *   perdeu-controle   controls in the screen area: lost >= 2 and >= 25%.
  *   perdeu-chip       chips or colored state signals: lost >= 2 and >= 50%.
  *   perdeu-largura    used width: lost >= 120px and >= 10% of the usable width.
+ *   perdeu-marca      (source only) brand art: logo, mark, mascot, hero art,
+ *                     illustration components and logo/mascot images: lost >= 1
+ *                     and >= 50%. A cleanup that deletes the brand's own asset
+ *                     removed the life, not a tell (Tucano, 2026-11-11).
  *
  * A loss can be right: the cut test exists. So a finding asks for a reason, not
  * a revert: `--aceito regra="why"` prints the reason and clears that rule. What
@@ -65,14 +69,19 @@ const RE_CONTENTOR = /<(?:Card|Panel|Tile|Surface|Stat\w*|Metric\w*|v-card|el-ca
 const RE_CONTROLE = /<(?:button|Button|Link|select|Select|input|Input|Switch|Checkbox|Toggle\w*|Tabs?Trigger|v-btn|el-button|mat-button|router-link)\b|<a\s[^>]*href=/g;
 const RE_CHIP = /<(?:Badge|Chip|Pill|Tag|Status\w*)\b|\brounded-full\b[^"'`]*\b(?:px-|bg-)/g;
 const RE_MOLDURA = /\bmax-w-(?:xs|sm|md|lg|xl|[2-7]xl|screen-\w+|\[[^\]]+\])|\bmax-width\s*:/g;
+/* Brand art: a component whose name ENDS in a brand noun (EngineMark, ToucanHero, GoalArt; not Markdown,
+   not HeroSection), or an image whose src/alt names a logo, mascot, brand or illustration. */
+const RE_MARCA_IMG = /<img\b[^>]*\b(?:src|alt)=["'{`][^"'}`]*(?:logo|mascot|mascote|brand|marca|illustration|ilustra)/gi;
+const RE_MARCA = /<(?:[A-Z]\w*)?(?:Logo|Mark|Mascot|Hero|Art|Illustration|Brand|Emblem)s?(?![\w-])/g;
 const contar = (s, re) => (s.match(re) || []).length;
-export const medirFonte = (s) => ({ contentores: contar(s, RE_CONTENTOR), controles: contar(s, RE_CONTROLE), chips: contar(s, RE_CHIP), molduras: contar(s, RE_MOLDURA) });
+export const medirFonte = (s) => ({ contentores: contar(s, RE_CONTENTOR), controles: contar(s, RE_CONTROLE), chips: contar(s, RE_CHIP), molduras: contar(s, RE_MOLDURA), marcas: contar(s, RE_MARCA) + contar(s, RE_MARCA_IMG) });
 export function compararFonte(a, b) {
   const out = [];
   const q = (k) => queda(a[k], b[k]);
   if (q('contentores').perdeu >= 2 && q('contentores').pct >= 0.34) out.push({ regra: 'perdeu-contentor', detalhe: `boxes in source: ${a.contentores} -> ${b.contentores}` });
   if (q('controles').perdeu >= 2 && q('controles').pct >= 0.25) out.push({ regra: 'perdeu-controle', detalhe: `controls in source: ${a.controles} -> ${b.controles}` });
   if (q('chips').perdeu >= 2 && q('chips').pct >= 0.5) out.push({ regra: 'perdeu-chip', detalhe: `chips in source: ${a.chips} -> ${b.chips}` });
+  if (q('marcas').perdeu >= 1 && q('marcas').pct >= 0.5) out.push({ regra: 'perdeu-marca', detalhe: `brand art in source: ${a.marcas} -> ${b.marcas}. Removing the brand's own asset is losing life, not a tell: replace it in the same change or say why` });
   if (b.molduras > a.molduras) out.push({ regra: 'perdeu-largura', detalhe: `new max-w frame: ${a.molduras} -> ${b.molduras}. Confirm on the screen` });
   return out;
 }
@@ -123,6 +132,10 @@ function selfTest() {
   const rf = compararFonte(a, b).map((x) => x.regra);
   ok(JSON.stringify(rf) === JSON.stringify(['perdeu-contentor', 'perdeu-controle', 'perdeu-chip', 'perdeu-largura']), `source diff fires all four -> ${rf}`);
   ok(compararFonte(a, a).length === 0, 'source unchanged is silent');
+  const comMarca = medirFonte(`<TucaMark live/><GoalArt id="x"/><img src="/logo.svg" alt=""/><Markdown/><HeroSection/>`);
+  ok(comMarca.marcas === 3, `brand art counted, Markdown and HeroSection left out -> ${comMarca.marcas}`);
+  ok(compararFonte(comMarca, medirFonte('<p>texto</p>')).some((x) => x.regra === 'perdeu-marca'), 'brand art deleted fires perdeu-marca');
+  ok(!compararFonte(comMarca, medirFonte('<TucaMark/><MissionArt/><img src="/logo.svg"/>')).some((x) => x.regra === 'perdeu-marca'), 'brand art swapped for other brand art is silent');
   console.log(falhas ? `\nregressao --self-test: ${falhas} failure(s)` : '\nregressao --self-test: floors hold both ways.');
   return falhas ? 1 : 0;
 }

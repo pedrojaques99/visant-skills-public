@@ -10,7 +10,7 @@
     "link": "node link.mjs",
     "smoke": "node scripts-smoke.mjs",
     "boundaries": "node skills-doctor.mjs --boundaries",
-    "test": "node check-links.mjs && node skills-doctor.mjs --self-test && node skills-doctor.mjs --strict && node skills-doctor.mjs --boundaries && node scripts-smoke.mjs && node visant-motion/scripts/codemod-duration.mjs --self-test && node visant-motion/scripts/motion-lint.mjs --self-test && node visant-killer/scripts/dist-scan.mjs --self-test && node visant-killer/scripts/killer-scan.mjs --self-test && node visant-killer/scripts/regressao.mjs --self-test && node visant-refine/scripts/refine-scan.mjs --self-test && node visant-preflight/scripts/preflight-scan.mjs --self-test && node visant-copy/scripts/copy-lint.mjs --self-test",
+    "test": "node check-links.mjs && node skills-doctor.mjs --self-test && node skills-doctor.mjs --strict && node skills-doctor.mjs --boundaries && node scripts-smoke.mjs && node visant-motion/scripts/codemod-duration.mjs --self-test && node visant-motion/scripts/motion-lint.mjs --self-test && node visant-killer/scripts/dist-scan.mjs --self-test && node visant-killer/scripts/killer-scan.mjs --self-test && node visant-killer/scripts/regressao.mjs --self-test && node visant-killer/scripts/stroke-scan.mjs --self-test && node visant-refine/scripts/refine-scan.mjs --self-test && node visant-preflight/scripts/preflight-scan.mjs --self-test && node visant-copy/scripts/copy-lint.mjs --self-test",
     "check-links": "node check-links.mjs"
   },
   "dependencies": {

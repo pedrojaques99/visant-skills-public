@@ -140,6 +140,7 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
 | `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 25 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
+| `stroke-scan` (this skill) | `EXCEPTION to stroke-scan/<rule>: reason` | `stroke-ignore-file: <rule>, reason` | `heavy-border`, `heavy-ring`, `heavy-outline`, `heavy-focus`. Passes without a marker: 0–1px, focus up to 2px, a transparent border, a ring in the surface color, the `border-2 … animate-spin` spinner |
 | token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `raw-hex`, `raw-rgb-hsl`, `tailwind-palette` (legacy `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` still accepted) |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
 | repo `scan-ui-scale` | `EXCEÇÃO ao ui-scale/<rule>: reason` | `// ui-scale-ignore-file: <rule> — reason` | `micro-label`, `px-cru`, `peso-pesado`, `raio-sortido`, `accent-repouso`, `matiz-cru`, `opacidade-cru` |
@@ -149,7 +150,7 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 In the repo scanners' whole-file form the dash is literal syntax those scripts
 parse; keep it as written.
 
-This skill's own scanners (`noise-scan`, token fallback) accept `EXCEPTION to`
+This skill's own scanners (`noise-scan`, `stroke-scan`, token fallback) accept `EXCEPTION to`
 and the original Portuguese `EXCEÇÃO ao` (`EXCECAO` without accents also
 counts), and `ruido-ignore-file:` as well as `noise-ignore-file:`, so markers
 already written keep working. `noise-scan` rule ids were Portuguese until

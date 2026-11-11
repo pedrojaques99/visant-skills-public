@@ -1,0 +1,11 @@
+/* EXPECTED: heavy-border 4, heavy-ring 2, heavy-outline 1, heavy-focus 1 */
+.card { border: 1.5px solid var(--border); }
+.card[aria-selected="true"] { border-width: 2px; }
+.radio::before { box-shadow: inset 0 0 0 2px var(--accent); }
+.tab { border-bottom: 3px solid var(--accent); }
+.chip { outline: 2px solid var(--accent); }
+.field:focus-visible { outline: 3px solid var(--ring); }
+/* a silent marker releases nothing: */
+/* EXCEPTION to stroke-scan/heavy-border */
+.tab--x { border-bottom: 2px solid; }
+.halo { box-shadow: 0 0 0 3px var(--accent-soft); }

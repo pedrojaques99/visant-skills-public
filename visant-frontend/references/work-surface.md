@@ -84,6 +84,12 @@ scan, demoted signal forces the user to open items to decide.
   with a count badge.
 - **Duplicated navigation is chrome.** A "back to dashboard" link under a sticky
   header that already contains the nav.
+- **Hide in sequence, not only in menus.** One choice per step; an option's panel
+  appears once it is chosen; a batch bar only while something is selected; Save
+  only on the row that changed. Back sits top-left, before the progress.
+- **And the reverse: discoverability.** A capability that only lives in settings
+  (import, connect, restore) goes up to the entry where people arrive, through
+  the same component: one door, two places (catalog 21).
 
 ## Grouping by spacing
 
@@ -130,6 +136,11 @@ Pattern: [stack-tailwind-react.md → Reveal on hover](stack-tailwind-react.md#r
 **Selection controls are a special case.** A checkbox may hide until hover, but
 must become permanently visible when its row is selected *or* when any selection
 is active — otherwise the user loses sight of what they already marked.
+
+**Hover previews the outcome.** The best hover says what the click will do: the
+destination, the item it opens, the value it will set. Darkening the background
+is the floor. On a core component, hover can also react in the brand's idiom
+([brand-idiom](../../visant-design/references/brand-idiom.md) §4).
 
 Quick actions on hover are usually the single largest throughput win available:
 copying a phone number, opening a link, or firing a message without leaving the

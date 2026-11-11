@@ -814,11 +814,36 @@ actions behind one `⋯`; dependent controls only while they apply.
 
 ### 64. Clean to the bone
 
-**Symptom.** After a cleanup: no cards, numbers at body size, a state reduced to a grey icon, six tiles turned into a sentence, a frame with a void beside it. Every detector at zero.
-**Cause.** Detectors count what is left over, so deleting always scores.
-**Fix.** Boxes back on main data, chips back on states, the column back to its width. Text that repeats becomes a drawn fact, not an ornament.
-**Test.** Before and after side by side, shown to the owner. Would they miss what went?
-**Detector.** `tela-scan.js` on the open screen, `regressao.mjs` against the previous state ([verification.md](verification.md#tela-scanjs-what-the-screen-lost)).
+**Symptom.** After a cleanup: no cards, numbers at body size, a state reduced to a grey icon, six tiles turned into a sentence, a frame with a void beside it. On a first run: the mascot, the illustration and the brand color gone, the screen correct and lifeless. Every detector at zero.
+**Cause.** Detectors count what is left over, so deleting always scores, and nothing said where to spend before cutting.
+**Fix.** Boxes back on main data, chips back on states, the column back to its width. Text that repeats becomes a drawn fact (a count, a ring, a logo), keeping the cards that carry it. On a `shine` region the brand moment comes back from the brand's own idiom, not as ornament ([brand-idiom](../../visant-design/references/brand-idiom.md)).
+**Test.** Before and after side by side, shown to the owner. Would they miss what went? The swap test: with a competitor's logo, could the screen be theirs?
+**Detector.** `tela-scan.js` on the open screen, `regressao.mjs` against the previous state (`perdeu-marca` for brand art), and the `shine` row without a brand moment in `--report` ([verification.md](verification.md#tela-scanjs-what-the-screen-lost)).
+
+## Signals from an over-clean first run (65–67)
+
+From a desktop agents app redesigned on 2026-11-11 (case in [cases.md](cases.md#lost-its-soul)). Each one is a cleanup that went in the right direction and stopped at the wrong place.
+
+### 65. Heavy stroke as selection
+
+**Symptom.** Cards with 1.5–2px outlines, a 2px radio ring, a 3px focus halo, the selected item said by a thicker border.
+**Cause.** Weight is the cheapest way to say "this one"; it reads as template.
+**Fix.** 1px chrome. Selection by color: the accent mixed into the border (~55%), a tint behind. Focus up to 2px (WCAG 2.4.7). Anything else over 1px carries a written reason.
+**Detector.** `stroke-scan.mjs` (CSS, style objects, Tailwind, shadcn defaults).
+
+### 66. Illustration that is only brand
+
+**Symptom.** A large mascot or logo beside the first-run title, saying nothing about what the product does.
+**Cause.** "Bring the brand back" read as "put the logo bigger".
+**Fix.** Draw the sentence the title says, in the brand's idiom: the team perched on the mascot, a status walking through the work until "approved". Each one makes the other easier to read.
+**Test.** Cover the title. Does the drawing still say what the product does?
+
+### 67. The core object in a corner preview
+
+**Symptom.** A builder whose form fills the screen and whose result (the agent, the document, the design) is a small card in a corner.
+**Cause.** The form was built first; the object became its preview.
+**Fix.** Canvas + deck: the object large on its own color, standing still; the controls in a deck beside it that changes per step. The same canvas carries the moment it is born.
+**Test.** Squint. Is the biggest thing on screen the thing being made?
 
 ## Quick sweep
 

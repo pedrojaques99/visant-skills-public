@@ -183,6 +183,23 @@ mistakes below happened in one real session.
   status is `tail`'s, so a rejected push reads as success. Don't pipe it, or use
   `set -o pipefail`.
 
+## Your own tools lie too (Windows, scripts, test doubles)
+
+From one long redesign session (2026-11-11); each one cost a round.
+
+- **The bash heredoc on Windows eats backslashes.** A regex written through `cat <<EOF` or
+  `node - <<EOF` loses them (`\w` becomes `w`, `\\n` breaks a string) and the script still runs,
+  silently matching nothing. Write code with the editor tool, or read the line back.
+- **A CSS-rewrite script that matches a selector inside a group** (`.a, .b {`)
+  rewrites the other selectors' rules too. Match the whole selector list, or edit by hand.
+- **jsdom does not fire `onChange` on a synthetic checkbox click.** Use
+  `fireEvent.click` from Testing Library or `user-event`, not `element.click()`.
+- **A short splash races the capture script.** Wait for a DOM mark of the real
+  screen, never a fixed delay.
+- **Every full run leaves temp folders.** About 1,900 per run of a 45-screen
+  suite filled a disk. While iterating, run only the affected tests and the screen
+  that changed; everything once, before the commit.
+
 ## Checklist, to paste into the report
 
 ```

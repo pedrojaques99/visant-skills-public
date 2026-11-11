@@ -1444,7 +1444,29 @@ function runSelfTest() {
     console.log('[OK]    copy-lint rule ids (legacy ids normalize, map matches copy-lint)');
   }
 
-  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length + idFalhas.length;
+  /* Craft column, both ways: a "shine" row with no brand moment is caught; a filled
+     one, a calm row with the moment empty, and an old report without the column pass. */
+  const craftFalhas = [];
+  const tab = (linhas) => `| Route | Surface | Business variable it moves | Craft | Brand moment / quiet on purpose |\n|---|---|---|---|---|\n${linhas}`;
+  const casosCraft = [
+    ['shine without a moment is caught', tab('| /welcome | A | activation | shine |  |\n| /settings | B | throughput | alive | logo, quota ring |'), ['/welcome']],
+    ['shine with a dash is caught', tab('| /new | A | activation | brilhar | - |'), ['/new']],
+    ['shine with a moment passes', tab('| /welcome | A | activation | shine | mascot alive, art tells the feature |'), []],
+    ['calm row may leave it empty', tab('| /logs | B | throughput | sober |  |'), []],
+    ['old report without the column passes', '| Route | Surface | Variable |\n|---|---|---|\n| /a | A | conversion |', []],
+  ];
+  for (const [nome, texto, esperado] of casosCraft) {
+    const got = brilhoSemMomento(texto);
+    if (JSON.stringify(got) !== JSON.stringify(esperado)) craftFalhas.push(`${nome}: expected ${JSON.stringify(esperado)}, got ${JSON.stringify(got)}`);
+  }
+  if (craftFalhas.length) {
+    console.log(`[FAIL]  craft column: ${craftFalhas.length}`);
+    for (const f of craftFalhas) console.log(`          ${f}`);
+  } else {
+    console.log('[OK]    craft column (a "shine" row needs its brand moment; calm rows and old reports pass)');
+  }
+
+  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length + idFalhas.length + craftFalhas.length;
   console.log('-'.repeat(64));
   console.log(
     failed
@@ -1567,6 +1589,38 @@ function readReport(path) {
   return { classified, seen, text };
 }
 
+/* The craft column (2026-11-11). Every instrument in this skill is subtractive: it
+ * counts what is left over, so deleting always scores. A first-run screen was
+ * cleaned of every tell and its owner said it had lost its soul. The surface
+ * table now also says where to SPEND: a row marked "shine" (first impression,
+ * the object being made, the screen the product is about) must name its brand
+ * moment, the same way a row must name its variable. Rows marked alive or sober
+ * may leave it empty; a report written before the column existed passes. */
+function brilhoSemMomento(text) {
+  const linhas = text.split(/\r?\n/);
+  const cel = (l) => l.split('|').slice(1, -1).map((c) => c.trim());
+  const sep = (l) => /^\s*\|[\s|:-]+\|\s*$/.test(l ?? '');
+  const out = [];
+  let cols = null;
+  for (let i = 0; i < linhas.length; i++) {
+    const l = linhas[i];
+    if (!l.trim().startsWith('|')) { cols = null; continue; }
+    if (sep(l)) continue;
+    const c = cel(l);
+    if (sep(linhas[i + 1])) {
+      const craft = c.findIndex((x) => /^(craft|of[ií]cio)/i.test(x));
+      const momento = c.findIndex((x) => /moment/i.test(x));
+      cols = craft >= 0 && momento >= 0 ? { craft, momento, nome: 0 } : null;
+      continue;
+    }
+    if (!cols) continue;
+    const brilha = /\b(shine|brilh\w*)\b/i.test(c[cols.craft] ?? '');
+    const m = (c[cols.momento] ?? '').trim();
+    if (brilha && (!m || /^[-–—?]+$/.test(m) || /^(tbd|a definir|n\/a)$/i.test(m))) out.push(c[cols.nome]);
+  }
+  return out;
+}
+
 function gateZero(reportPath) {
   if (!reportPath) {
     return {
@@ -1612,6 +1666,12 @@ function gateZero(reportPath) {
     why.push('    a green gate is not a screen seen; a frozen AnimatePresence passes all of them');
   }
 
+  const semMomento = brilhoSemMomento(r.text);
+  if (semMomento.length) {
+    why.push(`${semMomento.length} "shine" row(s) without a brand moment (what makes the eye shine, from the brand's own idiom):`);
+    for (const n of semMomento.slice(0, 12)) why.push(`    ${n}`);
+  }
+
   /* A report that only lists what was seen reads as complete. What nobody looked
      at (a width, a theme, the worst record) has to be written down too. */
   const notChecked = r.text.match(/^##+[ \t]*(?:Not checked|Não verificado)[^\n]*\n([\s\S]*?)(?=^##[ \t]|$(?![\s\S]))/im);
@@ -1648,9 +1708,9 @@ if (initReport) {
     rows = telas.porRota.map((x) => {
       const base = x.arquivo.split('/').pop().replace(/\.\w+$/, '');
       const comp = x.componente && x.componente !== base ? ` (${x.componente})` : '';
-      return `| ${x.caminho} | ${disp(x.arquivo)}${comp} |  |  | ${nav?.dica(x.caminho) ?? ''} |  |`;
+      return `| ${x.caminho} | ${disp(x.arquivo)}${comp} |  |  |  |  | ${nav?.dica(x.caminho) ?? ''} |  |`;
     });
-    cabecalho = '| Route | File | Surface (A/B/C) | Business variable it moves | Shell | Notes |\n|---|---|---|---|---|---|';
+    cabecalho = '| Route | File | Surface (A/B/C) | Business variable it moves | Craft (shine/alive/sober) | Brand moment / quiet on purpose | Shell | Notes |\n|---|---|---|---|---|---|---|---|';
     if (telas.redirecionamentos?.length) {
       extra = `\nRedirects (no screen of their own, not in the table): ${telas.redirecionamentos
         .map((x) => `\`${x.caminho}\` goes to \`${x.para}\``)
@@ -1658,8 +1718,8 @@ if (initReport) {
     }
     extra += `\nRoutes read from \`${disp(telas.router)}\`${nav ? `; the Shell column is the hint from \`${nav.arquivo}\` (who mentions the path), not the classification` : ''}.\n`;
   } else {
-    rows = telas.cobrados.map((f) => `| ${disp(f)} |  |  |  |`);
-    cabecalho = '| File | Surface (A/B/C) | Business variable it moves | Notes |\n|---|---|---|---|';
+    rows = telas.cobrados.map((f) => `| ${disp(f)} |  |  |  |  |  |`);
+    cabecalho = '| File | Surface (A/B/C) | Business variable it moves | Craft (shine/alive/sober) | Brand moment / quiet on purpose | Notes |\n|---|---|---|---|---|---|';
   }
   writeFileSync(
     abs,
@@ -1675,6 +1735,17 @@ after changing things is justifying what was already done.
 - **C trust**: money, permission, destructive action. It cannot lie.
 
 Applying A instincts to a B screen is the most expensive Visant frontend mistake.
+
+**Craft** says where to spend, before anything is cut:
+
+- **shine**: seen the first time, where the person decides to stay, or what they
+  came to make. Needs a **brand moment** from the brand's own idiom; what you
+  remove here is replaced in the same change.
+- **alive**: calm and dense, with a live signal (state, real logo, ring).
+- **sober**: clarity first; personality only in the tone.
+
+Core components (on many screens, or the object the product is about) get a
+row too: full states, smart hover, the biggest polish budget.
 
 ${cabecalho}
 ${rows.join('\n')}

@@ -20,13 +20,11 @@ by Richard ([@richardrx](https://x.com/richardrx)), 101 principles on conversion
 activation, retention, pricing, and behavioral science, distilled with the
 author's permission. That skill owns **persuasion mechanics**; this one owns the
 **product interior and the build**. Where both apply, cite the RCD principle by
-name and add the Visant-specific move.
+name and add the Visant-specific move. Never edit that skill; reference it.
 
 > **Do not apply either skill to betting, casino, gambling, or real-money
 > games-of-chance products.** This is a hard condition of the source author's
 > reuse permission, not a stylistic preference. Decline and explain.
-
-**Never modify the revenue-centric-design skill.** Reference it; do not edit it.
 
 ### The craft layer lives next door
 
@@ -38,13 +36,10 @@ the motion that carries a data change. The split is strict and load-bearing:
 > **`visant-refine` decides HOW it is drawn, and that every such element on the
 > screen reads as one family.**
 
-Load `visant-refine` whenever the ask is "add a chart", "show the limit", "make it
-feel designed", "burilar", a slider that projects a scenario, or intelligent
-animation. It defers to `dataviz` for chart correctness and to `visant-motion` for
-the easing/duration SSoT, and it never justifies an element. If the *cut test*
-below produces silence, the fix is deletion, not refinement: a beautiful chart of
-a datum nobody uses is slop with better finishing, and it costs more attention
-than the ugly version.
+Load it for "add a chart", "show the limit", "burilar", a scenario slider or
+intelligent animation. It never justifies an element: when the *cut test* below
+is silent, the fix is deletion, and a beautiful chart of an unused datum is slop
+with better finishing.
 
 ## Step 0: classify the surface (a written table, before any fix)
 
@@ -63,13 +58,9 @@ node $K --report AUDIT.md <target>
 and rejects a row whose business-variable column is blank, `-`, or "TBD".
 Classifying *after* you've edited isn't classifying, it's justifying.
 
-**If the script isn't at that path, the step is still mandatory.** It is a
-convenience, not the reason for the step. Check with
-`ls <skill-dir>/../visant-killer/scripts/killer-scan.mjs`; if it's missing
-(repo not linked, skill installed alone, client environment), **write the table
-by hand** in the project's `.md`, same columns: route, class, business variable,
-what persuasion is there. One row per route, variable column never empty. A
-gate whose tool vanished is not a license to skip; it becomes manual work.
+**No script at that path** (skill installed alone, client repo): the step is
+still mandatory. Write the table by hand in the project's `.md`, same columns,
+one row per route, variable column never empty.
 
 Applying one surface's instincts to another is the most expensive frontend
 error. Classify first; the rules follow from the class.
@@ -85,6 +76,14 @@ and wrong on `/leads`, same component, opposite verdict.
 
 When a screen mixes classes, classify **per region**, not per page. A billing row
 inside a settings page is C even though the page is B.
+
+**The class says what persuasion is worth; the craft column says where to spend.**
+`shine` (seen the first time, where the person decides to stay, or the object
+they came to make) names its **brand moment** from the brand's own idiom;
+`alive` (work: dense, drawn facts, a live signal) and `sober` (trust: personality
+only in the tone) may leave it empty. Core components (on many screens, or the
+object the product is about) get a row too and the biggest polish budget. Rules:
+[visant-design brand-idiom.md](../visant-design/references/brand-idiom.md).
 
 ## The spine
 
@@ -145,6 +144,11 @@ Twelve principles. Each names its variable. RCD lineage marked where it exists.
 
 Before shipping a rule, a component, or a pixel, name its variable. No variable
 named → it does not ship. Apply this to your own recommendations too.
+
+**Its mirror, the keep test.** The brand moment has variables too: activation
+on first run, recall against the competitor, perceived quality. In a `shine`
+region nothing leaves without a replacement in the same change. Stripping the
+moment from a core screen is a defect, not a cleanup.
 
 ## Non-negotiables
 
@@ -216,13 +220,9 @@ the equivalent for the repo you're in.
 
 ### Verified in production
 
-Real cases that confirm the spine, each with the variable it protects:
-**[19 cases in references/verified-production.md](references/verified-production.md)**.
-
-The four that repeat most: a price written in copy is a claim about the
-database; role says *can see*, ownership says *whose action it is*; silent-empty
-is the dominant lie and it is almost always told one layer down; and two numbers
-in different units side by side with no label corrupt the reading.
+**[19 real cases in references/verified-production.md](references/verified-production.md)**,
+each with the variable it protects. Most repeated: a price in copy is a claim
+about the database; silent-empty is the dominant lie, told one layer down.
 
 ## Navigation
 

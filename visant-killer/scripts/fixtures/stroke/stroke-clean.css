@@ -1,0 +1,15 @@
+/* EXPECTED: zero. The legitimate twin of every dirty line. */
+.card { border: 1px solid var(--border); }
+.card[aria-selected="true"] { border-color: color-mix(in oklab, var(--accent) 55%, var(--border)); background: var(--accent-soft); }
+.hair { border-width: 0.5px; }
+.btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.spinner { border: 2px solid var(--border); border-top-color: transparent; animation: spin 1s linear infinite; }
+.quota-ring {
+  /* EXCEPTION to stroke-scan/heavy-border: the gauge ring is data, its weight is the reading */
+  border: 6px solid var(--accent);
+}
+/* .old { border: 2px solid red; } */
+.tab--active { border-bottom: 2px solid var(--accent); } /* EXCEPTION to stroke-scan/heavy-border: the active tab bar marks position */
+.panel { @apply border rounded-lg; }
+.avatar { box-shadow: 0 0 0 2px var(--panel); }
+.tab { border-bottom: 2px solid transparent; }

@@ -8,8 +8,13 @@ interrogation are worth one item at a time, answered with evidence.
 | Band | Weight | How it scores |
 |---|---|---|
 | **Gate** (impeccable, token, copy, chrome noise) | 20 | all or nothing. Any error in the target drops the 20. A skipped gate scores 0 and is written down. |
-| **Judgment** (visant-frontend, visant-motion, visant-copy, slop-catalog) | 40 | 40 minus 4 per confirmed slop-catalog item that survived with no fix and no justification the user accepted. |
-| **Interrogation** (devil's advocate) | 40 | proportional to the tier's questions answered with `file:line`, plus the fixed block F1 to F6. A question answered with an adjective instead of evidence does not count. |
+| **Judgment** (visant-frontend, visant-motion, visant-copy, slop-catalog) | 40 | 40 minus 4 per confirmed slop-catalog item that survived with no fix and no justification the user accepted, minus 8 per **dead core**: a `shine` region without its brand moment, or a core component without its states. |
+| **Interrogation** (devil's advocate) | 40 | proportional to the tier's questions answered with `file:line`, plus the fixed block F1 to F7. A question answered with an adjective instead of evidence does not count. |
+
+**Why a dead core costs double.** Every other deduction punishes what is left
+over, so a cleanup that deletes the reason to stay used to score higher. Slop is a
+tell; a dead core is a lost reason to stay. It weighs more than a slop item and
+less than the gate: it is judgment, confirmed on the screen, not a syntax veto.
 
 **Why the gate is worth little.** In the skill's first real round (a set of
 finance cards) `impeccable` and the token gate gave **zero before and zero
@@ -61,6 +66,12 @@ Skipped: <none, or which one and why>
 |---|---|---|---|
 | 1 | Rainbow card | Card.tsx:66-160 | color became the exception; a typographic minus marks outflow |
 
+## Craft
+
+| Region or core component | Craft | Brand moment (or what stays quiet) | Swap test |
+|---|---|---|---|
+| first run | shine | the mascot alive, art that tells the feature | passes: the drawing is this brand's |
+
 ## Slop kept on purpose
 
 | Catalog | Where | Why it stays |
@@ -75,7 +86,7 @@ Q5 <question>
 ### Fixed block
 
 F1 reuse · F2 design system · F3 responsive and performance · F4 flow for the ICP
-F5 hide or turn into an icon · F6 what is missing for Silicon Valley level
+F5 hide or turn into an icon · F6 what is missing for Silicon Valley level · F7 swap test
 
 ## What this round fixed in the detectors
 

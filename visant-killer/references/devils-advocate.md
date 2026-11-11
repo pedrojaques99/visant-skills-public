@@ -4,7 +4,7 @@ Question bank for Step 4. Not a UI checklist: it is a concept interrogation. A
 good question here erases pixel work that never needed to exist.
 
 **How to use:** T1 uses the 5 marked `[T1]`. T2 uses the 12 marked `[T1]` and `[T2]`.
-T3 uses all of them. The **fixed block** (section 7, F1 to F6) runs in every tier, no
+T3 uses all of them. The **fixed block** (section 7, F1 to F7) runs in every tier, no
 exceptions: they are the six questions the user asks anyway, so arriving without
 them answered is arriving incomplete. Answer each one **yourself**, with
 `file:line`, before escalating anything to the user.
@@ -242,6 +242,9 @@ readable label for a riddle, and that is a regression dressed as density.
 How to answer: a table with three columns, hide / compact / turn into icon, and a
 fourth with what should **not** be hidden and why. Every row names how many
 vertical pixels it gives back.
+Hiding is also *when*: one choice per step, an option's panel only once it is
+chosen, a batch bar only with a selection, Save only on the row that changed.
+And the reverse: a capability buried in settings goes up to the entry.
 
 **F6 What is missing to reach the level of a Silicon Valley product?**
 Closing question, and the easiest to answer on vibes. Don't answer with an
@@ -267,6 +270,12 @@ The level is measured in thirteen details, and none of them is aesthetic:
 12. Comes back to the same position after acting (the action doesn't lose the
     user's place).
 13. Copy in the house voice, no vices, and error messages that say what to do.
+
+**F7 Swap test: with a competitor's logo, could this screen be theirs?**
+The cleanup that only removes things converges every product to the same kit.
+How to answer: name the brand moment of each `shine` region and the asset of the
+brand's idiom it comes from ([brand-idiom](../../visant-design/references/brand-idiom.md)).
+"Nothing, it's clean" on a first run is the finding, not the pass.
 
 How to answer: mark the thirteen as done, missing or not applicable; then name the
 **three** with the highest leverage per effort and stop there. A list of thirteen

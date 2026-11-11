@@ -116,3 +116,51 @@ owner: "too clean", "no room to breathe", "full of text". Two rules
 were read past their scope ("depth by line" on a dashboard, "cards in cards" as
 "cards are bad"). `tela-scan.js` and `regressao.mjs` came from it, and so did the
 rule above the score: before and after side by side, shown to the owner.
+
+## Lost its soul
+
+The second over-clean round, and the reason the fix had to change shape. Tucano
+(a desktop app for teams of AI agents, 2026-11-11) had a first run with its own
+childish theme: blobs, floating faces, fake chips, rounded 900-weight type. The
+first pass followed these skills and removed every tell. The detectors went to
+zero, and the owner said: "perdeu a alma, ficou sem vida" (it lost its soul, it
+has no life). The previous case had already added `tela-scan`, `regressao` and
+the before-and-after rule, and all three can only say what was lost after the
+fact. Nothing said where to spend before cutting, so every screen got the same
+treatment: clean.
+
+The second pass put the life back from the brand's own assets. Each change
+became a rule:
+
+| Owner's correction | What changed | Rule |
+|---|---|---|
+| the hero was only the logo, big | the agent team perched on the toucan's beak, a status walking through their work until "Posso enviar? ✓ Aprovado" | the illustration explains the feature (catalog 66) |
+| the builder was a form with a little preview in the corner | canvas + deck: the agent large on its own color, the deck changing per step | the object being made is the protagonist (catalog 67) |
+| "too much text" in Settings › Models was answered by removing cards | harness cards with the real logo, agents count and the plan's ring; 2628px down to 1716px | drawn facts, not fewer cards (catalog 64) |
+| 1.5–2px outlines, a 2px radio ring, a 3px focus halo | 1px chrome, selection by color | `stroke-scan` (catalog 65) |
+| a dot grid behind the canvas | hairline rings of presence spreading from the avatar | textures from the subject (catalog 32) |
+| goals and missions in library icons in boxes | one SVG per item in the icon's idiom; presets wear their trade | thumbs when the item is something the product does |
+| welcome showed every option at once | first only "I'm new" / "I already use one", then that path; back top-left, before the progress | one thing at a time (work-surface, Hiding) |
+| importing from another bot lived in Settings | one `BotImport` door, on the welcome screen and in Settings | discoverability (catalog 21) |
+
+Read by class, the same app gives an example of each kind of screen. **Shine:**
+welcome, "what to delegate", the agent being born, the builder. **Alive:**
+Settings › Models, the missions list, the questions card. **Sober:** connecting the
+AI (keys and permission): a neutral panel, the mascot speaking as the only
+personality. **Core components:** `EngineMark` (the official harness logo, one
+source), `JobCard`, `QuotaRing`, and the live eye hook. Each was polished once and
+spread everywhere.
+
+What changed in the skills: the craft column and the brand moment in the
+surface table (`killer-scan` rejects a `shine` row without one), the keep test
+beside the cut test, a dead core costs 8 in the score, `regressao` flags lost
+brand art, `stroke-scan` became a detector, and the brand idiom
+([brand-idiom](../../visant-design/references/brand-idiom.md)) runs before any
+cut. Process lessons from the same session: ask early with previews when the
+call is the owner's, show the pair before install or push, and while iterating
+run only the affected tests and the changed screen
+([environment](environment.md#your-own-tools-lie-too-windows-scripts-test-doubles)).
+
+Left out on purpose: the product finding both revenue reviews agreed on (the
+agent's first message asks instead of delivering). No screen rule catches it;
+it belongs to the product and copy skills.

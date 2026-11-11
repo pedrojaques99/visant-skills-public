@@ -18,7 +18,7 @@ loaded), because AI slop survives any linter: the problem is decision, not synta
 > form passed six gates. So `killer-scan` **refuses** "gate open" without the
 > surface table and the record of having opened the screen.
 
-> **The score is not the verdict.** Removing always improves it: a screen stripped of its cards scored zero and the owner called it "too clean". Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
+> **The score is not the verdict, and cleaning is not the goal.** Removing used to always improve the score: a screen stripped of its cards scored zero and the owner called it "too clean", and a first run wiped of its tells "lost its soul". Now a `shine` row needs its brand moment, a dead core costs 8, and `regressao` flags lost brand art. Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
 
 Where each rule came from: [references/cases.md](references/cases.md). **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
 
@@ -26,7 +26,7 @@ Where each rule came from: [references/cases.md](references/cases.md). **Stack.*
 
 | Forbidden | Write | Why |
 |---|---|---|
-| arrow glyph in text (`→`, `←`, `↑`, `↓`) and hand-drawn icon SVG | a real library icon (`@phosphor-icons/react`, `@radix-ui/react-icons`) | **LAW.** The character arrow is Claude's nº1 habit: it inherits font metrics, drifts off the baseline, changes shape per family, has no controllable weight or size, and reads as text. A hand SVG is the same disease in more lines. Icons are library assets, always |
+| arrow glyph in text (`→`, `←`, `↑`, `↓`) and hand-drawn icon SVG | a real library icon (`@phosphor-icons/react`, `@radix-ui/react-icons`) | **LAW.** The character arrow is Claude's nº1 habit: it inherits font metrics, drifts off the baseline, changes shape per family, has no controllable weight or size, and reads as text. A hand SVG is the same disease in more lines. Icons are library assets, always. Brand art is not an icon: marks, mascots, illustrations and list thumbs in the brand idiom live in one shared module (`*Art`, `*Mark`) |
 | `hover:scale-*`, `whileHover={{ scale }}` | change color, shadow or border | scale on hover is the nº1 template tell; it moves neighboring layout and does not survive `prefers-reduced-motion` |
 | hover that grows **over** neighboring text | reserve the lane permanently and grow inside it | hover reveals, hover does not run over things |
 | `hover:bg-accent` **when `--accent` is emphasis** | `hover:bg-muted` or `hover:bg-primary` | emphasis turned into a mouse state. Check the token: in stock shadcn `--accent` is the neutral hover color, and there `hover:bg-accent` is right |
@@ -58,17 +58,15 @@ D=<skill-dir>/scripts/dist-scan.mjs
 C=<skill-dir>/../visant-copy/scripts/copy-lint.mjs
 T=<skill-dir>/scripts/corta-scan.js; E=${T%corta-scan.js}ritmo-scan.js  # IN THE BROWSER (Step 5): clipping; spacing
 V=<skill-dir>/scripts/verify-screens.mjs  # opens the app logged in (Step 5)
-S=<skill-dir>/scripts/tela-scan.js; G=<skill-dir>/scripts/regressao.mjs  # what the screen lost; before vs after
+S=<skill-dir>/scripts/tela-scan.js; G=<skill-dir>/scripts/regressao.mjs  # what the screen lost (brand art too); before vs after
+W=<skill-dir>/scripts/stroke-scan.mjs  # strokes over 1px in CSS, style objects and Tailwind
 # grafo.mjs is a library (import graph for --roots and repeated-door), not a CLI
 ```
 
 ## Step 0: Root first (large target)
 
-A target of dozens of files starts by grouping findings by **root**:
-`node $K --roots <target>` (shared pieces ranked by `fan-out × findings`,
-[how](references/gates.md#how---roots-ranks)). One wrong container produces
-hundreds of leaves with the same symptom, pointing at the wrong file. Primitives
-and the shell come before any page; only then `--all` to split the rest by file.
+Dozens of files: `node $K --roots <target>` first ([how](references/gates.md#how---roots-ranks)). One wrong
+container makes hundreds of leaves; primitives and the shell before any page, then `--all`.
 
 ## Step 1: Classify the target (never skip)
 
@@ -107,6 +105,9 @@ Without a complete `--report` it prints **GATE INCOMPLETE** and exits 1
   the most expensive frontend mistake.
 - **business variable**: what this element moves. Dash, "TBD" or empty is
   rejected: filling it with nothing is skipping the step.
+- **craft** and **brand moment**: where to spend (shine / alive / sober). A
+  `shine` row with no brand moment is rejected the same way
+  ([brand-idiom](../visant-design/references/brand-idiom.md)).
 
 The `## Screen seen` section (exact heading; `## Tela vista` also parses) is the
 other half: one row per screen **opened**, with route, width, data state and
@@ -120,13 +121,12 @@ strings that reach the eye: JSX text, `label`, `title`, `placeholder`,
 `aria-label`, `alt`); **chrome noise** (`noise-scan`: each line defensible, the
 sum unreadable). Details and the 25 noise rules: [gates.md](references/gates.md).
 
-**Discover the target repo's gates.** The four detectors are the floor. Look at
-`package.json` scripts named lint/audit/design/token/ui/theme/i18n/ratchet and
-at `scripts/` for unwired scanners; run what exists on the target; record what
-ran and what was skipped, and why
-([commands](references/gates.md#discover-the-target-repos-gates)).
+**Discover the target repo's gates.** The four detectors are the floor: run the repo's
+lint/audit/design/token/ui/theme/i18n scripts too, and record what ran and what was
+skipped, and why ([commands](references/gates.md#discover-the-target-repos-gates)).
 
-Side gates: `node $R <target>` when there is a chart, gauge or animation;
+Side gates: `node $W <target>` always (selection by color, not weight; focus up to 2px passes);
+`node $R <target>` when there is a chart, gauge or animation;
 `node $D <app-root>` on surface A, **before** polish, because a page that shares
 without a card or converts without an event is not fixable by tokens and no UI
 detector lights up ([distribution.md](references/distribution.md)).
@@ -158,8 +158,7 @@ Skill memory is not the skill; load by tier, and report what was **not** loaded.
 | **T3 core** | all four | none |
 
 **Lean T3** (tight context): only each SKILL.md; a reference only **for a finding**.
-Order: **`visant-frontend`** (the *cut test*: every element names the business
-variable it moves, or it goes; the Step 2 surface table is its output), then
+Order: **`visant-frontend`** (the *cut test* and its mirror, the *keep test*), then
 **`visant-motion`** (easing/duration SSoT and feel gotchas), **`visant-copy`**
 (voice; the gate caught syntax), **`revenue-centric-design`** (only as Step 4
 ammunition).
@@ -174,9 +173,10 @@ The goal is the **concept** change that makes half the pixel work unnecessary.
 Question bank per tier: [devils-advocate.md](references/devils-advocate.md).
 
 - Pick the tier's questions, no more (extra on T1 is philosophy about a card).
-  The **fixed block F1 to F6** runs on every tier: reuse, design-system
+  The **fixed block F1 to F7** runs on every tier: reuse, design-system
   consistency, measured responsiveness and performance, progressive flow for the
-  ICP, what to hide or iconize, what is missing for Silicon Valley level.
+  ICP, what to hide or iconize, what is missing for Silicon Valley level, and
+  the swap test (with a competitor's logo, could this screen be theirs?).
 - **Answer it yourself first**, with `file:line`. A question handed back with no
   attempt is laziness dressed as rigor. Only what **changes what gets built** and
   the code cannot answer goes to the user, with your recommendation first.
@@ -196,7 +196,7 @@ By hand: `$T`/`$E` in the console. Flags: [verification.md](references/verificat
 signals in [environment.md](references/environment.md): route warmed up, hydration confirmed by a DOM mark (not
 `readyState`), real data including the worst record, node count matching the page opened by hand.
 
-Then, and only then (whatever did not run goes in the report):
+Then, and only then (whatever did not run goes in the report). While iterating, run only the affected tests and the screen that changed; the full suite and every screen run once, before the commit:
 
 | Check | How |
 |---|---|

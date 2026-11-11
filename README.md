@@ -27,6 +27,7 @@ Portuguese: "audit this screen", "tá com cara de IA", "make this smoother",
 | Judgment: `visant-design`, `visant-frontend`, `visant-motion`, declutter, devil's advocate | yes | yes |
 | Open-screen scans: `corta-url`, `corta-scan`, `ritmo-scan`, `tela-scan`, `regressao` | yes | yes |
 | `copy-lint` | yes | yes |
+| `stroke-scan` (CSS, style objects, Tailwind) | yes | yes |
 | `killer-scan` and the code detectors | yes | refuses with exit 2; it never reports a zero it did not read |
 
 Built on the open [Agent Skills](https://agentskills.io) format. Commands use `<skill-dir>`: the folder holding that `SKILL.md`.
@@ -92,8 +93,8 @@ hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 
 | Skill | What it does | Needs |
 |---|---|---|
-| [`visant-design`](visant-design/SKILL.md) | **Start here.** One door: reads the ask and loads the right playbook below | the skills it routes to |
-| [`visant-killer`](visant-killer/SKILL.md) | Anti-slop UI audit: detectors as a hard gate, judgment through the skills below, a devil's advocate pass and a score. `tela-scan` and `regressao` measure what a screen lost, because removing is not automatically better | Node 20+; Playwright optional (screen checks); axe-core optional (target size, name) |
+| [`visant-design`](visant-design/SKILL.md) | **Start here.** One door: reads the ask and loads the right playbook below. Branding is core: it extracts the product's brand idiom and decides where to spend craft before anything is cut, so cleaned products keep their life and stop looking alike | the skills it routes to |
+| [`visant-killer`](visant-killer/SKILL.md) | Anti-slop UI audit: detectors as a hard gate, judgment through the skills below, a devil's advocate pass and a score. `tela-scan` and `regressao` measure what a screen lost (brand art included), because removing is not automatically better; `stroke-scan` catches strokes over a hairline | Node 20+; Playwright optional (screen checks); axe-core optional (target size, name) |
 | [`visant-frontend`](visant-frontend/SKILL.md) | Interface decisions: every element names the business variable it moves, or it goes | nothing |
 | [`visant-motion`](visant-motion/SKILL.md) | Easing/duration tokens for CSS and framer-motion, `motion-lint`, URL measurement | Node 20+ |
 | [`visant-refine`](visant-refine/SKILL.md) | Charts, gauges, sparklines, sliders and metric tiles with one shared anatomy | Node 20+ |
@@ -141,6 +142,7 @@ npm test                                              # every detector's self-te
 node visant-killer/scripts/killer-scan.mjs <app/src>  # the whole gate, from any folder
 node visant-killer/scripts/corta-url.mjs <url> home   # clipping, spacing, what the screen lost, axe
 node visant-killer/scripts/regressao.mjs diff antes.json depois.json  # lost boxes, controls, chips, width
+node visant-killer/scripts/stroke-scan.mjs <app/src>  # strokes over 1px; selection by color, not weight
 node visant-motion/scripts/motion-lint.mjs <app>
 node visant-copy/scripts/copy-lint.mjs <file-or-folder>
 bash visant-video-editor/scripts/self-test.sh         # needs ffmpeg
