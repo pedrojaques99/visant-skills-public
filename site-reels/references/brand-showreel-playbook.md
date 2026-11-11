@@ -95,9 +95,40 @@ Every ref changes subject by **transformation inside the shot** or by a **graphi
   - tonal cinematic ambient with a 20 dB swell (Opus, no SFX at all);
   - minimal electronic loops (glitch, collage).
 - **Rejected by the user:** felt piano or neoclassical piano tracks, and EDM, corporate or trailer music.
+- **Closer to what the user wants:** afro house ("better, still not the one"), then bossa nova, jazz-funk or nu-disco with a real band groove.
 - **SFX:** interface ticks locked to typing in the intro and no kick (Arko, Unsigned). A low hit on the logo (Opus 17.25).
+- **Finding CC0 music:**
+  - Search in parallel through an agent. Free Music Archive's CC0 filter works; check the license on each track's own page and save it in `<slug>.rights.json`.
+  - Use librosa for structure: windowed RMS and onsets, with stems from demucs when useful. `beat_track` gets the BPM wrong often, so confirm it with kick or onset autocorrelation.
+  - Cut each excerpt so the strongest hit lands on the film's drop time.
+  - A track can be edited on the beat (`kilcut.py` pattern): keep the bars the user liked, jump over a breakdown, and land the track's own drop on the hit, with 30 ms crossfades at the splice.
+- **Comparing tracks:** render the film **with no music in the composition**, then mix each candidate with ffmpeg (`amix` plus a 2-pass loudnorm). Rendering with the default track still inside shipped two songs playing at once.
+
+## Production techniques that worked (GRUPO VIVA v4)
+- **Cinematic logo open, as a material match cut:**
+  - Use the brand's official 3D renders (transparent PNGs) in 4–5 materials: chrome, bronze, dark, glass.
+  - Lock them all to the same bbox: scale the ring's height to a fixed px, centred.
+  - Cut on the beat while one continuous camera push runs across the cuts, on a dark radial-gradient background. This is the Opus shape-held continuity applied to the symbol.
+- **Grid forming with a camera:**
+  - Put the symbol field inside a CSS `perspective` wrapper.
+  - Start at `rotationX` about 62° with fog at the horizon, then tilt to flat with `expo.inOut` while the rows slide in opposite directions.
+- **Locked-axis burst, implemented:**
+  - Measure the brand mark in each application image on a gridded 1000 px view: centre and symbol width in source px.
+  - Then `scale = LOCK / symbolWidth`, `left = 960 - cx*scale`, `top = 540 - cy*scale`.
+  - Use the 4K source images (mock raw fills), since the mark is often tiny. A 1.12→1 settle per cut keeps it alive.
+- **Figma Motion for layouts:**
+  - Clone the brand's designed 1920×1080 layouts into a new section, and never animate the originals.
+  - Keyframe the children with `applyManualKeyframeTrack`: staggered rise and fade, opposite column slides along a rotated axis, a card sliding in, a photo push.
+  - `export_video` at WIDTH 1920. At most 5 exports run at once; retry the rest after.
+- **Mockup studio (Vintageuiuxlibrary) for devices:** put the Figma Motion exports on laptop, phone or tablet with camera recipes (`notebook-orbita`, `mesa-para-heroi`, camera by scenes). Render one scene at a time; a batch hung for 15 min.
+- **Letters appear by mask, never by scale:**
+  - Clip the wordmark area.
+  - Move each letter on y (210 → 0) with a stagger.
+  - Use a precise selector: `[id^="x-t"]` also matched the container `x-tag` and pushed the whole line down.
+- **GSAP:** never place a tween before 0 in a composition timeline. A negative position shifted every shot in the scene by about 0.3 s.
 
 ## Pre-production checklist
+0. Create the client's project in jaques-os (if the studio app is in use) before the first render; otherwise the film folder is filed under the wrong owner.
 1. Watch the refs' contact sheets again (`docs/refs/frames/<slug>/sheets`) and pick **2 refs** to steal from, by name and timestamp.
 2. Write the story as **transformations**: what becomes what. A list of pictures is not a story.
 3. Pick the **seed** (symbol or shape), the **fixed axis** for the one burst, and the **signature type gesture**.
@@ -110,4 +141,5 @@ Every ref changes subject by **transformation inside the shot** or by a **graphi
 - **An invented construction grid:** thin radial guides and a circle behind a logo outline draw that don't come from the brand's real construction.
 - **A generic wipe:** giant flat rays of brand colour sweeping across the frame.
 - **Piano music.**
+- **Distorting the logo:** `scaleX` or `scaleY` squash or stretch to make the wordmark appear or disappear ("nunca anime assim"). The brand's misuse rules forbid it too. Reveal by mask or slide at true proportions.
 - **AI icon art on texture backgrounds, a generic 3D tunnel, or the same hero clip twice** (Visant 360 review).
