@@ -81,6 +81,37 @@ final hit snap to it. Sound (SFX, break track, stems as Studio lanes, levels) li
 - Feedback that shaped it: too long on b-roll, repeated mockups, empty screens, heavy grain,
   intrusive cut sounds, keyboard SFX rejected (use mouse clicks/drags + engine).
 
+**Release-level pass** (Visant 360, 2026-11; the bar was "HEX / basement / Silicon Valley launch
+video"). Run it before every delivery and compare against the refs, not against the last version:
+
+- **One visual system.** Every ref keeps one palette, even on photos of people; ours mixed
+  concrete, teal gradient, lime and raw colour footage. Grade every photo and b-roll into the
+  brand duotone: `scripts/duo.sh` (ink → light accent, all-intra output so seeks never stall).
+- **One returning motif.** Opus 5.5 puts the same horizon arc in every shot; Arko repeats
+  parentheses and rays; Caixa repeats the X. Make the brand device (here, the 360° ring) open
+  every chapter as an iris, then leave. A motif seen only at the start and end does not count.
+- **Real before stock.** Look for the client's own photos and footage first: talks, team, studio,
+  events. Stock is the fallback. When used, stock b-roll stands for *people and city in general*:
+  elegant, slow, **no faces** (backs, silhouettes, feet, shadows, aerials, architecture), no
+  text or logos, no posing models, no masks.
+- **Never trust a search result.** A "São Paulo" query returned Tokyo, Korea and India. Pull 3
+  frames per clip (20/50/80%), tile and look before using it. Don't name a city the footage is not.
+- **Slop to cut on sight:** AI-generated 3D icons on texture backgrounds, a generic 3D tunnel or
+  road, the same hero clip twice, a dark card floating small in a black void.
+- **Copy:** few lines, white, centered, words rising from a mask; legibility from text shadow only
+  (no box, no blur, no darkening). The line lives only over people/city b-roll, never over a logo
+  or case piece: reorder shots so its whole span is b-roll.
+- **No dead frames at any cut.** Elements enter already visible (number punches in big and
+  blurred; cards start at 50% opacity); exits push forward (scale up, scatter) instead of fading to
+  nothing before the cut. Guides of a logo build show on frame 1.
+- **The render can drop one frame to black** at some shot starts even when the Studio and
+  `snapshot` are correct. One worker, PNG extraction, video pre-roll and shot overlap did not fix
+  it. Before loudnorm, run `blackdetect` and then `scripts/tapar-pretos.sh in out`, which swaps
+  each isolated black frame for the previous one with `freezeframes` (audio stays in sync).
+- **Compare, don't overwrite.** Build the alternative as a flag in the generator (`V=b node
+  montar.mjs`), render both, and ship both links. Write the ref review as a short `.md` in the
+  project: what the refs do, what is slop or confusing in ours, and what the B cut changes.
+
 ## Product showreel (real app filmed)
 
 Screens are filmed for real (Playwright + CDP screencast at 2x, steps

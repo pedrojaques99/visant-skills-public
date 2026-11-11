@@ -67,6 +67,7 @@ camera entering on scroll, immersive route (walk), footer wordmark and one full 
 - 1MB for 19s = blank scene. > 100MB = does not go into Figma (scene `crf` fixes it; 24 for a scene with grain + trails).
 - Top strip (`crop=1920:120:0:0`) at several times to catch a leaking nav.
 - `LOW-FPS` with a long pause at the start/end is a false alarm (the meter counts still frames); check the contact sheet.
+- Designed brand films: run the release-level pass in `references/showreel-variants.md` (one palette via `scripts/duo.sh`, a returning motif, real media before faceless stock, no dead frames). Then `blackdetect` the render and patch isolated black frames with `scripts/tapar-pretos.sh`.
 
 ## Known pitfalls
 
