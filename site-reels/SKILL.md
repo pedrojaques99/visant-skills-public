@@ -143,6 +143,8 @@ create video from bytes; `upload_assets` only accepts images (≤ 10MB). So:
 
 ## Showreel variants
 
+**Before writing the story of any brand showreel, read [brand-showreel-playbook.md](references/brand-showreel-playbook.md):** what the reference films do, the transition grammar, rhythm and music, and the anti-patterns that scored 2/10 (slideshow, invented grids, ray wipes, piano).
+
 Once plates/footage exist, pick the variant that matches the brief. Full
 technique for each → [showreel-variants.md](references/showreel-variants.md).
 
