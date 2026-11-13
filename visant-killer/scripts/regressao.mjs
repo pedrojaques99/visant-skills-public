@@ -39,7 +39,7 @@
  * Exit 0: nothing lost. Exit 1: losses. Exit 2: could not compare.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -258,7 +258,10 @@ async function main() {
   process.exit(2);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+/* Caminho REAL dos dois lados: a skill costuma ser instalada por link (~/.claude/skills -> repo), e
+   com o link o argv[1] nunca batia com o import.meta.url: o script saía calado, sem rodar nada. */
+const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
+if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url))) {
   main().catch((e) => {
     console.error('regressao:', e.message);
     process.exit(2);
