@@ -1,0 +1,14 @@
+{
+  "model": "kling-v3",
+  "klingMode": "pro",
+  "mode": "frames_to_video",
+  "aspectRatio": "9:16",
+  "duration": "5s",
+  "sound": "off",
+  "seed": 123,
+  "startFrame": "https://.../s1_start.png",
+  "endFrame": "https://.../s1_end.png",
+  "prompt": "<see references/frames-and-prompts.md>",
+  "negativePrompt": "morphing product, changing logos, extra hands, extra fingers, distorted face, face change, jitter, camera shake, text flicker",
+  "costTag": "CLIENT-TASK"
+}
