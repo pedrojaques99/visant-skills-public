@@ -6,7 +6,7 @@ Each rule here came from an owner pointing at a real screen and saying what was 
 
 **Tell:** a paragraph that teaches the user how to read the interface ("what has no lock is yours, what has a lock is…"). If the screen needs a manual, the screen is wrong.
 
-**Instead:** say the state on the object itself. The lock, the price, the check, the dimmed thumb carry the meaning; the copy is gone. If one line survives, it is about the user's outcome, not about the UI's mechanics. Keep one voice across the product (one form of "you", one register); mixed registers read as confusion even when every line is correct.
+**Instead:** say the state on the object itself. The lock, the price, the check, the dimmed thumb carry the meaning; the copy is gone. If one line survives, it is about the user's outcome, not about the UI's mechanics. The form of address can move between registers the way people talk; that is voice, not confusion. Confusion is the line about mechanics.
 
 ## 2. Counts and offers become objects
 
