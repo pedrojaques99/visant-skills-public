@@ -147,7 +147,7 @@ export function ExtraFixture({ prev }: { prev: { year: number } }) {
 
 declare function Consumidor(p: { ano: { anterior: number; atual: number } }): JSX.Element;
 
-/* Copy SPLIT by interpolation. Found in the mockup-store home header, where
+/* Copy SPLIT by interpolation. Found in the app B home header, where
  * `59 à vista · 4.480 no acervo` was on screen and the gate said zero: the
  * fragment left after the mask is "à vista ·", a single word, and the "fewer
  * than two words is not a sentence" rule discarded it. A false NEGATIVE, the
@@ -170,7 +170,7 @@ export function CopyPartida({ vista, total }: { vista: number; total: number }) 
 /* Generic with a template argument. The JSX text extractor eats what follows
  * the `>` of `querySelector<T>(...)` and returned the whole selector as copy;
  * the trailing `;` became a semicolon finding. A false POSITIVE, found in the
- * Recorder audit (jaques-os, 2026-08-05). The backtick joined CODEY: it
+ * Recorder audit (app F, 2026-08-05). The backtick joined CODEY: it
  * delimits a template literal and never appears in text the user reads. */
 export function SeletorDeDom({ id }: { id: string }) {
   const pular = () => {
@@ -184,7 +184,7 @@ export function SeletorDeDom({ id }: { id: string }) {
  * candidate came out with `{cond` glued on, CODEY saw the brace and threw the
  * whole sentence away: the dash stayed visible on screen and the gate said
  * zero. A false NEGATIVE, found by opening the page in the Recorder audit
- * (jaques-os, 2026-08-05). */
+ * (app F, 2026-08-05). */
 export function CopyAntesDeExpressao({ tem }: { tem: boolean }) {
   return (
     <div>
@@ -197,7 +197,7 @@ export function CopyAntesDeExpressao({ tem }: { tem: boolean }) {
 
 /* Cookie: a `key=value;` pair. It has letters, spaces and no code smell: it
  * passed `looksLikeCopy` whole and the gate flagged a sales-copy semicolon on a
- * `Set-Cookie`. A false POSITIVE, found in the boxy-app audit
+ * `Set-Cookie`. A false POSITIVE, found in the app C audit
  * (login-form.tsx:120, 2026-08-06). Copy does not write `key=value;`. */
 export function LimpaCookieDeErro() {
   const limpar = () => {
@@ -279,7 +279,7 @@ export function fly(root: HTMLElement | null, flights: Map<string, Tween>, id: s
  *   - `(ref as React.MutableRefObject<Konva.Stage | null>).current = node;`
  *     handed over `).current = node;`, and the `;` flagged a semicolon
  *     (KonvaCanvas.tsx).
- * A false POSITIVE, wave 4 of the visantlabs-os slop killer (2026-10-05). Screen
+ * A false POSITIVE, wave 4 of the app A slop killer (2026-10-05). Screen
  * text never starts with `[]` or a glued `.member`. Mandatory counterexample:
  * a closing parenthesis after an inline tag, followed by a period and a SPACE, is prose. */
 type Setters = {

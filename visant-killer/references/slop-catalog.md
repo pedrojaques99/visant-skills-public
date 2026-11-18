@@ -111,8 +111,8 @@ again", never loading. A service must not turn a network failure into an empty l
 
 **Symptom.** Three or four `text-xs uppercase tracking-wider` in the same card,
 with the same weight.
-**Fix.** One label level per card, and the next distinction comes from space and
-rules. At most 2 uppercase labels per screen. Length, tracking and the hero-eyebrow tell: the
+**Fix.** The next distinction comes from space and rules. At most 2 uppercase
+labels per screen. Length, tracking and the hero-eyebrow tell: the
 [micro-label tax](../../visant-frontend/references/acquisition-surface.md#the-micro-label-tax-eyebrows-and-letterspaced-mono).
 **Detector.** `noise-scan`, rule `shouting-label`.
 
@@ -350,18 +350,23 @@ next section).
 **Test.** Remove it. Does anyone still know there is more below?
 **Detector.** Quick sweep below.
 
-> **35 to 46: the showcase round.** About 140 pieces of a component library were
-> opened one by one. All passed tsc, lint and the repo's own checks. The defects
-> below only exist by looking. The procedure is in
-> `visant-frontend/references/component-showcase.md`.
+> **35 to 46: one core in focus.** Show the core with a clear hierarchy, the least
+> at a time, and never lose what matters. The rest is revealed in sequence
+> ([hide in sequence](../../visant-frontend/references/work-surface.md#hiding)).
+> Entries 35 to 41 apply this. A component showcase is the example, not the scope.
+> About 140 pieces of a library were opened one by one, all green on tsc and lint,
+> and the defects only existed by looking
+> ([procedure](../../visant-frontend/references/component-showcase.md)). Entries
+> 42 to 46 are library hygiene found in the same round.
 
 ## 35. The frame that speaks for the piece
 
 **Symptom.** A component's demo wrapped in a fake navbar, a "Briefing" card, an
 invented toolbar, a caption "passe o mouse", "clique pra ver"; the piece takes a
 third of the frame.
-**Fix.** The piece large and centered, in the smallest credible context; no
-instructions. If the piece does not explain itself, the defect is in its affordance.
+**Fix.** The core large, in the smallest credible context, with no instructions.
+If the piece does not explain itself, the defect is in its affordance. On a
+product screen the same holds: the chrome around the core is never louder than it.
 **Test.** Cover the piece with your finger: is more than one line of stuff left
 in the demo?
 
@@ -369,30 +374,36 @@ in the demo?
 
 **Symptom.** 4 skeletons, 6 loaders, 3 toggles, 4 frames side by side on the same
 stage, each one squeezed.
-**Fix.** **One at a time**: one large variation and a discreet selector (tiny text
-or arrows) that switches and replays.
+**Fix.** One variation in focus at a time: one large, with a discreet selector
+(tiny text or arrows) that switches and replays. A variant matrix or
+comparison a person needs in product UI stays. Reveal it in sequence (a step, a
+tab), never delete it.
 **Test.** At tile size, can each variation be read? If not, show one.
 
 ## 37. Piece that is born dim
 
 **Symptom.** Glow, perspective, tilt, menu or island only appear on hover; at rest
 the piece is a neutral rectangle.
-**Fix.** Born in its best state; hover intensifies, it does not reveal. The pretty
-state does not exist on touch, on the tile, in the screenshot or in the shared link.
+**Fix.** The core is born in its best state: hover intensifies it, it does not
+reveal it. The pretty state does not exist on touch, on the tile, in the
+screenshot or in the shared link. A secondary action revealed on hover in
+reserved space is not this: it stays, with a `focus-visible` and touch path.
 
 ## 38. Secondary control louder than the piece
 
 **Symptom.** Chips with a border and brand color to switch the demo mode, a switch
 labeled "Mostrar modo X", a state selector bigger than the component.
-**Fix.** Tiny text at the foot, no box, no brand; or the modes go to the panel
-knobs. No toggle with an instruction label.
+**Fix.** The core is louder than its controls: tiny text at the foot, no box, no
+brand; or the modes go to the panel knobs. No toggle with an instruction label. A
+control a person needs keeps its place and its target size, only quieter.
 
 ## 39. Permanent label that depends on state
 
 **Symptom.** "Apagar selecionados", "0 itens", "Nada aberto ainda" visible with
 nothing selected or open.
-**Fix.** The label is born with the state: the button is icon-only until there is a
-selection; a zeroed facet goes away instead of showing zero.
+**Fix.** Hide in sequence: the label is born with the state. The button is
+icon-only until there is a selection, and a zeroed facet goes away instead of
+showing zero. The action stays reachable the moment it has something to act on.
 
 ## 40. Amateur animation
 
@@ -407,7 +418,7 @@ noticed (`visant-motion`, "amplitude").
 **Symptom.** A queue moving, images arriving, a % bar, a toast and an error all
 animating together.
 **Fix.** One focus of motion at a time: states in sequence (sent → generating →
-ready → exporting), the rest still.
+ready → exporting), the rest still. Nothing that matters is dropped, it waits its turn.
 
 ## 42. Client copy leaking into the library
 
@@ -630,11 +641,11 @@ actions behind one `⋯`; dependent controls only while they apply.
 
 From a desktop agents app redesigned in a first-run pass (case in [cases.md](cases.md#lost-its-soul)). Each one is a cleanup that went in the right direction and stopped at the wrong place.
 
-### 65. Heavy stroke as selection
+### 65. Heavy stroke on every card
 
-**Symptom.** Cards with 1.5–2px outlines, a 2px radio ring, a 3px focus halo, the selected item said by a thicker border.
-**Fix.** 1px chrome. Selection by color: the accent mixed into the border (~55%), a tint behind. Focus up to 2px (WCAG 2.4.7). Anything else over 1px carries a written reason.
-**Detector.** `stroke-scan.mjs` (CSS, style objects, Tailwind, shadcn defaults).
+**Symptom.** Cards with 1.5–2px outlines, a 2px radio ring, a 3px focus halo that also shows on a mouse click, the selected item said by color alone or by a heavy border alone.
+**Fix.** 1px chrome. Selection is color and a second cue: the accent mixed into the border (~55%) and a tint behind, plus a check, a weight or a shape on the chosen one. A 2px border on a selected or invalid state is that second cue, not a heavy stroke. Focus shows on `:focus-visible` only, 2px with a 2px offset, at least 3:1 against its neighbor ([foundations §8](../../visant-design/references/foundations.md#8-interaction)). Anything else over 1px carries a written reason.
+**Detector.** `stroke-scan.mjs` (CSS, style objects, Tailwind, shadcn defaults). Warn-only until a second case is recorded: it was built from one.
 
 ### 66. Illustration that is only brand
 

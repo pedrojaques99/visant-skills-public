@@ -141,7 +141,7 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
 | `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 25 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
-| `stroke-scan` (this skill) | `EXCEPTION to stroke-scan/<rule>: reason` | `stroke-ignore-file: <rule>, reason` | `heavy-border`, `heavy-ring`, `heavy-outline`, `heavy-focus`. Passes without a marker: 0–1px, focus up to 2px, a transparent border, a ring in the surface color, the `border-2 … animate-spin` spinner |
+| `stroke-scan` (this skill) | `EXCEPTION to stroke-scan/<rule>: reason` | `stroke-ignore-file: <rule>, reason` | `heavy-border`, `heavy-ring`, `heavy-outline`, `heavy-focus`. Warn-only until a second case is recorded. Passes without a marker: 0–1px, a 2px `:focus-visible` ring, up to 2px on a selected, checked or invalid state, a transparent border, a ring in the surface color, the `border-2 … animate-spin` spinner |
 | token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `raw-hex`, `raw-rgb-hsl`, `tailwind-palette` (legacy `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` still accepted) |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
 | repo `scan-ui-scale` | `EXCEÇÃO ao ui-scale/<rule>: reason` | `// ui-scale-ignore-file: <rule> — reason` | `micro-label`, `px-cru`, `peso-pesado`, `raio-sortido`, `accent-repouso`, `matiz-cru`, `opacidade-cru` |
@@ -212,8 +212,8 @@ component's default padding against the page's `gap`) and only meet after
 layout. That is `ritmo-scan.js` (`$E`), at runtime, in the same harness as
 `corta-scan` (`$V` and `corta-url.mjs` run both and print a `spacing` line).
 It measures ink (line boxes, media, boxed regions), not CSS boxes, and only on
-vertical text stacks at component scale: calibrated to zero on linear.app,
-stripe.com and vercel.com. Its findings never fail the run: confirm each on the
+vertical text stacks at component scale: no false positives on linear.app,
+stripe.com and vercel.com, checked 2026-11. Its findings never fail the run: confirm each on the
 screenshot, then fix in the source.
 
 **The opposite failure.** Every line above punishes what is left over, so a screen

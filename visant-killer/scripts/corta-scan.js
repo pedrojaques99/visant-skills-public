@@ -86,7 +86,7 @@ function corta(raiz = 'body', { verbose = true } = {}) {
      * (a) the box clips its own content: `scrollWidth > clientWidth`. That is
      *     long text inside a fixed-width box.
      * (b) the WHOLE box leaves a clipping ancestor. That is what happened to
-     *     the jukebox pill: it has `position: absolute`, so it grows to fit its
+     *     the app E pill: it has `position: absolute`, so it grows to fit its
      *     own content (`scrollWidth` and `clientWidth` are equal, it thinks it
      *     is whole), and it is the 96px card with `overflow: hidden` that eats
      *     the ends. A first version of this rule measured only (a) and returned

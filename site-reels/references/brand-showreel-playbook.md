@@ -129,7 +129,7 @@ Every ref changes subject by **transformation inside the shot** or by a **graphi
 - **GSAP:** never place a tween before 0 in a composition timeline. A negative position shifted every shot in the scene by about 0.3 s.
 
 ## Pre-production checklist
-0. Create the client's project in jaques-os (if the studio app is in use) before the first render; otherwise the film folder is filed under the wrong owner.
+0. Create the client's project in the studio's project app (if one is in use) before the first render; otherwise the film folder is filed under the wrong owner.
 1. Watch the refs' contact sheets again (`docs/refs/frames/<slug>/sheets`) and pick **2 refs** to steal from, by name and timestamp.
 2. Write the story as **transformations**: what becomes what. A list of pictures is not a story.
 3. Pick the **seed** (symbol or shape), the **fixed axis** for the one burst, and the **signature type gesture**.

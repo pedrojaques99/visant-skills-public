@@ -1,6 +1,8 @@
 /* EXPECTED: zero. The legitimate twin of every dirty line. */
 .card { border: 1px solid var(--border); }
 .card[aria-selected="true"] { border-color: color-mix(in oklab, var(--accent) 55%, var(--border)); background: var(--accent-soft); }
+.card[aria-selected="true"] { border-width: 2px; }
+.field[aria-invalid="true"] { border: 2px solid var(--danger); }
 .hair { border-width: 0.5px; }
 .btn:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .spinner { border: 2px solid var(--border); border-top-color: transparent; animation: spin 1s linear infinite; }

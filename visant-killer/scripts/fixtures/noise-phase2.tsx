@@ -1,7 +1,7 @@
 /*
  * `ruido-scan` PHASE 2 fixture (2026-10-05): the six rules the eye caught and
  * the detector did not, and the two `mesma-info` false positives from slop
- * killer round 1 in visantlabs-os.
+ * killer round 1 in app A.
  *
  * Each block says how many findings it promises (EXPECTED). The NEGATIVES come
  * first and far from the positives on purpose: two rules (synthetic-cover and
@@ -91,7 +91,7 @@ export function SettingsPopover({ n }: { n: number }) {
 
 /* A CODE BLOCK repeats the auth header in every section on purpose:
  * whoever arrives by anchor reads only one. False positive confirmed on DocsPage
- * (visantlabs-os, 2026-10-05): 14 findings, all in examples.
+ * (app A, 2026-10-05): 14 findings, all in examples.
  * EXPECTED same-info-twice: zero. */
 export function DocDeApi() {
   return (

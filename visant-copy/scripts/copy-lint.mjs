@@ -210,7 +210,7 @@ const RULES = [
    * look like hype out of context: "Unlock account", "Transform" (a tool name),
    * "More than 30 templates", "Seamless pattern" (a texture feature). Every
    * hype verb needs a marketing object ("unlock your POTENTIAL", "transform
-   * YOUR", "elevate YOUR") before it fires. Calibrated on visantlabs-os
+   * YOUR", "elevate YOUR") before it fires. Calibrated on app A
    * (en-US.json and src/): "Confirm your email to unlock your full account" is
    * a feature gate and "seamless white background" is a photo backdrop, so
    * "unlock your" needs a hype object and bare "seamless" needs a hype noun. */
@@ -668,7 +668,7 @@ for (const file of files) {
          rule is forging a testimonial.
 
          The case that forced this is in /lote: `pedagio.quote` is "Ele não é
-         um bom designer, mas é um bom engenheiro", said by Jaques in the lote
+         um bom designer, mas é um bom engenheiro", said by the owner in the lote
          recording. It matches `nao-e-definicao` and still has to stay exactly
          as it was said.
 
@@ -693,7 +693,7 @@ for (const file of files) {
   /* Repetition pass: runs after scanning the whole file.
    *
    * The budget is PER PIECE, and in a locale dictionary the piece is NOT the
-   * file. Measured in visantlabs-os: `pt-BR.json` has 5173 keys from dozens
+   * file. Measured in app A: `pt-BR.json` has 5173 keys from dozens
    * of independent screens, and the limit of 1 flagged 11 occurrences as if
    * they were the same page. A rule that shouts 11 times teaches people to
    * ignore the linter, which is worse than not having the rule.

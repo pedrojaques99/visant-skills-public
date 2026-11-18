@@ -137,7 +137,7 @@ became a rule:
 | the hero was only the logo, big | the agent team perched on the toucan's beak, a status walking through their work until "Posso enviar? ✓ Aprovado" | the illustration explains the feature (catalog 66) |
 | the builder was a form with a little preview in the corner | canvas + deck: the agent large on its own color, the deck changing per step | the object being made is the protagonist (catalog 67) |
 | "too much text" in Settings › Models was answered by removing cards | harness cards with the real logo, agents count and the plan's ring; 2628px down to 1716px | drawn facts, not fewer cards (catalog 64) |
-| 1.5–2px outlines, a 2px radio ring, a 3px focus halo | 1px chrome, selection by color | `stroke-scan` (catalog 65) |
+| 1.5–2px outlines, a 2px radio ring, a 3px focus halo | 1px chrome, selection by color and a second cue, focus 2px on `:focus-visible` | `stroke-scan`, warn-only (catalog 65) |
 | a dot grid behind the canvas | hairline rings of presence spreading from the avatar | textures from the subject (catalog 32) |
 | goals and missions in library icons in boxes | one SVG per item in the icon's idiom; presets wear their trade | thumbs when the item is something the product does |
 | welcome showed every option at once | first only "I'm new" / "I already use one", then that path; back top-left, before the progress | one thing at a time (work-surface, Hiding) |

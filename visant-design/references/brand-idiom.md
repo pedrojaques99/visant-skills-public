@@ -42,7 +42,7 @@ A component is core when it appears on three or more screens, or it is the objec
 
 - **Every state:** rest, hover, focus, active, selected, loading, empty, done, error.
 - **Hover that previews the outcome:** what the click will open, change or send. It can also reveal the secondary action in reserved space, and on a core piece react in the idiom. A hover that only darkens the background is the floor, not the target.
-- **Hairline strokes:** 1px chrome, selection by color (`stroke-scan`).
+- **Hairline strokes:** 1px chrome, selection by color and a second cue (`stroke-scan`).
 - **One source:** a shared module, imported everywhere. Brand marks come from the official asset, never redrawn per screen.
 
 ## 5. Thumbs, when the item is something the product does

@@ -72,7 +72,9 @@ Gestalt is why a screen with every token right can still read wrong.
 - **Response time** (Nielsen): under 0.1s feels instant, under 1s keeps the flow, past 10s attention is gone. Show progress for anything over about 1s.
 - **Every state exists:** empty, loading, error, partial, success. An error says what happened and how to fix it, in place, keeping what was typed. Zero and empty: [§12](#12-states).
 - **Undo beats confirmation** when the action can be reversed. Save the dialog for what cannot.
-- **Keyboard.** Everything reachable, with a visible focus (WCAG 2.4.7). What only appears on hover does not exist on touch.
+- **Keyboard.** Everything reachable. What only appears on hover does not exist on touch.
+- **Focus** shows on `:focus-visible` only, never on a mouse click. 2px with a 2px offset (or an equivalent inset ring), at least 3:1 against what is next to it. That meets WCAG 2.4.7 and the 2.4.13 area guidance without a 3px ring.
+- **Selection** is never said by color alone: color and a second cue (a check, a weight, a shape).
 - **Hover reveals, never relayouts.** Reserve the space and float the revealed control over it. Nothing is reachable only on hover: `focus-visible` and a touch path reach it too.
 
 ## 9. Forms

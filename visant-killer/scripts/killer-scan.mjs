@@ -155,7 +155,7 @@ if (!selfTest && !initReport && !uiFiles.length) {
 /* Copy also lives in `.ts`, and that was the gate's biggest blind spot.
  *
  * The extractor only looked at `.tsx`/`.jsx`, so a sentence written in a lib and
- * RENDERED by the screen was never scanned. Real case (mockup-store, 2026-08-05):
+ * RENDERED by the screen was never scanned. Real case (app B, 2026-08-05):
  * `art-classify.ts` returned a `reason:` string with a dash, and the render panel
  * passed it straight to the user's eye. The gate said "copy zero" with a
  * language tic on screen.
@@ -192,7 +192,7 @@ function runImpeccable() {
 
 /* Token gate that lives as a FILE, not as an npm script.
  *
- * Expected format (that of visantlabs-os's `scan-design-violations.mjs`):
+ * Expected format (that of app A's `scan-design-violations.mjs`):
  *
  *   ERR [rule-name] message
  *     path/file.tsx:123
@@ -481,14 +481,14 @@ function runAuditDesign() {
   if (!existsSync(pkgPath)) return runTokenFallback('repo has no package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
-  /* Not every repo names its token gate `audit:design`. boxy-app calls it
+  /* Not every repo names its token gate `audit:design`. app C calls it
      `lint:design` and the gate said "SKIPPED" with 218 open token findings: a
      silent skip that looks like approval, the same defect as the extractor's
      false negative. Accept the known aliases before giving up. */
   const ALIASES = ['audit:design', 'lint:design', 'design:lint', 'lint:tokens'];
   const scriptName = ALIASES.find((n) => pkg.scripts?.[n]);
   if (!scriptName) {
-    /* Not every repo exposes its token gate as an npm script. visantlabs-os
+    /* Not every repo exposes its token gate as an npm script. app A
        keeps its own as a FILE (`scripts/scan-design-violations.mjs`), and the
        killer printed "SKIPPED" with the scanner right there: a silent skip that
        looks like approval, the SAME defect the block above had already fixed
@@ -606,10 +606,10 @@ const TS_PARAM = /\b\w+\??\s*:\s*(?:string|number|boolean|unknown|null|undefined
  * argument becomes a "tag close" and what is glued right after it is a type
  * suffix or a member access, never screen text:
  *   - `Node<FlowNodeData>[] | ((prev: ...` handed over `[] | ((prev: Node` and
- *     the union pipe flagged pipe-separator (visantlabs-os CollaborativeCanvas);
+ *     the union pipe flagged pipe-separator (app A CollaborativeCanvas);
  *   - `(ref as React.MutableRefObject<Konva.Stage | null>).current = node;`
  *     handed over `).current = node;` and flagged a semicolon (KonvaCanvas).
- * Found in wave 4 of the visantlabs-os slop killer (2026-10-05).
+ * Found in wave 4 of the app A slop killer (2026-10-05).
  *
  * Only in the JSX text branch, and only at the START of the candidate: `[]`
  * (type array) or a glued `.member`, with or without `)` before it. Prose after
@@ -621,7 +621,7 @@ const GENERIC_TAIL = /^(?:\[\]|\)?\.[A-Za-z_$])/;
    `document.cookie = 'auth_error=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'`
    has letters, has spaces and none of the code smells above: it passed
    `looksLikeCopy` whole and the gate flagged a sales-copy semicolon on a
-   `Set-Cookie`. Found in the boxy-app audit (login-form).
+   `Set-Cookie`. Found in the app C audit (login-form).
    Real copy does not write `key=value;`. */
 const KV_STRING = /[A-Za-z_-]+=[^;=]*;/;
 
@@ -864,7 +864,7 @@ function extractCopy(file) {
        extraction. It cuts from the call to the end of the line because the call
        runs to the end of the statement, and copy after a console call on the
        SAME line does not exist. Found in the scene operations audit
-       (mockup-store, 2026-08-06). */
+       (app B, 2026-08-06). */
     const devOut = line.search(/\bconsole\s*\.\s*[a-zA-Z]+\s*\(/);
     if (devOut !== -1) line = line.slice(0, devOut);
     if (!line.trim()) return;
@@ -905,14 +905,14 @@ function extractCopy(file) {
        the character before the > is no longer a letter and the whole copy was
        never read. A false NEGATIVE, the serious one: the gate said zero about
        text nobody had checked. Found by the fixture in the Recorder audit
-       (jaques-os, 2026-08-05). */
+       (app F, 2026-08-05). */
     for (const m of masked.matchAll(/(?<=[A-Za-z0-9"'\]\/_-])>(?!=)([^<>]+)(?=<|$)/g)) {
       /* Cut at the leftover {. Multi-line JSX leaves the expression OPEN at the
          end of the line (`Aperte <b>Gravar</b> — ou {estado?.atalho`), and the
          candidate came with that piece of code glued on; CODEY then discarded
          the whole sentence because of the brace. A false NEGATIVE: a dash
          visible on screen passed the gate and only showed up when someone
-         OPENED the page. Found in the Recorder audit (jaques-os, 2026-08-05). */
+         OPENED the page. Found in the Recorder audit (app F, 2026-08-05). */
       const cand = unmask(m[1]).split("{")[0].trim();
       if (GENERIC_TAIL.test(cand)) continue;
       if (looksLikeCopy(cand)) found.push(cand);
@@ -1049,7 +1049,7 @@ function runCopy() {
 /* ---------- routes: the report is per SCREEN, not per file ----------
  *
  * `--init-report` asked for one row per interface file when the repo has no
- * `page.tsx` (Vite + react-router). In visantlabs-os that was 582 rows to run
+ * `page.tsx` (Vite + react-router). In app A that was 582 rows to run
  * the gate on `src/`: a table nobody fills in, and a gate nobody fills in is a
  * skipped gate. visant-frontend's unit of decision is the ROUTE (who arrives
  * there, what it moves), so the table becomes one row per route, with the page

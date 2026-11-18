@@ -6,7 +6,7 @@
  *
  * This file exists because of a real false NEGATIVE, the serious kind: the
  * extractor only looked at `.tsx`, so a sentence written in a lib and RENDERED
- * by the screen was never scanned. In mockup-store (2026-08-05) `art-classify.ts`
+ * by the screen was never scanned. In app B (2026-08-05) `art-classify.ts`
  * returned a `reason:` string with a dash (written here as <dash>), and the
  * render panel sent that string straight to the user's eye. The gate said
  * "copy zero" with a language tic on screen.

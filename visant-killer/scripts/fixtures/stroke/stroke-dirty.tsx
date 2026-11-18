@@ -1,4 +1,4 @@
-// EXPECTED: heavy-border 5, heavy-ring 2, heavy-outline 1, heavy-focus 2
+// EXPECTED: heavy-border 5, heavy-ring 2, heavy-outline 1, heavy-focus 3. Public pair: a card, a radio, a focus halo
 export function Dirty() {
   return (
     <div>
@@ -7,6 +7,7 @@ export function Dirty() {
       <label className="ring-2 ring-accent" />
       <button className="focus-visible:ring-[3px] focus-visible:ring-ring/50" />
       <input className="focus:outline-4" />
+      <button className="focus:ring-2 focus:ring-ring" />
       <div className="outline-2 outline-accent" />
       <div style={{ borderWidth: 2 }} />
       <div style={{ border: '2px solid var(--accent)' }} />

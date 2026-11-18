@@ -6,6 +6,7 @@ export function Clean() {
       <div className="border-0 ring-1 ring-border outline-0" />
       <div className="data-[state=checked]:border-accent/55 data-[state=checked]:bg-accent/10" />
       <button className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-2" />
+      <div className="border data-[state=checked]:border-2 data-[state=checked]:border-accent aria-invalid:border-2 aria-invalid:ring-2" />
       <span className="size-4 animate-spin rounded-full border-2 border-muted border-t-transparent" />
       <div className="ring-offset-2 border-[0.5px]" />
       {/* EXCEPTION to stroke-scan/heavy-ring: the quota ring is a chart, its weight is data */}

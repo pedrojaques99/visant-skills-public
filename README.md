@@ -141,7 +141,7 @@ npm test                                              # every detector's self-te
 node visant-killer/scripts/killer-scan.mjs <app/src>  # the whole gate, from any folder
 node visant-killer/scripts/corta-url.mjs <url> home   # clipping, spacing, what the screen lost, axe
 node visant-killer/scripts/regressao.mjs diff antes.json depois.json  # lost boxes, controls, chips, width
-node visant-killer/scripts/stroke-scan.mjs <app/src>  # strokes over 1px; selection by color, not weight
+node visant-killer/scripts/stroke-scan.mjs <app/src>  # strokes over 1px (warn-only until a second case is recorded)
 node visant-motion/scripts/motion-lint.mjs <app>
 node visant-copy/scripts/copy-lint.mjs <file-or-folder>
 bash visant-video-editor/scripts/self-test.sh         # needs ffmpeg

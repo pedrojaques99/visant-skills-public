@@ -128,8 +128,10 @@ every layout overflow, so measuring without real data measures nothing.
 
 **Q18 `[T2]` What does this teach the user to do wrong?**
 Color on everything teaches that color means nothing. A badge that 100% of rows
-carry teaches people to ignore badges. A disabled primary teaches that the button
-lies.
+carry teaches people to ignore badges. A disabled primary with no visible reason
+teaches that the button lies. A pending submit stays disabled in the product's own
+pending state (its progress treatment, a label change like "Enviando…", the brand's
+motion), not a generic spinner ([waiting is a surface](../../visant-motion/SKILL.md#4-waiting-is-a-surface-design-every-pending-state)).
 
 **Q19 `[T3]` If this screen is the only thing the customer sees of the product, do
 they renew?**
@@ -268,7 +270,8 @@ The level is measured in thirteen details, and none of them is aesthetic:
 8. Motion from the SSoT, under 300ms, interruptible, and respecting
    `prefers-reduced-motion` without canceling the result.
 9. Defensible density: chrome counted in pixels until the first real data.
-10. One primary per surface, and a disabled primary doesn't exist.
+10. One primary per surface. A disabled primary shows its reason, and a pending submit
+    stays disabled in the product's own pending state, not a generic spinner.
 11. A default you defend in writing, with the rule visible where people choose.
 12. Comes back to the same position after acting (the action doesn't lose the
     user's place).

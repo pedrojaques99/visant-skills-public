@@ -30,8 +30,8 @@ Where each rule came from: [references/cases.md](references/cases.md), optional 
 | hover that lifts or scales (`hover:scale-*`, `whileHover={{ scale }}`, `y<0`) | change color, shadow or border | home: [catalog 31](references/slop-catalog.md#31-the-card-that-jumps). Hover never moves the element. The detector is warn-only |
 | hover that grows **over** neighboring text | reserve the lane permanently and grow inside it | hover reveals, hover does not run over things |
 | `hover:bg-accent` **when `--accent` is emphasis** | `hover:bg-muted` or `hover:bg-primary` | emphasis turned into a mouse state. Check the token: in stock shadcn `--accent` is the neutral hover color, and there `hover:bg-accent` is right |
-| `border-accent`, unless it is the selection state | `border-border` | same confusion: emphasis turned into chrome. Selection keeps a second cue besides color (catalog 65) |
-| `backdrop-blur` outside dialog/sheet | solid token background | costs compositing on every scroll; on a card it is decoration paid in frames |
+| `border-accent`, unless it is the selection state | `border-border` | same confusion: emphasis turned into chrome. Selection is color plus a second cue, never color alone (catalog 65) |
+| `backdrop-blur` where nothing scrolls behind it | solid token background | blur is for a floating bar over scrolling content. On a flat background or with nothing behind it, it is decoration paid in frames |
 | `white-space: nowrap` in an overlay without `max-width` | `max-width: calc(100% - 12px)` and let it wrap | inside an `overflow: hidden` parent the word gets CUT, and the cut only exists after the font loads: no linter sees it |
 | a fixed highlight (`on: true`, `active: true`) in an item factory | the condition that decides (`on: q.live`) | a highlight that runs once per item lights up the whole list, and emphasis on everything is emphasis on nothing |
 | two doors for the same kind of data on one screen | one per screen | home: [catalog 21](references/slop-catalog.md#21-two-doors-for-the-same-gesture) |
@@ -125,7 +125,7 @@ sum unreadable). Details and the 25 noise rules: [gates.md](references/gates.md)
 lint/audit/design/token/ui/theme/i18n scripts too, and record what ran and what was
 skipped, and why ([commands](references/gates.md#discover-the-target-repos-gates)).
 
-Side gates: `node $W <target>` always (selection by color, not weight; focus up to 2px passes);
+Side gates: `node $W <target>` always (warn-only: 1px chrome, selection by color plus a second cue, focus 2px on `:focus-visible`);
 `node $R <target>` when there is a chart, gauge or animation;
 `node $D <app-root>` on surface A, **before** polish, because a page that shares
 without a card or converts without an event is not fixable by tokens and no UI

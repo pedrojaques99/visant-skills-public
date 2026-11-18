@@ -34,7 +34,7 @@
  * this skill that does not fit in one file, and the finding that produced it
  * had gotten past the seven previous rules, `tsc`, `ui:audit` and 2347 tests.
  *
- * Six came in on 2026-10-05 (slop killer phase 2 in visantlabs-os), all found
+ * Six came in on 2026-10-05 (slop killer phase 2 in app A), all found
  * by OPENING the screen after the detectors went green: `synthetic-cover`,
  * `tile-img-no-onerror`, `stagger-by-index`, `hover-lift`,
  * `dot-grid` and `blur-on-card`. The same day `repeated-door` started
@@ -147,7 +147,7 @@ function extrairTextos(src) {
   /*
    * TEXT INSIDE A CODE BLOCK IS NOT A SCREEN SENTENCE, and so it gets a mark.
    *
-   * False positive confirmed in slop killer round 1 (visantlabs-os,
+   * False positive confirmed in slop killer round 1 (app A,
    * 2026-10-05): 14 `same-info-twice` findings on DocsPage, all inside
    * example blocks: `# Pass your API key in every request` against
    * `# Pass your API key in the Authorization header`, and endpoint lists
@@ -219,7 +219,7 @@ function extrairTextos(src) {
   const CHEIRO_DE_CODIGO = /[;=]|=>|\b(const|let|var|function|return|await|import|export|React|use[A-Z])\w*/;
   /*
    * Two more sieves, and both came from the SAME false positive confirmed on
-   * 2026-08-19 (visant-club, `components/club/Rail.tsx`): R5 flagged "l.142
+   * 2026-08-19 (app D, `components/x/Rail.tsx`): R5 flagged "l.142
    * and l.145, 50% shared words" on
    *
    *     () => Array.from(ref.current?.querySelectorAll<HTMLElement>('[data-item]')
@@ -305,8 +305,8 @@ function extrairTextos(src) {
   /*
    * ALT TEXT IS NOT CHROME, and that is why it left this list.
    *
-   * False positive confirmed on 2026-08-19 (visant-club,
-   * `app/(club)/mural/page.tsx:73`): R3 flagged as "caption of what comes" the
+   * False positive confirmed on 2026-08-19 (app D,
+   * `app/x/page.tsx:73`): R3 flagged as "caption of what comes" the
    * `alt` of an empty-state illustration:
    *
    *   alt="Pintura a óleo de uma parede de galeria com várias molduras
@@ -356,7 +356,7 @@ function extrairTextos(src) {
    *   placeholder={api.set ? `link · vai pra "${api.set}"` : compact ? 'link ou arquivo' : 'url .mp3'}
    *
    * That `'link ou arquivo'` is as visible as any other, and it was the
-   * invisible half of the jukebox repeated-door pair (2026-09-11): R9 ran
+   * invisible half of the app E repeated-door pair (2026-09-11): R9 ran
    * against the broken code and returned zero, because the typing side never
    * reached the extractor. A detector that only reads the easy case approves
    * the real one.
@@ -431,8 +431,8 @@ const REGRAS = [];
  * showing anything. Apple groups with space and body hierarchy; a template
  * groups with tags.
  *
- * Floor of 3 per file, because a table header or a single eyebrow is
- * legitimate and common.
+ * The rule is at most 2 uppercase labels per screen, so the detector fires
+ * at 3 per file: a table header or a single eyebrow is legitimate and common.
  */
 REGRAS.push({
   id: 'shouting-label',
@@ -947,7 +947,7 @@ REGRAS.push({
 /* the rules the EYE caught and the detector did not (phase 2, 2026-10-05) */
 /* ------------------------------------------------------------------ */
 /*
- * The six rules below came out of slop killer round 1 in visantlabs-os. All
+ * The six rules below came out of slop killer round 1 in app A. All
  * were found by OPENING the screen, after the detectors went green, and all
  * have a cheap static signature. What was an eye judgment and repeated across
  * dozens of files becomes a rule; the rest stays with the eye.
@@ -1298,7 +1298,7 @@ REGRAS.push({
  *
  * The density rules (47 tag, 51 divider, 57 mono) follow R1: one use is a
  * choice, many in the same file is the symptom, so the floor is a per-file
- * count. Every rule was run on a real app (visantlabs-os, 588 interface files,
+ * count. Every rule was run on a real app (app A, 588 interface files,
  * 2026-10-28) and tightened where the sampled hits were legitimate; each
  * exclusion below names the case that forced it.
  *
@@ -1499,7 +1499,7 @@ REGRAS.push({
  * tool groups, all legitimate).
  *
  * Floor 8 per file: a few section lines in a long page are normal; eight is a
- * page that groups by line instead of by space. On visantlabs-os (2026-10-28)
+ * page that groups by line instead of by space. On app A (2026-10-28)
  * it left 7 files, led by DocsPage.tsx (55) and BrandReadOnlyView.tsx (17).
  */
 REGRAS.push({
@@ -1693,7 +1693,7 @@ REGRAS.push({
  * path, url, slug or hex, the cases the catalog keeps.
  *
  * Floor 10 per file: a handful of mono values (a price column, a timestamp) is
- * a choice; ten is a second font. On visantlabs-os (2026-10-28) it left 7
+ * a choice; ten is a second font. On app A (2026-10-28) it left 7
  * files, and the sampled hits were what the catalog describes: an `<h1>`,
  * error copy, buttons and table headers in mono (AdminPage.tsx alone: 210).
  */
@@ -1744,7 +1744,7 @@ const JANELA_DA_EXCECAO = 8;
  *
  * `on: true` written by hand inside a card factory. It is not a syntax error,
  * not a wrong token, not text chrome: it is HIGHLIGHT AT REST. The case that
- * produced the rule (jukebox, 2026-09-11): every record in the queue came with
+ * produced the rule (app E, 2026-09-11): every record in the queue came with
  * `on: true`, and `.tcard.on` lights up border, shadow and name. With three
  * records in the box and all three in the queue, the whole grid lit up in cyan,
  * and "on air" became indistinguishable from "3rd in queue". A highlight that
@@ -1949,12 +1949,12 @@ function temMotivoEscrito(linhas, linhaDoAchado, regraId) {
  * This is the first rule of this skill that does NOT fit in one file, and that
  * is why the defect that produced it got past everything.
  *
- * The case (jukebox, 2026-09-11): the "your box" tab had a url field that
+ * The case (app E, 2026-09-11): the "your box" tab had a url field that
  * writes to the ROOM's set, and the footer right below (which comes from
  * ANOTHER file, through a component call) has a url field that writes to the
  * PERSONAL box. Same shape, the same two icons beside it, 40px between one and
  * the other. And the label of one (`<Group cap="link ou arquivo">`, in
- * JukeboxPanel.tsx) was LITERALLY the placeholder of the other
+ * BoxPanel.tsx) was LITERALLY the placeholder of the other
  * (`'link ou arquivo'`, in MyPlaylist.tsx). Different stores, different
  * permissions, and nothing on screen said so: the person read the same form
  * twice and chose by luck.
@@ -1977,7 +1977,7 @@ function temMotivoEscrito(linhas, linhaDoAchado, regraId) {
  * And it has TWO FORMS, both useful, and only whoever opens the file knows
  * which one it is:
  *
- *   1. **Two doors on the same screen**: the jukebox case. A layout defect: the
+ *   1. **Two doors on the same screen**: the app E case. A layout defect: the
  *      person chooses by luck. Fix: separate or merge.
  *   2. **The same name for different things**: found in this rule's first
  *      round: `Director.tsx:1647` calls the door for the room's ambience
@@ -1995,13 +1995,13 @@ const REGRAS_GLOBAIS = [];
  * FORM 2 WAS DROPPED ON 2026-10-05, and the rule started requiring the SAME
  * SCREEN.
  *
- * Slop killer round 1 (visantlabs-os) gave 25 findings for this rule, and the
+ * Slop killer round 1 (app A) gave 25 findings for this rule, and the
  * verdict on each, file open, was almost always "no": four
  * `t('common.search')` searches on four screens over different data; the budget
  * form that returns the Visant form in an early `return` (the two doors never
  * coexist); two steps of a wizard in a ternary; the canvas and the Mockup
  * Machine, which are not even the same route. A rule that is wrong 9 times in
- * 10 teaches the team to skip the whole section, and then the jukebox case,
+ * 10 teaches the team to skip the whole section, and then the app E case,
  * which is real, gets through.
  *
  * What remained:
@@ -2283,7 +2283,7 @@ function selfTest() {
      */
     'highlight-at-rest': 1,
     /*
-     * 4 = the TWO ENDS of the jukebox pair (`cap` in ruido-casos, which now
+     * 4 = the TWO ENDS of the app E pair (`cap` in ruido-casos, which now
      * renders the box, and `placeholder` in noise-door-b) + the two ends of
      * the sibling pair in door/siblings-*. Two per pair because a finding that
      * cites only one end sends you to fix the wrong side. The other six cases

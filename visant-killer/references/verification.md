@@ -148,9 +148,9 @@ Locked in `scripts/fixtures/tela/` by `tela-self-test.mjs`.
 
 | Run | Pages | Result |
 |---|---|---|
-| Default, 1440 and 1920 | linear.app, linear.app/pricing, stripe.com, stripe.com/pricing, vercel.com, vercel.com/docs, npm package page, ui.shadcn.com/examples (dashboard, tasks, mail), GitHub issue list, githubstatus.com | zero (9 of the 13 count as showcases, so this zero is partly scope) |
+| Default, 1440 and 1920 | linear.app, linear.app/pricing, stripe.com, stripe.com/pricing, vercel.com, vercel.com/docs, npm package page, ui.shadcn.com/examples (dashboard, tasks, mail), GitHub issue list, githubstatus.com | no false positives, checked 2026-11 (9 of the 13 count as showcases, so this is partly scope) |
 | Default | news.ycombinator.com | 1 known false positive, kept: `texto-demais`. The measure is true; the site is text by design |
-| All rules forced, 1440 | shadcn examples, GitHub issue list, npm, vercel docs, stripe.com, githubstatus.com | zero: the real test |
+| All rules forced, 1440 | shadcn examples, GitHub issue list, npm, vercel docs, stripe.com, githubstatus.com | no false positives, checked 2026-11: the real test |
 | All rules forced, 1440 | linear.app | 25 on its drawn product UI (`parece-clicavel` 23): why showcases exist |
 | Default, logged in, 1920 only | three screens of an agent console already rebuilt with boxes | zero; with surfaces stripped by CSS, `sem-ponto-de-entrada` and `tudo-igual` fire |
 

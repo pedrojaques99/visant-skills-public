@@ -29,7 +29,7 @@ The old pack whooshes and clicks (`7panel_studio/backend/assets/samples`) were r
 ("muito ruins", 2026-11). What gives them away is a muddy low end, a long tail and a soft attack.
 **Never default to the packs.**
 
-1. **Curated kit first.** In the jaques-os Biblioteca, the collections `Triagem · Whoosh` (16)
+1. **Curated kit first.** In the studio's sound library, the collections `Triagem · Whoosh` (16)
    and `Triagem · Clique` (15) hold top-rated CC0 originals from Freesound. The user favourites
    the approved ones, and **the favourites are the showreel kit**. Pull from favourites. If none
    are marked yet, ask before using the unreviewed triage.

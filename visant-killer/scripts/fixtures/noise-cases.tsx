@@ -178,8 +178,8 @@ export function PositivoAtributoRepetido() {
 /* ============================================================== */
 /* ALT TEXT IS NOT VISUAL CHROME                                  */
 /* ============================================================== */
-/* False positive confirmed on 2026-08-19 (visant-club,
- * app/(club)/mural/page.tsx:73): R3 flagged as "caption of what comes" the `alt`
+/* False positive confirmed on 2026-08-19 (app D,
+ * app/x/page.tsx:73): R3 flagged as "caption of what comes" the `alt`
  * of an empty-state illustration, because the description ends in "ao lado".
  * `alt` is an accessibility duty, long by obligation, and nobody sees it on
  * screen: shortening it makes the product worse. `alt`, `aria-*` and SVG
@@ -207,8 +207,8 @@ export function FalsoPositivoTextoAlternativo() {
 /* ============================================================== */
 /* A TS GENERIC + FUNCTION ARROW ARE NOT SCREEN TEXT              */
 /* ============================================================== */
-/* False positive confirmed on 2026-08-19 (visant-club,
- * components/club/Rail.tsx:142): R5 flagged "l.142 and l.145, 50% shared
+/* False positive confirmed on 2026-08-19 (app D,
+ * components/x/Rail.tsx:142): R5 flagged "l.142 and l.145, 50% shared
  * words" on the `>` of a `=>` closing at the `<` of a generic. The extracted
  * chunk was `Array.from(ref.current?.querySelectorAll`: code, which nobody
  * reads on screen. The new sieves: a `>` preceded by `=` does not open a tag,
@@ -354,7 +354,7 @@ export function GrafismoDaMarca() {
 /* ============================================================== */
 /* `on: true` written by hand in a card factory: the highlight runs once PER
  * ITEM, so the whole list lights up and the highlight stops highlighting.
- * Real case: jukebox, 2026-09-11: three records in the box, all three in the
+ * Real case: app E, 2026-09-11: three records in the box, all three in the
  * queue, the whole grid in cyan and "on air" indistinguishable from "3rd in queue".
  * EXPECTED highlight-at-rest: 1. */
 export function GradeToraAcesa({ discos }: { discos: { url: string }[] }) {
@@ -395,12 +395,12 @@ export function PlanoAtual() {
 /* R9 · TWO DOORS FOR THE SAME GESTURE (across files)             */
 /* ============================================================== */
 /* The label of the door here is, LITERALLY, the placeholder of the door in
- * `noise-door-b.tsx`. Real case: jukebox × record box, 2026-09-11:
+ * `noise-door-b.tsx`. Real case: app E × record box, 2026-09-11:
  * same shape, same icons, different stores, and nothing on screen said which
  * was which. No per-file rule sees this.
  *
  * Since 2026-10-05 the rule requires the SAME SCREEN, so this room RENDERS the
- * box (`<PortaDaCaixa />`, imported at the top of the file), as in the jukebox:
+ * box (`<PortaDaCaixa />`, imported at the top of the file), as in the app E:
  * without the import, the two ends would be unrelated screens and the rule would go quiet.
  * EXPECTED repeated-door: 2 (one end here, one end there). */
 export function PortaDaSala({ Group }: { Group: React.ComponentType<{ cap: string; children?: React.ReactNode }> }) {
