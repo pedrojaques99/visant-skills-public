@@ -54,7 +54,7 @@ for (const c of casos) {
   for (const r of Object.keys(conta)) vivas.add(r);
   fim(!erros.length, `${c.caso}${erros.length ? `  -> ${erros.map((r) => `${r}: expected ${c.espera[r] ?? 0}, found ${conta[r] ?? 0}`).join('; ')}` : ''}`);
 }
-const TODAS = ['vazio-lateral', 'blocos-colados', 'texto-denso', 'sem-ponto-de-entrada', 'metrica-sem-destaque', 'numeros-em-frase', 'tudo-igual', 'acao-virou-texto', 'estado-so-texto', 'estado-so-icone', 'parece-clicavel', 'texto-demais', 'rotulo-repetido', 'legenda-em-toda-linha', 'nomes-tecnicos', 'pilha-de-selos', 'icones-decorativos'];
+const TODAS = ['vazio-lateral', 'blocos-colados', 'texto-denso', 'sem-ponto-de-entrada', 'metrica-sem-destaque', 'numeros-em-frase', 'tudo-igual', 'acao-virou-texto', 'estado-so-texto', 'estado-so-icone', 'parece-clicavel', 'texto-demais', 'rotulo-repetido', 'mesmo-objeto-repetido', 'legenda-em-toda-linha', 'nomes-tecnicos', 'pilha-de-selos', 'icones-decorativos'];
 for (const r of TODAS) if (!vivas.has(r)) fim(false, `rule ${r} never fired in the fixture`);
 
 /* 2 · the real case, whole page */

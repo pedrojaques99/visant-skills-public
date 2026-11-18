@@ -50,6 +50,10 @@
  *                        elements per 100 words. Surfaces, chips, charts, media and state
  *                        signals count fully; an icon counts half.
  *   rotulo-repetido      the same short label in >= 80% of 4+ sibling rows.
+ *   mesmo-objeto-repetido 3+ siblings side by side on one line with the same whole
+ *                        short text (three identical presence chips, the same pill
+ *                        three times in a bar). Outside tables, code, tab and radio
+ *                        groups. Stacked rows belong to rotulo-repetido.
  *   legenda-em-toda-linha 5+ stacked rows, >= 80% carrying a quieter caption of
  *                        4+ words.
  *   nomes-tecnicos       6+ distinct identifiers side by side (`a-b`, `x_y`,
@@ -798,6 +802,24 @@ function tela(raiz, { verbose = true, tudo = false } = {}) {
   }
   for (const [k, nomes] of porPai) {
     if (nomes.size >= 6) add('comunicacao', 'nomes-tecnicos', k, `${nomes.size} identifiers side by side: the owner reads config, not state. Fix: an icon with a tooltip per kind, or a count that opens the list`);
+  }
+  /* The same object repeated side by side: one mark is information, three identical ones on
+     a line are noise (one presence chip per open tab, the same pill three times). */
+  const textoInteiro = (el) => el.textContent.replace(/\s+/g, ' ').trim();
+  for (const pai of m.todos) {
+    if (pai.closest('table,pre,svg,[role="radiogroup"],[role="tablist"],[role="listbox"]')) continue;
+    const filhos = [...pai.children].filter((c) => vis(c));
+    if (filhos.length < 3) continue;
+    let corrida = 1, maior = 1, exemplo = '';
+    for (let i = 1; i < filhos.length; i++) {
+      const a = filhos[i - 1], b = filhos[i];
+      const t = textoInteiro(b);
+      const igual = t && t.length <= 60 && /[A-Za-zÀ-ÿ\u0600-\u06ff\u3040-\u30ff\u4e00-\u9fff]/.test(t) && normal(t) === normal(textoInteiro(a))
+        && Math.abs(a.getBoundingClientRect().top - b.getBoundingClientRect().top) <= 4;
+      corrida = igual ? corrida + 1 : 1;
+      if (corrida > maior) { maior = corrida; exemplo = t; }
+    }
+    if (maior >= 3) add('comunicacao', 'mesmo-objeto-repetido', pai, `"${exemplo}" ${maior} times side by side: the same mark repeated says nothing new. Fix: one mark (one per person, not per tab), the count beside it, detail on hover`);
   }
   /* THE OPPOSITE: decoration in excess. Without this, the axis above would reward ornament. */
   const porPaiSelo = new Map();

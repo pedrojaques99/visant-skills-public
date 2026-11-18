@@ -153,6 +153,17 @@
   <h2>Pedidos</h2><div class="card"><div>Pedido de Ana <i>aberto</i> ontem</div><div>Pedido de Bia <i>aberto</i> hoje</div><div>Pedido de Caio <i>aberto</i> agora</div><div>Pedido de Davi <i>aberto</i> cedo</div></div>
 </section>
 
+<!-- COMUNICACAO · mesmo-objeto-repetido -->
+<section data-caso="the same presence three times in a bar" data-espera='{"mesmo-objeto-repetido":1}'>
+  <h2>Editor</h2><div style="display:flex;gap:8px;align-items:center"><span>Você · 00:00:00</span><span>Você · 00:00:00</span><span>Você · 00:00:00</span><button type="button" onclick="void 0">Nota</button></div>
+</section>
+<section data-caso="NEG: different people side by side" data-espera='{}'>
+  <h2>Editor</h2><div style="display:flex;gap:8px;align-items:center"><span>Ana</span><span>Bia</span><span>Caio</span><button type="button" onclick="void 0">Nota</button></div>
+</section>
+<section data-caso="NEG: the same action on stacked rows is not side by side" data-espera='{}'>
+  <h2>Arquivos</h2><div><div>Contrato</div><div>Proposta</div><div>Orçamento</div></div>
+</section>
+
 <!-- COMUNICACAO · legenda-em-toda-linha -->
 <section data-caso="a caption on every row" data-espera='{"legenda-em-toda-linha":1}' data-gera="legenda"></section>
 <section data-caso="NEG: captions on the rows that need one" data-espera='{}' data-gera="legenda-rara"></section>

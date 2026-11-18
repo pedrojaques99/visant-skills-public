@@ -91,6 +91,7 @@ defect. That's yours, and it takes thirty seconds:
    same person, the same status on every row, a type label in every section
    header: one mark stays, the rest is noise
    ([presence](../../visant-frontend/references/work-surface.md#presence-of-others)).
+   `tela-scan.js` flags the side-by-side case (`mesmo-objeto-repetido`).
 7. **On a panel, select each type of thing and count what does not change it.**
    Every section still in view for a selection it does not edit is accumulation
    ([control panels](../../visant-refine/references/control-panels.md#the-selection-decides-the-panel)).
