@@ -260,7 +260,36 @@ function ritmo(raiz = 'body', { verbose = true } = {}) {
     const s = cs(el);
     return [s.paddingTop, s.paddingRight, s.paddingBottom, s.paddingLeft, s.rowGap, s.columnGap].map((v) => r1(px(v))).join(' ');
   };
+  /*
+   * A CHAT LIST changes its gap on purpose when the author or the day changes
+   * (messages grouped by author, dividers like "Today"). Detected by role="log",
+   * or by 2+ message items (article with a time or an avatar) in the stack, or
+   * by message items alternating with divider items. Gaps are not compared there.
+   */
+  const ehMensagem = (el) =>
+    (el.tagName === 'ARTICLE' || el.getAttribute('role') === 'article' || el.hasAttribute('data-message')) &&
+    !!el.querySelector('time,[datetime],img,[class*="avatar" i]');
+  const ehDivisor = (el) =>
+    el.tagName === 'HR' ||
+    el.getAttribute('role') === 'separator' ||
+    !!el.querySelector(':scope > [role="separator"],:scope > hr') ||
+    ((el.innerText || '').trim().length <= 20 && !el.querySelector('img,svg,button,a'));
+  const ehListaDeMensagens = (P) => {
+    if (P.el.closest('[role="log"]')) return true;
+    const msgs = P.filhos.filter((f) => ehMensagem(f.el)).length;
+    if (msgs < 2) return false;
+    return P.filhos.some((f) => !ehMensagem(f.el) && ehDivisor(f.el)) || msgs >= P.filhos.length - 1;
+  };
+  /* a value is the OUTER side of the first or last child when the stack ends there:
+     aligning to the container edge is a choice, so only the inner sides compare */
+  const ladoExterno = (eixo, i, n) => {
+    const out = new Set();
+    if (i === 0) out.add(eixo === 'y' ? 0 : 3); /* top or left padding */
+    if (i === n - 1) out.add(eixo === 'y' ? 2 : 1); /* bottom or right padding */
+    return out;
+  };
   for (const P of pilhas.values()) {
+    if (ehListaDeMensagens(P)) continue;
     /* 3a · same-signature siblings with a different padding/gap */
     const grupos = new Map();
     for (const f of P.filhos) {
@@ -277,6 +306,9 @@ function ritmo(raiz = 'body', { verbose = true } = {}) {
         if (vals[i] === comum) return;
         const a = vals[i].split(' ').map(Number);
         const b = comum.split(' ').map(Number);
+        const pos = P.filhos.findIndex((f) => f.el === el);
+        for (const k of ladoExterno(P.eixo, pos, P.filhos.length)) a[k] = b[k];
+        if (a.every((x, j) => x === b[j])) return;
         const d = Math.max(...a.map((x, j) => Math.abs(x - b[j])));
         if (d < TOL || d > DESVIO * 2) return;
         achados.push({

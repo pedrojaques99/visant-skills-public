@@ -219,6 +219,18 @@ function corta(raiz = 'body', { verbose = true } = {}) {
         const INTERATIVO = 'a[href],button,input,select,textarea,[role="button"],[tabindex]:not([tabindex="-1"])';
         const temInterativo = embaixo.matches(INTERATIVO) || !!embaixo.querySelector(INTERATIVO);
         if (area(em_cima) < 0.25 * area(embaixo) && !temInterativo) continue;
+        /*
+         * DECORATION stacks on purpose: reaction emojis drawn overlapping, a canvas
+         * under an svg in a sparkline, star or sky layers. Skip a covered piece
+         * that is hidden from assistive tech (aria-hidden, role presentation or
+         * none) or a canvas/svg with no text and no accessible name. Covered
+         * TEXT and covered interactive pieces are still flagged.
+         */
+        const nomeAcessivel = (n) => n.getAttribute('aria-label') || n.getAttribute('aria-labelledby') || n.getAttribute('title') || !!n.querySelector(':scope > title');
+        const decorativo =
+          !!embaixo.closest('[aria-hidden="true"],[role="presentation"],[role="none"]') ||
+          (/^(canvas|svg)$/i.test(embaixo.tagName) && !(embaixo.textContent || '').trim() && !nomeAcessivel(embaixo));
+        if (decorativo && !temInterativo) continue;
         /* Sobreposição declarada: comparador antes e depois existe para empilhar. */
         if (em_cima.closest('[data-sobreposicao]')) continue;
         achados.push({

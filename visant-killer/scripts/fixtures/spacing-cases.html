@@ -7,13 +7,19 @@
   EXPECTED (node scripts/corta-self-test.mjs):
     proximidade-invertida  1   (#inv: 24px inside each group, 12px between them)
     ritmo-chato            1   (#flat: three nested levels all 16px apart)
-    irmaos-desalinhados    2   (#drift: the card with 20px padding among 24px;
-                                #list: one 12px gap among 16px)
+    irmaos-desalinhados    3   (#drift: the card with 20px padding among 24px;
+                                #list: one 12px gap among 16px;
+                                #tabs-bad: the third tab with 8px among 12px)
 
   NEGATIVES:
     #good   8px inside, 32px between: grouping that reads right
     #boxed  cards with 16px inside and 12px between: a card is its own region,
             common region beats proximity
+    #chat   role="log" list with day dividers and author groups: the gap
+            changes on purpose, never compared across author or day
+    #chat2  the same without role="log": articles with time and avatar
+            alternating with a divider
+    #tabs-ok first tab with no left padding (it aligns to the page edge)
     #break  one 48px gap among 16px: too large to be an accident, it is a decision
     15px / 22px paddings: off the scale, and SILENT here on purpose. A value's
             intent only exists in the source; that is the repo linter's job
@@ -26,6 +32,7 @@
   section { border: 1px solid #333; padding: 16px; }
   .col { display: flex; flex-direction: column; }
   .card { background: #16181c; padding: 24px; }
+  .avatar { display: inline-block; width: 12px; height: 12px; background: #888; margin-right: 6px; }
 </style>
 <body>
   <!-- 1 · POSITIVE: inverted proximity -->
@@ -75,6 +82,37 @@
     <p style="margin-bottom: 48px">Item dois</p>
     <p style="margin-bottom: 16px">Item três</p>
     <p>Item quatro</p>
+  </div></section>
+
+  <!-- NEGATIVE: chat list, gap changes with author and day -->
+  <section><div id="chat" role="log">
+    <p style="margin-bottom: 20px">Hoje</p>
+    <article style="margin-bottom: 12px"><i class="avatar"></i><time>10:01</time> Oi, tudo bem?</article>
+    <article style="margin-bottom: 12px"><i class="avatar"></i><time>10:02</time> Segue o plano.</article>
+    <article style="margin-bottom: 20px"><i class="avatar"></i><time>10:03</time> Fechado.</article>
+    <p style="margin-bottom: 12px">Ontem</p>
+    <article><i class="avatar"></i><time>09:00</time> Bom dia.</article>
+  </div></section>
+  <section><div id="chat2">
+    <article style="margin-bottom: 12px"><i class="avatar"></i><time>10:01</time> Primeira.</article>
+    <article style="margin-bottom: 12px"><i class="avatar"></i><time>10:02</time> Segunda.</article>
+    <p style="margin-bottom: 20px">Ontem</p>
+    <article style="margin-bottom: 12px; padding-top: 8px"><i class="avatar"></i><time>09:00</time> Terceira.</article>
+    <article><i class="avatar"></i><time>09:01</time> Quarta.</article>
+  </div></section>
+
+  <!-- NEGATIVE: first tab aligned to the container edge. POSITIVE: a drift in the middle -->
+  <section><div id="tabs-ok" style="display: flex">
+    <span class="tab" style="padding: 8px 12px 8px 0">Geral</span>
+    <span class="tab" style="padding: 8px 12px">Membros</span>
+    <span class="tab" style="padding: 8px 12px">Agentes</span>
+    <span class="tab" style="padding: 8px 12px">Uso</span>
+  </div></section>
+  <section><div id="tabs-bad" style="display: flex">
+    <span class="tab" style="padding: 8px 12px">Geral</span>
+    <span class="tab" style="padding: 8px 12px">Membros</span>
+    <span class="tab" style="padding: 8px 8px">Agentes</span>
+    <span class="tab" style="padding: 8px 12px">Uso</span>
   </div></section>
 
   <!-- NEGATIVE: off the scale, the linter's job (see header) -->

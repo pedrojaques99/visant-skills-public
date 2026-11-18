@@ -5,8 +5,11 @@
 
   EXPECTED (run `node scripts/corta-self-test.mjs` from a repo with playwright):
     texto-cortado      1   (only the nowrap pill)
-    overlay-empilhado  2   (the corner button over the action disc; and the badge
-                            over the inset-0 background that HAS a button: hides the action)
+    overlay-empilhado  3   (the corner button over the action disc; and the badge
+                            over the inset-0 background that HAS a button: hides the action;
+                            and emoji spans stacked with no aria-hidden: covered text)
+  NEGATIVES (decoration): emoji spans inside an aria-hidden stack, a canvas under
+  an svg with no text and no name, a role="presentation" layer under another.
   NEGATIVE from 2026-10-05: a small badge ("Pública") over the cover's inset-0
   fallback with NOTHING interactive. A badge over a background, not a hidden
   piece: the top one takes < 25% of the bottom one's area and the bottom one
@@ -70,7 +73,28 @@
   <span class="selo">Pública</span>
 </div>
 
+<!-- NEGATIVE: decorative stacks (aria-hidden emoji, canvas under svg, presentation) -->
+<div class="card" aria-hidden="true">
+  <span class="emo" style="left: 4px; z-index: 1">&#x1F44D;</span>
+  <span class="emo" style="left: 8px; z-index: 2">&#x2764;</span>
+</div>
+<div class="card">
+  <canvas class="camada" width="40" height="20" style="z-index: 1"></canvas>
+  <svg class="camada" width="40" height="20" style="z-index: 2"><path d="M0 10 L40 0" stroke="#888"/></svg>
+</div>
+<div class="card">
+  <div class="camada" role="presentation" style="z-index: 1; background: #222; width: 40px; height: 20px"></div>
+  <div class="camada" role="presentation" style="z-index: 2; background: #333; width: 40px; height: 20px"></div>
+</div>
+<!-- POSITIVE: the same emoji stack WITHOUT aria-hidden is covered text -->
+<div class="card">
+  <span class="emo" style="left: 4px; z-index: 1">&#x1F44D;</span>
+  <span class="emo" style="left: 8px; z-index: 2">&#x2764;</span>
+</div>
+
 <style>
+  .emo { position: absolute; top: 20px; width: 16px; height: 16px; background: #181a1e; }
+  .camada { position: absolute; left: 4px; top: 40px; }
   .cortina { display: block; width: 200px; height: 80px; margin: 12px; opacity: 0; }
   .so-teclado { pointer-events: none; }
 </style>
