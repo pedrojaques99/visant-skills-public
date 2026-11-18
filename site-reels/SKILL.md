@@ -160,6 +160,6 @@ Origin stories, reference projects and machine-specific tips: `references/cases.
 ## Neighbors
 
 - **[[visant-video-editor]]**: footage from a camera
-- **[[visant-premiere-editor]]**: a rough cut in Premiere
-- **[[sound-design-de-sfx-para-motion]]**: SFX, break track and stems for the film
-- **[[render-e-entrega-de-reels-hyperframes]]**: HyperFrames render, check and delivery
+- A Premiere rough-cut skill, if installed: the same cut inside Premiere
+- **Sound (SFX, track, mix)**: [sound-design.md](references/sound-design.md). Never default to pack whooshes and clicks: the user rejected them.
+- **Render, check and delivery (HyperFrames)**: [render-and-delivery.md](references/render-and-delivery.md)

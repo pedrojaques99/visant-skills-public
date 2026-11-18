@@ -164,3 +164,81 @@ run only the affected tests and the changed screen
 Left out on purpose: the product finding both revenue reviews agreed on (the
 agent's first message asks instead of delivering). No screen rule catches it;
 it belongs to the product and copy skills.
+
+## Catalog case notes
+
+Causes and real cases moved out of [slop-catalog.md](slop-catalog.md) so each entry
+stays at symptom, fix, test and detector. Optional context, never required reading.
+
+**12, eternal skeleton.** Seen in a naming screen, in a profile referral block and
+in an API helper where a network failure became an empty list in the SERVICE,
+before the page had a chance to show an error. The page's error state was
+unreachable even after it was written.
+
+**13 and 20, why the sum is invisible.** Counting what existed before the first
+pixel of product in a real showcase: position tag, title, thesis, count line,
+command, command caption, context label, opening sentence, block label, the word
+"add" five times, block note. Eleven blocks of text, and the same information said
+three times in three sizes. Each piece of chrome alone is defensible: the label
+names the section, the note orients, the ordinal gives order. The agent has just
+decided on a structure and wants the structure to show, so it captions what it
+did, like a junior commenting every line.
+
+**18, blur with nothing behind it.** A 2026-08 audit of one app found 49
+occurrences, about 20 with nothing behind. It shows up in series because it was
+copied from a card where the effect really existed.
+
+**19, shell mounted twice.** A marketing landing in an app showed the footer twice.
+Both files compiled and passed tsc, lint and the copy gate. The user reported it
+with a screenshot, scrolled to the end, which is exactly where nobody looks. It
+comes back whenever someone creates a landing by copying another.
+
+**21, two doors.** In a music-box app, the "your box" tab had the url field of the
+ROOM, and the footer just below, from another file, had the url field of the BOX.
+Different databases, different permissions, and the label of one was literally the
+placeholder of the other. Each door was written in one session and neither session
+looked at the assembled screen. The fix was moving the link paste to the queue
+tab, the only tab with no way to add a record. The detector went from 25 hits,
+almost all false, to 2 real ones once it required the same screen. Sister tools
+(the same selector in the top bar of one tool and in the panel of the other) came
+from a later round, and widening the detector would bring the false hits back.
+
+**22, highlight at rest.** In the same app every record in the queue came with
+`on: true`, and `.on` lit border, shadow and name. With three records all in the
+queue, "now playing" looked like "3rd in line". The factory runs once per item, so
+the line is only wrong on the third repetition, and its author saw one item.
+
+**23, the word cut in half.** The action pill had `white-space: nowrap` inside a
+96px square with `overflow: hidden`. "tirar da fila" at 10px did not fit, and the
+piece left over landed on the badge that already said the same thing. Every static
+gate passed.
+
+**25 and 26, tiles.** A references masonry card had no `onError`, and the server
+accepted a local path from the curator's machine as "has an image". A column grid
+rendered thin lines because zero-height tiles were distributed before the images
+loaded.
+
+**28 and 29, backend slop.** A 503 message "seu crédito foi estornado" matched the
+paywall regex. A route set `charged = true` without reading the charge's return, so
+admin and unlimited accounts gained a credit on every error. It only showed
+because verification opened the route on the real database.
+
+**30 and 31, motion tells.** A staircase of `delay: index * 0.05` is pretty with 4
+items and 1.5s with 30. A `-translate-y-1` on 26 admin cards is a 2021 landing
+template applied to a work screen.
+
+**32, dot grid.** It lived in a page shell and shipped on every route.
+
+**34, scroll indicator.** A house rule from a 2026-10 client round: the indicator
+takes the noblest spot of the fold with an obvious instruction and a loop that
+pulls the eye. It stays deletable only because a cut-off row is the usual cue.
+
+**35 to 46, the showcase round.** The owner opened about 140 pieces one by one and
+left about 100 one-sentence reports. Typical reports: "poorly presented", "focus on
+the component", "one at a time" (repeated on 6 pieces), "cursor pointer obviously".
+The testable reasons now sit in each entry: the piece disappears behind the
+explanation (35), nothing reads at tile size (36), the pretty state does not exist
+on touch (37), a Tailwind v4 preflight resets the cursor (46).
+
+**47, chips.** The relaxed rule keeps three uses of a chip and warns on the rest, a
+file holding several components each with one state chip passes on review.

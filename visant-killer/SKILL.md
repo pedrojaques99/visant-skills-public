@@ -12,32 +12,32 @@ that do not replace each other: the **gate** (deterministic scripts, binary:
 AI tell, token, voice, **chrome noise**) and **judgment** (you, with the skills
 loaded), because AI slop survives any linter: the problem is decision, not syntax.
 
-> **Rule zero: ask before editing.** An audit changes no file until the user says so: the report comes first and ends with the question ("Corrijo estes N?"). "Corrige", "conserta" or "limpa" in the request already count as the answer, for confirmed defects only. What passes clean stays untouched, even if it sounds flat. Taste improvements go as a proposal table; the user picks line by line.
+> **Rule zero: ask before editing.** An audit changes no file until the user says so: the report comes first and ends with the question ("Corrijo estes N?"). "Corrige", "conserta" or "limpa" in the request already count as the answer, for confirmed defects only. What passes clean stays untouched, even if it sounds flat. Taste improvements go as a proposal table; the user picks line by line. With no user in the loop (CI, a scheduled run, a sub-agent), output the proposal table and stop. Never invent an approval.
 
 > **A green gate is not a seen screen.** A frozen `AnimatePresence` in a lead
 > form passed six gates. So `killer-scan` **refuses** "gate open" without the
 > surface table and the record of having opened the screen.
 
-> **The score is not the verdict, and cleaning is not the goal.** Removing used to always improve the score: a screen stripped of its cards scored zero and the owner called it "too clean", and a first run wiped of its tells "lost its soul". Now a `shine` row needs its brand moment, a dead core costs 8, and `regressao` flags lost brand art. Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
+> **The score is not the verdict, and cleaning is not the goal.** Removing used to always improve the score: a screen stripped of its cards scored zero and read as "too clean" (detectors count only what is left, so deleting always scores), and a first run wiped of its tells "lost its soul". Now a `shine` row needs its brand moment, a dead core costs 8, and `regressao` flags lost brand art. Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
 
-Where each rule came from: [references/cases.md](references/cases.md). **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
+Where each rule came from: [references/cases.md](references/cases.md), optional context, never required reading. **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
 
 ## Hard prohibitions (you break them while writing, not reviewing)
 
 | Forbidden | Write | Why |
 |---|---|---|
-| arrow glyph in text (`→`, `←`, `↑`, `↓`) and hand-drawn icon SVG | a real library icon (`@phosphor-icons/react`, `@radix-ui/react-icons`) | **LAW.** The character arrow is Claude's nº1 habit: it inherits font metrics, drifts off the baseline, changes shape per family, has no controllable weight or size, and reads as text. A hand SVG is the same disease in more lines. Icons are library assets, always. Brand art is not an icon: marks, mascots, illustrations and list thumbs in the brand idiom live in one shared module (`*Art`, `*Mark`) |
-| `hover:scale-*`, `whileHover={{ scale }}` | change color, shadow or border | scale on hover is the nº1 template tell; it moves neighboring layout and does not survive `prefers-reduced-motion` |
+| arrow glyph as a UI control (`→`, `←`, `↑`, `↓` in a button, link or nav) and hand-drawn icon SVG | an icon from the icon library the repo already installs (any: lucide, Phosphor, Radix, Heroicons) | **LAW for UI controls.** The character arrow inherits font metrics, drifts off the baseline and has no controllable weight or size. A hand SVG is the same disease in more lines. Never strip a text arrow in prose or copy (`A → B` in a sentence is typography): the detector flags it too, so release it with a written exception. Brand art is not an icon: marks, mascots, illustrations and list thumbs in the brand idiom live in one shared module (`*Art`, `*Mark`) |
+| hover that lifts or scales (`hover:scale-*`, `whileHover={{ scale }}`, `y<0`) | change color, shadow or border | home: [catalog 31](references/slop-catalog.md#31-the-card-that-jumps). Hover never moves the element. The detector is warn-only |
 | hover that grows **over** neighboring text | reserve the lane permanently and grow inside it | hover reveals, hover does not run over things |
 | `hover:bg-accent` **when `--accent` is emphasis** | `hover:bg-muted` or `hover:bg-primary` | emphasis turned into a mouse state. Check the token: in stock shadcn `--accent` is the neutral hover color, and there `hover:bg-accent` is right |
-| `border-accent` | `border-border` | same confusion: emphasis turned into chrome |
+| `border-accent`, unless it is the selection state | `border-border` | same confusion: emphasis turned into chrome. Selection keeps a second cue besides color (catalog 65) |
 | `backdrop-blur` outside dialog/sheet | solid token background | costs compositing on every scroll; on a card it is decoration paid in frames |
 | `white-space: nowrap` in an overlay without `max-width` | `max-width: calc(100% - 12px)` and let it wrap | inside an `overflow: hidden` parent the word gets CUT, and the cut only exists after the font loads: no linter sees it |
 | a fixed highlight (`on: true`, `active: true`) in an item factory | the condition that decides (`on: q.live`) | a highlight that runs once per item lights up the whole list, and emphasis on everything is emphasis on nothing |
-| two doors for the same kind of data on one screen | one per screen, or names that say the difference (the detector only checks the same screen; a repeated name across screens is judgment) | two identical URL fields side by side writing to different stores: people choose by luck |
+| two doors for the same kind of data on one screen | one per screen | home: [catalog 21](references/slop-catalog.md#21-two-doors-for-the-same-gesture) |
 | the same gap inside a group and between groups (`space-y-4` on every level) | tight inside, open between: each level at least 2× the one inside it (8 / 16 / 32) | the eye groups by distance: when the label is as far from its value as from the next block, the screen reads wrong with every token right (catalog 6) |
 | `transition-all` | `transition-colors` or an explicit list | animates what you did not ask for, layout included |
-| `duration-300`+ on an interactive element | `DUR.base` / `DUR.slow` | above ~300ms the UI feels stuck |
+| a UI duration over 300ms (`duration-300`+ on an interactive element) | `DUR.base` / `DUR.slow` | one number, owned by `visant-motion` |
 | raw hex, `rgb()`, `rgba()` | a token from the repo's own layer | read how it stores values first: loose channels need `hsl(var(--x))`, a full color (oklch in current shadcn) is `var(--x)` |
 | component demo with a fake frame, "hover me" caption, stacked variations | the piece large and centered, **one at a time**, a quiet selector | catalog 35-38: in the tile the piece disappears behind the explanation |
 | the pretty state (glow, tilt, open menu) only on hover | born in its best state; hover intensifies | it does not exist on touch, in the tile or in a screenshot (catalog 37) |
@@ -210,7 +210,7 @@ Then, and only then (whatever did not run goes in the report). While iterating, 
 | light theme | `$V --theme both`. A dark-first app breaks in light where nobody looks |
 | signed out, sister tools | `$V --login none` on every route a visitor can reach (footer, header and gated actions change; the default run is logged in). Frames of tools doing the same job, side by side: the same control elsewhere or renamed ([catalog 21](references/slop-catalog.md#21-two-doors-for-the-same-gesture)) |
 | **real gesture** | a custom drag on a real iPhone. Chromium with touch emulation stays green while it breaks ([recipe](../visant-frontend/references/stack-tailwind-react.md#a-touch-gesture-that-holds)) |
-| backend failure | run with the backend down. Silent zero is the dominant lie: a failed fetch that paints "0" is indistinguishable from a real zero |
+| backend failure | run with the backend down: a failed fetch must not paint "0" ([Q11 and Q12](references/devils-advocate.md#3-data-truth)) |
 | keyboard | `focus-visible` reaches everything hover reveals |
 | feel | DevTools, Animations, 25% speed |
 

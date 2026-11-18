@@ -723,6 +723,9 @@ const LIBS_DE_ICONE = [
 const PALAVRA_DE_GLIFO =
   /\b(icon|close|x|menu|hamburger|chevron|caret|arrow|check|checkmark|tick|plus|minus|add|remove|delete|trash|search|expand|collapse|open|next|prev|previous|back|forward|more|dismiss|cancel|edit|copy|settings|loading|spinner|info|warning|error|external|link|fechar|abrir|voltar|avançar|próximo|anterior|buscar|mais|menos|adicionar|remover|excluir|editar|copiar|seta)\b/i;
 
+const MARCA_NO_ROTULO = /\blogo(type)?\b/i;
+const MARCA_CONHECIDA = /\b(vercel|github|google|apple|twitter|x\.com|linkedin|facebook|instagram|youtube|stripe|slack|figma|discord|microsoft|amazon|meta)\b/i;
+
 /* The icon library the file can import from, from the nearest package.json (plus a monorepo root). */
 const CACHE_DE_LIB = new Map();
 function libDeIcone(file) {
@@ -763,6 +766,8 @@ function marcaDeMarca(svg) {
   const aria = abre.match(/aria-label\s*=\s*(?:"([^"]*)"|'([^']*)'|\{\s*["'`]([^"'`]*)["'`]\s*\})/);
   const rotulo = titulo || (aria && (aria[1] ?? aria[2] ?? aria[3] ?? '').trim());
   if (rotulo && !PALAVRA_DE_GLIFO.test(rotulo)) return true;
+  /* a name that says "logo" or a known brand is a mark even when it also holds a UI word ("Open Vercel logo") */
+  if (rotulo && (MARCA_NO_ROTULO.test(rotulo) || (/\brole\s*=\s*["']img["']/.test(abre) && MARCA_CONHECIDA.test(rotulo)))) return true;
   const caminhos = [...svg.matchAll(/\bd\s*=\s*(?:"([^"]*)"|'([^']*)'|\{\s*["'`]([^"'`]*)["'`]\s*\})/g)];
   if (caminhos.some((c) => (c[1] ?? c[2] ?? c[3] ?? '').length > PATH_DE_LOGO)) return true;
   const COR_LITERAL = /\b(?:fill|stroke)\s*=\s*\{?\s*["'](#(?!(?:0{3}|f{3}|0{6}|f{6})\b)[0-9a-f]{3,8}|rgba?\()/i;
@@ -1077,6 +1082,10 @@ REGRAS.push({
  * (it wants the list to "come alive"), and visant-motion already forbids it;
  * the ruler was missing.
  *
+ * A short, capped stagger (30 to 80 ms) is allowed on marketing surfaces
+ * (visant-motion), but the scanner cannot tell the surface: there it takes a
+ * written exception.
+ *
  * Catches `delay`, `transitionDelay` and `animationDelay` whose value
  * multiplies `i`, `idx`, `index` or `*Index`, in a transition object, prop or
  * style template.
@@ -1378,8 +1387,9 @@ function regioesDeCodigoEm(tags) {
  * `<Tag>` and the hand-made pill (`rounded-full` + horizontal padding + small
  * text). A pill with a fixed width or height is an avatar or a dot, not a tag,
  * and a tag you click (`onClick`, `active`, `selected`, `href`) is a filter or a
- * choice, the use the catalog keeps (measured: the ruler chips of
- * NamingSettingsPopover.tsx, six selectable `<Chip>`, all legitimate).
+ * choice, the use the catalog keeps (six selectable `<Chip>` in one settings
+ * popover are all legitimate). A state or kind chip, one per item, is also kept
+ * by the catalog: the floor below is a suspicion, confirmed on review.
  *
  * Floor 6 per file: a table column of status badges is legitimate and lives in
  * one or two lines of a `.map`; six separate tags in one file is the template.
@@ -2103,6 +2113,19 @@ REGRAS_GLOBAIS.push({
   },
 });
 
+/*
+ * Warn-only rules: suspicions with no case from a round yet (catalog 47-57), plus
+ * the floor-1 style tells a brand may define on purpose (hover-lift, italic
+ * headline word, display serif, numbered section). They print as [WARN] and
+ * never fail the run or the gate. `stagger-by-index` is not here: it is a hard
+ * finding on work screens, and the detector cannot tell a marketing surface, so
+ * a stagger there takes a written exception.
+ */
+const AVISOS = new Set([
+  'tag-everywhere', 'italic-headline-word', 'display-serif-tight', 'divider-everywhere', 'opacity-ladder',
+  'box-in-box', 'code-crumb', 'numbered-section', 'mono-everywhere', 'hover-lift',
+]);
+
 export function scanRuido(files) {
   const achados = [];
   /** screen text per file: it is what the global rules read (see R9) */
@@ -2126,7 +2149,7 @@ export function scanRuido(files) {
       );
       if (hits.length < regra.piso) continue;
       for (const h of hits) {
-        achados.push({ file, regra: regra.id, linha: h.linha, amostra: h.amostra });
+        achados.push({ file, regra: regra.id, linha: h.linha, amostra: h.amostra, aviso: AVISOS.has(regra.id) });
       }
     }
   }
@@ -2371,7 +2394,7 @@ if (executadoDireto) {
   for (const regra of [...REGRAS, ...REGRAS_GLOBAIS]) {
     const lista = porRegra.get(regra.id);
     if (!lista?.length) continue;
-    console.log(`[FAIL]  ${regra.id.padEnd(26)} ${lista.length} finding(s): ${regra.descricao}`);
+    console.log(`[${AVISOS.has(regra.id) ? 'WARN' : 'FAIL'}]  ${regra.id.padEnd(26)} ${lista.length} finding(s): ${regra.descricao}`);
     if (!quiet) {
       for (const a of lista.slice(0, 12)) {
         console.log(`           ${a.file}:${a.linha}  ${a.amostra}`);
@@ -2380,9 +2403,10 @@ if (executadoDireto) {
     }
   }
 
+  const duros = achados.filter((a) => !a.aviso).length;
   console.log(bar);
-  console.log(`${achados.length} cut candidate(s). Confirm at file:line before deleting:`);
+  console.log(`${achados.length} cut candidate(s)${duros === achados.length ? '' : `, ${achados.length - duros} warn-only`}. Confirm at file:line before deleting:`);
   console.log('one of these lines may be the only one that really guides.');
   console.log(bar);
-  process.exit(1);
+  process.exit(duros ? 1 : 0);
 }

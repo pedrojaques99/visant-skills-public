@@ -5,7 +5,7 @@ variable: **conversion rate**.
 
 Here persuasion is the job. Directing attention is not manipulation — an
 interface that refuses to direct converts worse (RCD 1: *neutrality is
-omission*).
+omission*, from [revenue-centric-design](https://github.com/heliocosta-dev/revenue-centric-design) by Richard, [@richardrx](https://x.com/richardrx)).
 
 **Load the `revenue-centric-design` skill for the mechanics** — awareness levels,
 decoy effect, anchoring, GBB pricing, social proof placement, trial design,
@@ -102,8 +102,9 @@ AI SaaS hero. Do not ship it.** It is a shape the market now reads as
 template. If the category has to be stated (it usually does), state it where the
 reader already is: in the CTA label, or in the spec line under it. Removing the
 eyebrow costs nothing when "E-book" already appears in the button.
-Section eyebrows deeper in the page are fine — the tell is specifically
-eyebrow-above-hero-h1. → *conversion*
+Deeper in the page, at most 2 uppercase labels per screen: one is an
+eyebrow, three is a template. This is the home of the limit, other files link
+here. → *conversion*
 
 **Uppercase and wide tracking are for labels of two or three words, never for a
 line of data.** The spec line ("34 páginas · 9 etapas · 1 case inteiro ·

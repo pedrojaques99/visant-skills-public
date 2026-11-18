@@ -9,7 +9,7 @@ metadata:
 
 Build interfaces where motion is invisible-correct: every transition has a purpose, responds instantly, and stays under the perception of "slow". Governing rule: **SSoT, never hardcode a cubic-bezier or a duration in a component.**
 
-**§1 and §2 are the whole skill in practice.** Everything after them is reference for a specific moment; the SSoT bootstrap is at §10 because it only matters once per repo (why: [references/cases.md](references/cases.md)).
+**§1 and §2 are the whole skill in practice.** Everything after them is reference for a specific moment; the SSoT bootstrap is at §10 because it only matters once per repo. [references/cases.md](references/cases.md) is optional context, never required reading.
 
 **Source of the principles:** Emil Kowalski's skills, https://github.com/emilkowalski/skills (`emil-design-eng`, `apple-design`, `improve-animations`, `review-animations`), distilled from animations.dev + Apple *Designing Fluid Interfaces* (WWDC 2018). Consult that repo for the upstream, canonical guidance; this skill is Visant's applied, SSoT-ized version of it.
 
@@ -29,7 +29,7 @@ Decide in this order. Full numeric catalog + severity for audits → **`referenc
 
 1. **Should it animate?** 100+×/day (shortcut, toggle, ⌘K) → **don't**. Occasional (modal, toast) → standard. Rare (onboarding) → can delight.
 2. **Easing:** enter/exit → `EASE_OUT`. Move on-screen → `EASE_IN_OUT`. Hover/color → `ease`. Constant (marquee/shimmer/progress) → `linear`. **Never `ease-in` on UI**, with one exception (§5 rule 2).
-3. **Duration:** UI < 300ms. press 100-160 · dropdown 150-250 · modal 200-300. Route passages (§5), marketing, scroll and 3D may be long & deliberate; the ceiling is about a control answering a click.
+3. **Duration:** interactive UI never above 300ms (home: [motion-rules.md](references/motion-rules.md#duration-table)). press 100-160 · dropdown 150-250 · modal or sheet 200-300. Route passages (§5), marketing, scroll and 3D may be long & deliberate.
 4. **Never `scale(0)`**: start at `scale(.95)` + opacity.
 5. **Only `transform` + `opacity`** (GPU). Never animate `width/height/margin/padding`. Opening to a size you don't know is the one named exception: [`0fr → 1fr`](references/motion-rules.md#opening-without-measuring), no measuring.
 6. **Springs** only for momentum/gesture (drag, flick). A menu fade uses duration, not spring.
@@ -38,7 +38,7 @@ Decide in this order. Full numeric catalog + severity for audits → **`referenc
 ## 2. Gotchas (non-obvious, all battle-tested; read before you write)
 
 1. **`duration-[var(--dur-x)]` throws a build "ambiguous" warning** (Tailwind can't tell transition- from animation-duration). Use property-explicit: **`[transition-duration:var(--dur-base)]`**.
-2. **framer-motion overrides CSS transforms.** If a `motion.div` animates `y`/`scale`, a Tailwind `hover:-translate-y-*` is silently eaten by the inline transform. Fix: let framer own transform (`whileHover={{y:-2}}` + `whileTap`), CSS handles only shadow/border.
+2. **framer-motion overrides CSS transforms.** If a `motion.div` animates `y`/`scale`, a Tailwind `hover:-translate-y-*` is silently eaten by the inline transform. Fix: let framer own transform (`whileTap={{scale:.97}}`), CSS handles only shadow/border/color. Hover never moves the element.
 3. **`whileTap` needs its own transition** or it inherits the (slow) enter transition: `whileTap={{ scale:.985, transition:{ duration: DUR.press, ease: EASE_OUT } }}`.
 4. **Never `transition-all`**: it animates unexpected props and janks. Scope: `transition-colors`, or `transition-[color,background-color,border-color,box-shadow,opacity]`, or `transition-transform`. Use the codemod (§7) to sweep a repo.
 5. **Origin-aware overlays:** Radix exposes `--radix-<primitive>-content-transform-origin`. Add `origin-[var(--radix-popover-content-transform-origin)]` (and dropdown-menu/select/context-menu/tooltip/hover-card) so they scale FROM the trigger. **Exception: modals stay `transform-origin: center`** (not anchored to a trigger).
@@ -75,7 +75,7 @@ import { EASE_OUT, EASE_IN_OUT, EASE_DRAWER, DUR, transitions,
 | `DUR` | `{press:.12, fast:.16, base:.2, slow:.3}` | duration scale (seconds) |
 | `transitions.*` | `fast/base/slow/spring/springSoft` | ready-made transition objects |
 | `fadeInUp`, `fade` | variants (`hidden`/`show`) | house entrances |
-| `itemEnter(i, step=.04, cap=.4)` | (function) | list-item entrance, short capped stagger |
+| `itemEnter(i, step=.04, cap=.4)` | (function) | marketing entrance only, short capped stagger (work screens: lists come in whole) |
 | `pressable` | (object) | subtle `whileTap` for clickable cards/tiles |
 
 CSS form (property-explicit, see gotcha #1): `[transition-duration:var(--dur-base)] [transition-timing-function:var(--ease-out)]`.
@@ -220,7 +220,7 @@ It drives the page (hover → click → escape → scroll) and reports what the 
 
 Exit 1 past budget (`--budget-inp 200`, `--budget-blocking 100`), so it gates a deploy.
 
-**Then judge with your eyes**; the numbers can't. DevTools → Animations → 25% speed: press gives an instant scale-down? popover grows from its trigger? no two overlapping states during a crossfade? stagger reads as a short cascade, not one-by-one? Review again the next day with fresh eyes.
+**Then judge with your eyes**; the numbers can't. DevTools → Animations → 25% speed: press gives an instant scale-down? popover grows from its trigger? no two overlapping states during a crossfade? a marketing stagger reads as a short cascade, not one-by-one? Review again the next day with fresh eyes.
 
 ## 9. Auditing a codebase
 

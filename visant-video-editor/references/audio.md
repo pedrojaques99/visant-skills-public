@@ -4,16 +4,24 @@ An inaudible take ruins a vlog faster than any image mistake. Phone footage from
 places and mic distances varies 15 to 20 LU between takes. Without normalizing, the viewer
 touches the volume twice and leaves.
 
+<a id="target"></a>
 ## Target
+
+The one loudness table. Other skills link here and do not state their own numbers.
 
 | Destination | Integrated LUFS | True peak |
 |---|---|---|
-| YouTube, Instagram, TikTok | **-16** | -1.5 dBTP |
-| Spotify / podcast | -14 | -1.0 dBTP |
+| **Vlog and video lesson, speech (`build.sh` default)** | **-16** | -1.5 dBTP |
+| YouTube (normalization reference) | -14 | -1.0 dBTP |
+| Instagram, TikTok, social short-form | -14 | -1.0 dBTP |
+| Spotify | -14 | -1.0 dBTP |
+| Apple Music, Apple Podcasts | -16 | -1.0 dBTP |
 | Broadcast EBU R128 | -23 | -1.0 dBTP |
 
-`build.sh` uses -16 by default (`TARGET_I=-16`). Streaming turns down what is above target but
-**does not raise** what is below: erring low is a permanent loss.
+Why -16 for speech by default: it sits 2 LU under the -14 platform reference, so no platform
+turns it down, and the extra 0.5 dB of peak room survives AAC. For music-forward or social-first
+delivery run `TARGET_I=-14`. Platforms turn down
+what is above their reference but **do not raise** what is below: erring low is a permanent loss.
 
 ## One pass vs two passes
 

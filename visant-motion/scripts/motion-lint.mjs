@@ -75,9 +75,9 @@ const RULES = [
     id: "slow-ui-duration",
     severity: "HIGH",
     files: ALL,
-    // Tailwind duration-[350..999] and raw CSS 350ms+ on a transition.
-    test: /(?:(?:^|\s)duration-\[?(?:3[5-9]\d|[4-9]\d\d|\d{4,})m?s?\]?(?![\w-])|transition-duration:\s*(?:3[5-9]\d|[4-9]\d\d|\d{4,})ms|transition-duration:\s*(?:0?\.[4-9]|[1-9])\d*s)/g,
-    message: "Interactive UI over ~300ms reads as slow no matter how good the curve is.",
+    // Tailwind duration-[301..] and raw CSS 301ms+ on a transition (ceiling: 300ms).
+    test: /(?:(?:^|\s)duration-\[?(?:30[1-9]|3[1-9]\d|[4-9]\d\d|\d{4,})m?s?\]?(?![\w-])|transition-duration:\s*(?:30[1-9]|3[1-9]\d|[4-9]\d\d|\d{4,})ms|transition-duration:\s*(?:0?\.(?:30[1-9]|3[1-9]|[4-9])|[1-9])\d*s)/g,
+    message: "Interactive UI over 300ms reads as slow no matter how good the curve is.",
     fix: "DUR.base/DUR.slow (200-300ms). Route/view transitions and marketing are exempt — suppress with a reason.",
     skip: ({ line }) => /view-transition|--dur-vt-|marquee|shimmer|skeleton/.test(line),
   },

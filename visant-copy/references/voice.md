@@ -62,17 +62,10 @@ always "a gente": text that speaks for the house speaks in plural.
   punch**, after a sentence that carried weight, one or two per section:
   "Você passa semanas numa identidade linda, o cliente aprova, e a marca se
   comporta de outro jeito três meses depois. Toda vez."
-- **Dash forbidden.** Where the hand wants a dash: period, or comma if the
-  aside is short, or colon if it is a definition, or parentheses if it is a side
-  note.
-- **Semicolon forbidden.** In sales copy it stalls reading. It becomes a period.
-- **Emoji forbidden.** `©`, `®`, `™` are trademarks and stay.
-- **Separator dot (`·`) forbidden**, including metadata lists, CTA with price,
-  phase labels and the social card. Conversion: a list becomes period and comma
-  (`E-book de 34 páginas. 9 etapas, 1 case inteiro, leitura de uma tarde.`), a
-  label becomes a colon (`Fase 1: A Estratégia`), a CTA becomes a preposition
-  (`Quero o e-book por R$ 47`). Same for `|` and `•`: a graphic separator in the
-  middle of a sentence is a crutch for not choosing the punctuation.
+- **Dash, semicolon, emoji and separator dot are banned.** The single list,
+  with the conversions, is [SKILL.md, The prohibitions](../SKILL.md#the-prohibitions).
+  Same for `|` and `•`: a graphic separator is a crutch for not choosing the
+  punctuation.
 - **Anaphoric repetition is a strong device, once per page.** Saved for the
   mechanism block, where the chaining IS the argument: "A Mensagem alimenta os
   Pilares. Os Pilares filtram a Pesquisa. A Pesquisa aprofunda a Persona." Used
@@ -276,9 +269,8 @@ None of them had a linter tic, which is why they are here.
 
 ## 8. Signed register, from the originals
 
-Taken from what the studio publishes on the Visant Club (essay, manifesto, post).
-Measured on excerpts: average 17 words per sentence, median 15, with 7 of 64 at
-six words or fewer. The short sentence works because the long one came first.
+Taken from what the studio signs (essay, manifesto, post). Sentences run longer
+than in the house register. The short sentence works because the long one came first.
 
 **Open by talking, not by announcing.** A connective from speech, then the claim:
 "Olha, eu acho que estamos vivendo em um momento muito peculiar". Spoken joints
@@ -370,7 +362,7 @@ stronger reason. Say in the report which finding stayed and why.
 
 ## 9. Structure of a signed piece (the skeleton)
 
-Taken from "O que vai sobrar para o designer de hoje?" (Pedro Xavier, Visant Club). The
+Taken from a signed essay of the studio. The
 order is the argument: each block earns the next one. Use it for essays, newsletters and
 long posts. A short post keeps only steps 1, 2 and 10.
 
@@ -389,8 +381,7 @@ long posts. A short post keeps only steps 1, 2 and 10.
 | 11 | **Close with repertoire and advice** | "Por fim," a plain advice, proved with a name and a date (Gutenberg in 1440, Photoshop in the hands of Alexandre Wollner). |
 | 12 | **Invite, ask, sign** | What the reader gets, that it is paid, a request to comment, "Te vejo em uma próxima." and the signature. |
 
-**Measured in the original:** about 17 words per sentence, 1 parenthesis every 150 to 200 words,
-2 CAPS words in the whole piece, 3 section titles, 2 numbered lists, 1 analogy. The first person
+In the original the parenthesis is rare, CAPS words are two at most, and the first person
 shows up in every block.
 
 ## 10. Linguistics: what makes it sound Brazilian

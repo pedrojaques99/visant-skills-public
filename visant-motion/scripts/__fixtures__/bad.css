@@ -1,3 +1,4 @@
 .card { transition: all 200ms ease-in; }
 .panel { transition: width 300ms; }
 .shine { animation: sweep 2s infinite; background-position: 0 0; }
+.drawer { transition-duration: 320ms; }

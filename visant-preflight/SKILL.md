@@ -16,7 +16,7 @@ costs days.
 > the five checks green or explicitly waived.**
 
 The whole preflight takes 15 minutes. Each mistake it prevents has already cost
-more than a day. The long stories are in [references/cases.md](references/cases.md).
+more than a day. Long stories: [references/cases.md](references/cases.md), optional, never required.
 
 ## When to run
 
@@ -105,9 +105,9 @@ The script is plain node, no dependencies, and needs nothing Visant-specific:
 | flag | what it does |
 |---|---|
 | `--assets <dir>` | walks any local folder (synced Drive, Dropbox, a repo's `public/`) and lists every `.png .jpg .jpeg .webp .avif .gif .svg` with width, weight and the role it supports. PNG, JPEG and WebP are measured; SVG is listed as vector; anything whose header it cannot read goes to a "skipped" list with the reason |
-| `--fonts "A,B"` | checks each family against Google Fonts (needs network; offline shows as undetermined) |
+| `--fonts "A,B"` | checks each family: a local `.woff2 .woff .ttf .otf` named after it in `--fonts-dir` (default: current folder) passes, otherwise Google Fonts decides (needs network; offline shows as undetermined) |
 | `--report <file.md>` | also writes the output to a markdown file |
-| `--strict` | exit 1 if any item fails (no image reaches 2000px, or a font is missing from Google Fonts or could not be checked) |
+| `--strict` | exit 1 if any item fails (no image reaches 2000px, or a font has no local file and is missing from Google Fonts or could not be checked) |
 | `--self-test` | validates the script's own parsers and thresholds |
 
 At least one of `--assets` or `--fonts` is required; with neither it prints

@@ -4,7 +4,7 @@
  * names the library to import from.
  *
  * EXPECTED hand-drawn-icon: 3 in this file (chevron, x, and the glyph whose
- * aria-label is a UI word). The four brand marks below stay out.
+ * aria-label is a UI word). The five brand marks below stay out.
  */
 export function Painel() {
   return (
@@ -35,6 +35,10 @@ export function Logos() {
       {/* role="img" with a label that is not a UI word */}
       <svg viewBox="0 0 24 24" role="img" aria-label="Planetscale" fill="currentColor">
         <path d="M0 12 12 0l12 12-12 12z" />
+      </svg>
+      {/* a name that says "logo" is a mark even when it also holds a UI word ("Open") */}
+      <svg viewBox="0 0 24 24" role="img" aria-label="Open Vercel logo" fill="currentColor">
+        <path d="M12 3 22 21H2z" />
       </svg>
       {/* a single complex path, longer than any glyph (the shortest real logo measured, Prisma, has 214 chars) */}
       <svg viewBox="0 0 24 24" fill="currentColor">

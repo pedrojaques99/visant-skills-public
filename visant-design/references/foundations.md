@@ -28,7 +28,7 @@ The surface decides the rules. Density that serves a work screen kills a landing
 
 Gestalt is why a screen with every token right can still read wrong.
 
-- **Proximity.** A label must be closer to its value than to the next group. Each level out is about twice the gap of the level inside it (8, 16, 32).
+- **Proximity.** A group reads tighter than the layout around it, so hierarchy and order show without a line. Inside a group, at most half the gap between groups; in a dense list, a third (8 inside an item, 24 between items). A label is closer to its value than to the next group. Measure the rendered gaps, the eye misses a few pixels (`ritmo-scan` in visant-killer does it). Spacing rules elsewhere link here.
 - **Similarity.** Things that look the same must behave the same. A blue word that is not a link is a lie.
 - **Common region.** Before adding a box, try space alone. A card inside a card is almost always one box too many. That forbids nesting, not cards: main data on an operation screen keeps its box.
 - **Alignment.** Every element shares an edge with something. Count the distinct left edges: fewer is calmer.
@@ -70,9 +70,10 @@ Gestalt is why a screen with every token right can still read wrong.
 
 - **Near and big gets hit faster** (Fitts's law). The frequent action is large and close to where the pointer or thumb already is. A dangerous one is not next to it.
 - **Response time** (Nielsen): under 0.1s feels instant, under 1s keeps the flow, past 10s attention is gone. Show progress for anything over about 1s.
-- **Every state exists:** empty, loading, error, partial, success. Empty says what to do first. An error says what happened and how to fix it, in place, keeping what was typed.
+- **Every state exists:** empty, loading, error, partial, success. An error says what happened and how to fix it, in place, keeping what was typed. Zero and empty: [§12](#12-states).
 - **Undo beats confirmation** when the action can be reversed. Save the dialog for what cannot.
 - **Keyboard.** Everything reachable, with a visible focus (WCAG 2.4.7). What only appears on hover does not exist on touch.
+- **Hover reveals, never relayouts.** Reserve the space and float the revealed control over it. Nothing is reachable only on hover: `focus-visible` and a touch path reach it too.
 
 ## 9. Forms
 
@@ -111,6 +112,14 @@ Nielsen's 10 usability heuristics. Answer from the screen:
 8. Is everything here necessary?
 9. Does an error say what to do?
 10. If I need help, is it where I am?
+
+## 12. States
+
+The one home for zero, repeated badges and the empty state. Other files link here.
+
+- **Zero.** A zero from a failed or unfed source does not render: show the error, or nothing. A measured zero stays on health and trust surfaces, where "0 failed jobs" is the answer. A breakdown that reads zero is noise until it moves. A total may stay when it is the subject of the page.
+- **A badge on 100% of rows distinguishes nothing.** Render it once rows differ.
+- **Empty.** The empty state is an invitation: the product's object, one line of what will appear, one action that starts filling it. Zeros stay hidden until a first item. The absence of a field on a record can itself be the signal: draw the gap as a deliberate state, not a hole. An empty shared space is a content problem, so seed it.
 
 ## Sources
 

@@ -45,7 +45,7 @@ with brand data in `brand.ts`.
 
 ## Brand film in HyperFrames (code-only: logo reveal + branding burst)
 
-Validated on Clube® (24.7s, 1920×1080, 30fps). Use when the brief is "logo reveal / branding film
+Validated on a client brand film (about 25 s, 1920×1080, 30fps). Use when the brief is "logo reveal / branding film
 like the Kargul reference" and the identity must feel built, not slid in. Remotion plates above
 stay for site recordings; this is for fully designed films.
 
@@ -65,8 +65,8 @@ stay for site recordings; this is for fully designed films.
 
 **Tempo**: map the film to a beat grid (`plan.json`, ramp ~100→138 BPM); scenes, wipes and the
 final hit snap to it. Sound (SFX, break track, stems as Studio lanes, levels) lives in
-[[sound-design-de-sfx-para-motion]]; render, loudness and delivery in
-[[render-e-entrega-de-reels-hyperframes]].
+[sound-design.md](sound-design.md); render, loudness and delivery in
+[render-and-delivery.md](render-and-delivery.md).
 
 **Workflow rules**:
 - The generator (`montar.mjs`) writes `index.html` + scene files; once the user edits in the
@@ -143,8 +143,8 @@ track grid (14 frames = 128.57 BPM). 40s max.
   file imported before the Root.
 - Continuous track across cuts: `trimBefore` on the bed so it continues from where the previous
   stretch stopped.
-- Loudness: render, measure and normalize with 2-pass `loudnorm` (-14 LUFS / -1 dBTP), copying
-  the video. Measure only at the end: Remotion's raw mix goes over 0 dBFS.
+- Loudness: render, measure and normalize with 2-pass `loudnorm` to the
+  [table's target](../../visant-video-editor/references/audio.md#target), copying the video. Measure only at the end: Remotion's raw mix goes over 0 dBFS.
 - Audit: timestamped contact sheet (`fps=2,drawtext=%{pts\:hms},tile=8x6`) of every render, and
   a dense sheet (fps=6) at every stretch junction.
 - A project without git, edited by another session at the same time: new cut in a new file,

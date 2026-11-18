@@ -70,12 +70,9 @@ scan, demoted signal forces the user to open items to decide.
 
 ## Hiding
 
-- **A metric reading zero does not render.** Not "0 contacted" in success green
-  during the first second of a session. The total may render when it is the
-  subject of the page; its breakdowns only when non-zero.
-- **A badge carried by 100% of rows distinguishes nothing.** A "NEW" status on a
-  freshly-fetched list is texture, not information. Render it only once it
-  changes.
+- **Zero and repeated badges:** [foundations §12](../../visant-design/references/foundations.md#12-states).
+  A breakdown reading zero ("0 contacted" in success green in the first second
+  of a session) stays hidden until it moves.
 - **Rare actions go behind `⋯`.** Export, bulk delete, settings. Destructive
   actions especially — they should not live one click from an innocuous button.
 - **Filters: show what is filtered, not what could be.** Six open selects
@@ -84,7 +81,7 @@ scan, demoted signal forces the user to open items to decide.
   with a count badge.
 - **Duplicated navigation is chrome.** A "back to dashboard" link under a sticky
   header that already contains the nav.
-- **Hide in sequence, not only in menus.** One choice per step; an option's panel
+- **Hide in sequence, not only in menus.** A control with nothing to act on is not drawn (a collapse on an empty section, a switcher with one option). One choice per step; an option's panel
   appears once it is chosen; a batch bar only while something is selected; Save
   only on the row that changed. Back sits top-left, before the progress.
 - **And the reverse: discoverability.** A capability that only lives in settings
@@ -92,6 +89,8 @@ scan, demoted signal forces the user to open items to decide.
   the same component: one door, two places (catalog 21).
 
 ## Grouping by spacing
+
+The ratio is one rule for the house: [foundations §3](../../visant-design/references/foundations.md#3-grouping).
 
 Variable gap *is* the grouping. Uniform `gap-2` throughout a card produces a flat
 stack with no perceivable structure; `gap-1` inside a zone and `gap-4` between
@@ -113,19 +112,18 @@ the grid reads as noise.
 
 ## Hover
 
-**Hover never changes layout.** Reserve the space permanently and float the
-revealed control over it — for example, right-pad the bottom zone so a hover
-action rack can occupy that corner without ever covering content, and without
-anything shifting when the pointer arrives.
+**Hover never changes layout, and nothing is reachable only on hover:**
+[foundations §8](../../visant-design/references/foundations.md#8-interaction).
+Example: right-pad the bottom zone so a hover action rack occupies that corner
+without covering content or shifting anything.
 
 **A control that must grow cannot leave the pointer.** An icon button that opens
 into its label moves its own edge: the pointer falls out, it closes, the pointer
 is back in, and it flickers. Listen for hover on a wrapper that does not change
 size, and grow away from the pointer, from a fixed edge.
 
-**Nothing revealed only on hover may be the sole path to an action.** Pair every
-`group-hover:` with `group-focus-within:`, and keep the same action reachable
-from a menu or detail view.
+Pair every `group-hover:` with `group-focus-within:`, and keep the same action
+reachable from a menu or detail view.
 
 **Reveal on `(hover: hover)`, not on a breakpoint.** `sm:opacity-0
 sm:group-hover:` treats screen width as "has a mouse" — but a tablet is wide and
@@ -245,9 +243,7 @@ say so in a comment next to each copy.
 
 ## Empty and absent
 
-Absence is information. A record with no logo, no site, or no photo is often
-exactly the record worth acting on; render the gap as a deliberate state that
-carries the argument, not as a hole in the layout.
+Empty state and the gap as a signal: [foundations §12](../../visant-design/references/foundations.md#12-states).
 
 Before adding any new visual element, run the **coverage question first**: where
 will this be missing? An element absent precisely on the best records is worse
@@ -285,6 +281,10 @@ eight, mark the required one with `*` (plus `aria-required` and an `sr-only`,
 because an asterisk is a visual convention, not semantics).
 
 ### Help text becomes placeholder
+
+Exception first: on first use and in onboarding, help is welcome. It is visual
+and inline (an example, a drawn hint), dismissible, and never a paragraph before
+the content. Everywhere else:
 
 Help text that explains the field's FORMAT belongs in the placeholder: it goes
 away on its own the moment it stops being useful (there is text in the field).
@@ -439,31 +439,14 @@ whole stage, and the picture is covered in three places.
 - **The exception is a control about the thing under it** (a handle, a selection
   toolbar). It stays next to its object and exists only while that object is
   selected.
-- **One thing, one place.** A selector in the top bar and the same selector in the
-  panel means nobody decided. Keep one
-  ([two doors](../../visant-killer/references/slop-catalog.md#21-two-doors-for-the-same-gesture)).
+- **One thing, one place.** Home: [two doors for the same gesture](../../visant-killer/references/slop-catalog.md#21-two-doors-for-the-same-gesture).
 - **Sister tools share the map.** If the same control sits in the panel in one
   tool and the top bar in another, each screen looks right and the product looks
   wrong. Compare them side by side.
 
 ## Render tool: preview in a fixed column, controls in another
 
-Found on a photo sequencer that stacked upload, controls (order, transition,
-format, slider) and the preview/player in a single scrolling column: tweaking a
-parameter meant scrolling to see the result, and the previous preview slid above
-the fold while the controls grew.
-
-**The rule:** in a "configure → generate → see the result" tool (sequencer,
-editor, image generator, any screen with a "render" button), preview and output
-live in their own fixed column (`lg:sticky lg:top-*`), separate from the controls
-column that scrolls freely. The user adjusts a parameter with the previous result
-always visible beside it: no choosing between seeing the control and seeing its
-effect.
-
-This holds even before the first render: the preview column is born in the
-layout (with an empty state in it, like "nothing rendered yet"), it never appears
-only after the first result exists. Otherwise the screen jumps from one column to
-two mid-use, and that layout jump is exactly what the rule prevents.
+In a "configure, generate, see the result" tool, the preview lives in its own fixed column (`lg:sticky lg:top-*`) beside the controls column, so a parameter is never changed out of sight of its effect. The column exists before the first render, with an empty state in it, so the layout never jumps from one column to two.
 
 ## Anti-patterns
 

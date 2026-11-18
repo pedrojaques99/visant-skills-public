@@ -40,7 +40,7 @@ line that gives the ruler), optional evidence (sparkline or thin bar).
 Own rules:
 
 - One tile per surface carries weight; two tiles of equal weight become none.
-- Zero does not render a tile: it renders a one-line empty state.
+- Zero and empty: see [foundations.md](../../visant-design/references/foundations.md#12-states).
 - Without the qualifier it is not a tile, it is a loose number.
 
 ## Sparkline

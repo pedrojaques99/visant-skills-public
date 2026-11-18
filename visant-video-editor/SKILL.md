@@ -234,9 +234,10 @@ foreground thinking it is fast.
 - **[references/course-lessons.md](references/course-lessons.md)**: sentence-level breakdown of
   screencasts/lessons: safe cut boundaries in whisper timestamps, finding a bad audio event
   without confusing it with speech emphasis, and why a literal cut beats a duck.
-- **[references/cases.md](references/cases.md)**: the jobs these rules came from.
+- **[references/cases.md](references/cases.md)**: the jobs these rules came from. Optional
+  context, never required reading.
 
 ## Neighbors
 
-- **[[visant-premiere-editor]]**: the rough cut inside Premiere
+- A Premiere rough-cut skill, if installed: the same cut inside Premiere
 - **[[site-reels]]**: recording a website; this skill starts from raw footage

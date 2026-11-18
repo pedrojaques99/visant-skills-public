@@ -36,7 +36,7 @@ The voice is one; who is speaking changes. Decide before the first sentence.
 
 | register | pieces | who speaks | rhythm |
 |---|---|---|---|
-| **Signed** | essay, newsletter, post, thread, personal invitation | "eu", a named person with an opinion | ~17 words on average, room for a long sentence and a story |
+| **Signed** | essay, newsletter, post, thread, personal invitation | "eu", a named person with an opinion | longer sentences, room for a story |
 | **House** | landing, product line, CTA, FAQ, sales email | "a gente" or "nossa", speaking for Visant | ~12 words, punch after the long sentence |
 | **Interface** | button, label, error, caption | nobody, just the verb | as short as it stays clear |
 
@@ -68,7 +68,9 @@ Absolute. They apply to headline, body, CTA, FAQ, email, caption, alt text,
 error message, meta description. No "but here it worked" exception. The only
 one is rule 3, and context decides it: [a real reversal is not the AI tic](references/voice.md#the-one-exception-a-real-reversal).
 
-1. **Dash (— or –) never.** Period, comma, colon or parentheses.
+1. **Em dash or en dash never.** Period, comma, colon or parentheses. A numeric
+   range (2020–2024, 9–17h) and text inside quotes (a testimonial, a client's
+   line, legal text) are exempt, and the linter skips both.
 2. **Separator dot (`·`, alt+7) never.** Not in metadata lists, not in a CTA with
    a price, not in a phase label, not on the social card. In a list it becomes
    period and comma ("34 páginas. 9 etapas, 1 case inteiro"), in a label a colon
@@ -97,6 +99,9 @@ one is rule 3, and context decides it: [a real reversal is not the AI tic](refer
 is almost always the right one. If the contrast really is the argument, show the
 **consequence** instead of negating: instead of "não é falta de talento, é falta
 de ordem", write "Talento você já tem. O que falta é ordem."
+
+This is the single list: [english.md](references/english.md) and
+[voice.md](references/voice.md) link here and do not restate it.
 
 ## The linter
 

@@ -87,9 +87,8 @@ column that doesn't fit. Always measure with:
 - the **worst** record (long name, many items, a 7-digit value, an email with no
   spaces, which is what breaks layouts)
 
-And once with the **backend stopped**. The silent zero is the dominant lie: a
-fetch that fails and paints "0" is indistinguishable from a true zero, and that
-screen passes every detector.
+And once with the **backend stopped**: a failed fetch must not paint "0", and that
+screen passes every detector ([Q11 and Q12](devils-advocate.md#3-data-truth)).
 
 ## 4. The measuring tool didn't cut off
 

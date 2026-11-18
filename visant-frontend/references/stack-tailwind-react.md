@@ -24,8 +24,8 @@ Example of how this varied across three real projects:
   sonner.
 - Product app with its own DS: Vite, Radix packages directly, own
   `src/components/ui/`, **no `components.json`**. Its media card, segmented
-  picker, narrow tab strips and upload zone were already DS pieces; see
-  [ds-visantlabs-os.md](ds-visantlabs-os.md) as an example of such a contract.
+  picker, narrow tab strips and upload zone were already DS pieces: read
+  the repo's design-system contract, if it has one.
 - Client sites: Next.js App Router, per template, next-intl, next-themes,
   framer-motion.
 
@@ -519,38 +519,7 @@ not for anything a type or a unit test already covers.
 
 ### Test the exemption, not only the detection
 
-A guard has three ways to be green and useless, and the third is the one that
-survives longest:
-
-1. it scanned nothing (the sanity assertion above),
-2. its detection pattern is wrong (obvious the first time you run it),
-3. its **allowlist** swallows real hits — it scans, it matches, then it exempts.
-
-A live case: a slop scanner exempted lines that looked technical, via
-`\b(?:px|dpi|kb|mb|…)\b`. That reads Tailwind spacing utilities as units —
-**`mb-2` is "MB", `px-4` is "px"** — so any `className` carrying padding or margin
-silently suppressed the finding. `font-mono uppercase mb-2` never appeared in a
-single report, for months, while the scanner reported a clean file.
-
-Nothing surfaces this except asserting the exemption directly, in both
-directions:
-
-```ts
-it.each([
-  ["font-mono uppercase mb-2", true],   // spacing utility is NOT a unit → must flag
-  ["font-mono uppercase px-4", true],
-  ["{w}px × {h}px", false],             // genuine unit → must stay exempt
-  ["Max 2MB", false],
-  ["16:9 Aspect", false],
-])("%s → flagged=%s", (line, flagged) => expect(SUPPRESS.test(line)).toBe(!flagged))
-```
-
-The fix is usually anchoring: require the unit to be glued to a number or to
-stand alone as a word — `(?:(?<=\d)|(?<![\w-]))UNIT(?![\w-])`.
-
-When investigating why a guard missed something real, suspect the exemption
-before the scope. "It doesn't scan that folder" is the comfortable answer and was
-wrong here — the walker covered the whole tree the entire time. → *every variable*
+A guard's allowlist can swallow real hits (a unit regex that read `mb-2` as "MB"). Assert it in both directions: one line that must flag, one that must stay exempt. Fixtures cover this: `visant-killer/scripts/fixtures`.
 
 ## Keyboard guard order
 

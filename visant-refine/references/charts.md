@@ -34,8 +34,9 @@ invisible when reading the code.
 | goal hit | `hsl(var(--success))` |
 | grid and axis | `hsl(var(--border))` and `hsl(var(--muted-foreground))` |
 
-More than two series on a working panel means the question was not decided. Cut
-the series or split into two charts. Never two y axes.
+Over 4 series on a working panel means the question was not decided. Split into
+two charts or highlight one series and mute the rest. A dual axis is allowed
+only when the units differ and both axes are labeled.
 
 ## States
 

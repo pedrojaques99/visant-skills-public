@@ -23,7 +23,7 @@ something else: go back to `SKILL.md`.
 
 This pattern removes, so it can overshoot ([catalog 64](slop-catalog.md#64-clean-to-the-bone)).
 Take a snapshot first (`regressao.mjs snap`), and when it is done, put before and
-after side by side and show the owner.
+after side by side and show the owner. With no user in the loop, put the pair in the report and stop.
 
 ## Step 1: Measure before you opine
 

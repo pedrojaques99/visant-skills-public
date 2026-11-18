@@ -1797,10 +1797,11 @@ The score is not the verdict. Screens compared side by side (\`regressao.mjs\`),
  */
 function runRuido() {
   const achados = scanRuido(uiFiles);
+  const linha = (a) => `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`;
+  /* warn-only rules (see AVISOS in noise-scan.mjs) are listed but never close the gate */
   return {
-    findings: achados.map(
-      (a) => `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`,
-    ),
+    findings: achados.filter((a) => !a.aviso).map(linha),
+    warnings: achados.filter((a) => a.aviso).map(linha),
   };
 }
 
@@ -1847,6 +1848,10 @@ for (const g of gates) {
   } else {
     const extra = g.strings != null ? ` (${g.strings} interface string(s))` : '';
     console.log(`[OK]      ${g.id}  zero${extra}`);
+  }
+  if (g.warnings?.length) {
+    console.log(`[WARN]    ${g.id}  ${g.warnings.length} warn-only (never closes the gate)`);
+    if (!quiet) for (const f of g.warnings.slice(0, 15)) console.log(`            ${f}`);
   }
   if (g.via && !quiet) console.log(`            via ${g.via}`);
 }

@@ -37,10 +37,10 @@ Decision:
 | Button press feedback | 100-160ms |
 | Tooltips, small popovers | 125-200ms |
 | Dropdowns, selects | 150-250ms |
-| Modals, drawers | 200-300ms (up to 500 for large sheets) |
+| Modals, drawers, sheets | 200-300ms (300 is the max) |
 | Marketing / explanatory / scroll-driven | can be longer, deliberate |
 
-**UI animations stay under 300ms.** A fast spinner makes loading *feel* faster even at identical load time. `ease-out` at 200ms feels faster than `ease-in` at 200ms.
+**Interactive UI never goes above 300ms. This is the one ceiling, and motion-lint flags anything over it.** Route passages, marketing, scroll and 3D are exempt. A fast spinner makes loading *feel* faster even at identical load time. `ease-out` at 200ms feels faster than `ease-in` at 200ms.
 
 ## Springs
 
@@ -82,7 +82,7 @@ motion tweak panel:
   token in place.
 - **Interface motion in the panel itself**: a segmented highlight slides with a
   shared `layoutId` (Motion), reset springs values back, a conditional control
-  slides in. All of it is UI motion: under 250ms, and none under
+  slides in. All of it is UI motion: within the ceiling above (150-250ms), and none under
   `prefers-reduced-motion`.
 
 ## Component rules
@@ -93,7 +93,8 @@ motion tweak panel:
 - **Tooltips:** delay the first, then open adjacent ones instantly (skip delay + animation).
 - **Transitions, not keyframes, for rapidly-triggered UI** (toasts, toggles) — transitions retarget smoothly.
 - **`@starting-style`** (modern CSS) or the `data-mounted` pattern for entry animations without JS.
-- **Stagger:** 30-80ms between items, capped total. Long stagger reads slow. Never block interaction on it.
+- **Hover never moves the element.** Shadow, border or color only.
+- **Stagger:** only on marketing and acquisition surfaces, 30-80ms between items, capped total. Never on work screens: lists come in whole. Never block interaction on it.
 - **Asymmetric timing:** slow where the user decides (hold-to-delete 2s), fast where the system responds (release 200ms).
 - **Blur to mask imperfect crossfades:** `filter: blur(2px)` during the transition (keep < 20px, expensive in Safari).
 
@@ -174,7 +175,7 @@ Full patterns + CSS: the official `vercel-react-view-transitions` skill (`npx sk
 
 - Native: `animation-timeline: scroll()` for progress-through-scroller, `view()` for element-in-viewport, scoped with `animation-range`. Runs off the main thread — it cannot jank the way a JS scroll handler can.
 - Always gate: `@supports (animation-timeline: view()) { … }`. Keep any JS path as fallback, never as the default.
-- These are not interactive UI. Long and deliberate is fine; the <300ms ceiling does not apply.
+- These are not interactive UI. Long and deliberate is fine; the 300ms ceiling does not apply.
 
 ## Apple fluid principles (gesture/drag work)
 
@@ -250,7 +251,7 @@ Then measure the deployed URL with `scripts/measure-motion.mjs` — dropped fram
 | keyframes on rapid element | CSS transition (interruptible) |
 | framer `x`/`y` under load | full `transform` string |
 | same enter/exit speed | exit faster than enter |
-| all appear at once | stagger 30-80ms, capped |
+| all appear at once on a marketing surface | stagger 30-80ms, capped (work screens: no stagger) |
 | hardcoded curve/duration | import from the repo motion SSoT (e.g. `lib/motion.ts`) / `var(--ease-*)` / `var(--dur-*)` |
 | spinner on a known layout | skeleton matching the real boxes + crossfade |
 | loader flashes / blinks | 300ms delay + 500ms minimum visible |

@@ -33,9 +33,9 @@ That is how those two rows went to the top of the "where echoes hide" table.
 ## The skill was stricter than the author
 
 The voice was written from one landing, then compared with the studio's own essay,
-manifesto and post. "Para" won 22 to 0 where the skill demanded "pra", "eu" appeared
-22 times where it restricted first person, and sentences averaged 17 words against
-the stated 12. The landing was right for a landing. Hence the registers, and hence
+manifesto and post. "Para" won where the skill demanded "pra", "eu" appeared
+where it restricted first person, and sentences ran longer than the stated 12
+words. The landing was right for a landing. Hence the registers, and hence
 "copy the traits, never the slips": the same originals also carry a loose hyphen and
 three seals.
 

@@ -118,12 +118,13 @@ green. One line of reason each; the full case is in the catalog.
 |---|---|---|
 | `synthetic-cover` | hue from a hash of the name, data colors turned into a gradient next to a missing image | an invented cover looks like data and means nothing (catalog 24) |
 | `tile-img-no-onerror` | `<img>` with `object-cover`/`aspect-*` and no `onError` | a broken URL becomes a split icon or an eternal blur; 128 dead refs on one route (25) |
-| `stagger-by-index` | `delay`/`animationDelay` = `index * ...` | the 30th item waits 1.5s on every filter (30) |
-| `hover-lift` | `hover:-translate-y-*`, `hover:scale` > 1 (not on an icon inside its button), `whileHover` with `y<0` | 26 admin cards jumping; it does not exist on touch (31) |
+| `stagger-by-index` | `delay`/`animationDelay` = `index * ...` | a work screen does not stage a show (30). A capped stagger on a marketing surface takes a written exception |
+| `hover-lift` | `hover:-translate-y-*`, `hover:scale` > 1 (not on an icon inside its button), `whileHover` with `y<0` | warn-only, see catalog 31 |
 | `dot-grid` | repeated `radial-gradient`, SVG of circles, `<GridDots>` | template texture; it lived in the page shell and shipped on every route (32) |
 | `blur-on-card` | `backdrop-blur` on an in-flow element | with nothing behind it blurs nothing, it only costs GPU (18) |
 | `invisible-range` | `<input type="range">` at opacity 0 that still takes the pointer | iOS Safari answers only on the native thumb, so the piece ignores the finger while Chromium passes; give the input `pointer-events-none` and the box the handlers. Reads the tag only: opacity in a CSS class is caught on screen by `corta-scan` (`range-invisivel`) |
 
+- **Warn-only rules** (catalog 47 to 57 and `hover-lift`) print `[WARN]` and never close the gate: [catalog](slop-catalog.md#warn-only-signals-47-to-57).
 - **Its finding is a cut candidate, not an automatic fix.** One of those lines
   may be the only one that really guides. Confirm at `file:line`.
 - **The exception exists and must justify itself** (format below). A gesture
@@ -183,7 +184,7 @@ findings always print the new id. The repo scanners in the last four rows match 
   (`en-hype`, `en-not-x-but-y`, `pt-hype`...).
 - A light-mode scanner may also suppress files that declare a loose `dark`
   class (always-dark stage) and editor folders. The dark-editor rule for the
-  house app is in `visant-frontend/references/ds-visantlabs-os.md`.
+  repo's design-system contract, if it has one, holds the dark-editor rule.
 
 ## Spacing: two layers
 

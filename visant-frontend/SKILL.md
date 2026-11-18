@@ -21,6 +21,8 @@ activation, retention, pricing, and behavioral science, distilled with the
 author's permission. That skill owns **persuasion mechanics**; this one owns the
 **product interior and the build**. Where both apply, cite the RCD principle by
 name and add the Visant-specific move. Never edit that skill; reference it.
+"RCD n" below is principle n of that original: 1 neutrality is omission, 4 your
+promise is the size of your proof, 6 the default is the strategy, 7 retention.
 
 > **Do not apply either skill to betting, casino, gambling, or real-money
 > games-of-chance products.** This is a hard condition of the source author's
@@ -106,16 +108,16 @@ Twelve principles. Each names its variable. RCD lineage marked where it exists.
    is a recommendation with your name on it. Make it good, and make its rule
    legible in one line where the user picks it. *(RCD 6)* → *decision quality*
 
-5. **Zero is not information.** A metric reading zero does not render. Neither
-   does a status badge that 100% of rows carry. → *density*
+5. **Zero is rarely information.** Rules for zero, repeated
+   badges and the empty state: [foundations §12](../visant-design/references/foundations.md#12-states). → *density*
 
 6. **Chrome is a budget.** Count vertical pixels before the first item of real
    content. Spend generously inside the content; pay for it by cutting chrome,
    not by cutting content. → *throughput*
 
-7. **Hover reveals; hover never relayouts.** Reserve the space permanently, float
-   the revealed control over it. Nothing revealed only on hover may be the sole
-   path to an action: `focus-visible` reaches everything. → *throughput, a11y*
+7. **Hover reveals; hover never relayouts.** Rule in
+   [foundations §8](../visant-design/references/foundations.md#8-interaction),
+   patterns in [work-surface.md](references/work-surface.md#hover). → *throughput, a11y*
 
 8. **Retention is built in the interior.** *(RCD 7)* RCD stops at the cancellation
    flow; retention is actually earned on the screen the user stares at daily.
@@ -126,7 +128,7 @@ Twelve principles. Each names its variable. RCD lineage marked where it exists.
    is a revenue rule, not a correctness footnote: you cannot optimize a number
    you are falsifying. → *every variable*
 
-10. **Absence is an argument.** An empty state can be the pitch. Before adding a
+10. **Absence is an argument.** Before adding a
     visual element, ask **where it will be missing**, not what it costs:
     coverage beats cost. An element absent exactly on your best records is worse
     than no element. *(RCD 4)* → *conversion*
@@ -214,9 +216,8 @@ Three rules that break most often, in any DS:
   neutral (`bg-neutral-950`, `neutral-800`) with tokens inside breaks in light
   theme.
 
-A filled-in example of this contract, from one real app:
-[ds-visantlabs-os.md](references/ds-visantlabs-os.md). Optional reading; build
-the equivalent for the repo you're in.
+If the repo has a design-system contract of its own, read it. If not, write
+the equivalent from the three steps above.
 
 ### Verified in production
 
@@ -236,7 +237,6 @@ about the database; silent-empty is the dominant lie, told one layer down.
 | Billing, destructive actions, data writes, confirmations | [trust-surface.md](references/trust-surface.md) |
 | Component library / registry showcase / demo of a piece / kits (the piece IS the product) | [component-showcase.md](references/component-showcase.md) |
 | Implementation in Tailwind v4 + React + Radix | [stack-tailwind-react.md](references/stack-tailwind-react.md) |
-| An example DS contract (pieces, chrome tokens, always-dark editor) | [ds-visantlabs-os.md](references/ds-visantlabs-os.md) |
 | Charts, limit meters, simulation sliders, crafted elements, motion on a data change | load the **`visant-refine`** skill |
 | Checking the work; height budget; keyboard audit; design detector | [verification.md](references/verification.md) |
 | Running or writing a design critique | [critique.md](references/critique.md) |

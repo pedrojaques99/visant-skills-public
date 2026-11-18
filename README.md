@@ -3,7 +3,7 @@
 [Claude Code](https://docs.claude.com/en/docs/claude-code/skills) skills from
 [Visant](https://visantlabs.com): how to decide interface, motion and copy, how
 to audit a screen before the PR, and how to cut video, from a recorded website
-to a Premiere rough cut. They work in any repo: each skill first discovers what
+to a rough cut. They work in any repo: each skill first discovers what
 the target repo already has (gates, primitives, tokens) and only then acts. The
 detectors are real scripts, and `npm test` proves every rule both ways against
 fixtures.
@@ -82,11 +82,11 @@ Visant code, then calibrated until what remained was defensible:
 |---|---|---|---|
 | [vercel/commerce](https://github.com/vercel/commerce) | passes: no token layer, Tailwind palette used as the design system (3 neutral, 3 accent hues) | 2: `hover-lift` on a product image and gallery buttons | 1 LOW: checkout hands off to Shopify, no `begin_checkout` event |
 | [shadcn-ui/taxonomy](https://github.com/shadcn-ui/taxonomy) | 9: palette classes that bypass its CSS-variable tokens (`text-red-600`, `bg-slate-50`) | 2: a hand-drawn lucide `Shield` while lucide-react is installed; "Enter your email below…" | 1 HIGH (public routes without description), a route without title, no sitemap |
-| [steven-tey/precedent](https://github.com/steven-tey/precedent) | 4 raw hex (Twitter blue as a one-off class, a gauge circle) + 1 palette-chaos finding (4 accent hues) | 2: the Vercel triangle, a CTA that grows on hover | clean |
+| [steven-tey/precedent](https://github.com/steven-tey/precedent) | 4 raw hex (Twitter blue as a one-off class, a gauge circle) + 1 palette-chaos finding (4 accent hues) | 2: the Vercel triangle (an SVG with no accessible name), a CTA that grows on hover (`hover-lift`, warn-only) | clean |
 
 What the calibration fixed, so it holds on any repo: palette classes only count
 as a bypass when there is a token layer to bypass; SVGs in an `icons/` folder
-and brand logos are not "hand-drawn icons"; components are never routes; a
+and brand logos that carry a name (`<title>`, `aria-label` or `role="img"` naming the brand or saying "logo") are not "hand-drawn icons", while an unnamed one still is; components are never routes; a
 hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 
 ## Interface
@@ -105,7 +105,6 @@ hosted checkout is not an unmeasured form. Each fix is locked by a fixture.
 | Skill | What it does | Needs |
 |---|---|---|
 | [`site-reels`](site-reels/SKILL.md) | Records a website's best scenes (WebGL hero, scroll, 3D) as 1080p MP4 and builds brand or product showreels in Remotion | Chrome or Edge, ffmpeg, Node |
-| [`visant-premiere-editor`](visant-premiere-editor/SKILL.md) | Builds the rough cut in Premiere Pro from a JSON cut plan: frame-exact cuts, markers, punch-ins, cards, b-roll, -14 LUFS delivery | Premiere Pro + [premiere-pro-mcp](https://github.com/leancoderkavy/premiere-pro-mcp), Python |
 | [`visant-video-editor`](visant-video-editor/SKILL.md) | Vlogs, event videos and lessons from raw footage: breakdown, silence cuts that never clip a word, loudness, chapters | bash, ffmpeg, Python, faster-whisper |
 
 ## Process
@@ -161,9 +160,6 @@ its own text; the summary:
 | [Stageshow](https://github.com/benjitaylor/skills/tree/main/stageshow) | Benji Taylor | `visant-killer` fresh reviewer and `## Not checked`; `visant-frontend` demo rules; route in `visant-design` |
 | [Skullet](https://skullet.lochie.me/docs) | [lochie](https://github.com/lochie/skullet) |`visant-motion` skeleton option |
 | [agent-skills](https://github.com/vercel-labs/agent-skills) (`vercel-react-view-transitions`) | Vercel | `visant-motion` |
-| [premiere-pro-mcp](https://github.com/leancoderkavy/premiere-pro-mcp) | premiere-pro-mcp contributors | `visant-premiere-editor` |
-| [OpenTimelineIO](https://opentimeline.io) | Academy Software Foundation | `visant-premiere-editor` (FCP7 XML) |
-| [Simple Icons](https://simpleicons.org) (CC0) | Simple Icons contributors; marks belong to their owners | `visant-premiere-editor` card logos |
 | [Remotion](https://www.remotion.dev), [puppeteer-screen-recorder](https://github.com/prasanaworld/puppeteer-screen-recorder), timesnap | Remotion; prasanaworld; Tungs | `site-reels` |
 | [FFmpeg](https://ffmpeg.org), [auto-editor](https://github.com/WyattBlue/auto-editor), [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | FFmpeg; WyattBlue; SYSTRAN | `visant-video-editor` |
 | [shadcn/ui](https://ui.shadcn.com), [Radix](https://www.radix-ui.com), [Playwright](https://playwright.dev) | shadcn; WorkOS; Microsoft | `visant-killer`, `visant-frontend` |

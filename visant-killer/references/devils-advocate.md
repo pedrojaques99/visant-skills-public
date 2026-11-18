@@ -89,7 +89,9 @@ The four classics, all seen in production: a fetch that failed and paints zero; 
 zero denominator becoming "0,0%"; a stock (queue, balance, pipeline) receiving a
 date filter that only events should receive; two numbers of the same unit and
 different kinds (budgeted and actual) side by side with no label saying which is
-which.
+which. This is the home of the silent zero and no-denominator rules: other
+files link here. Without a denominator there is no ratio, so the value is `null`
+and the line does not appear.
 
 **Q12 `[T2]` If the backend goes down, does this show an error or a zero?**
 Silent zero is the dominant lie, and it is usually told one layer down: the
@@ -256,10 +258,11 @@ The level is measured in thirteen details, and none of them is aesthetic:
 1. Keyboard reaches every action, and the shortcut shows where the action shows.
 2. `focus-visible` reaches everything hover reveals.
 3. Zero layout shift between loading and loaded (skeleton with the final shape).
-4. Optimistic write with undo, never a confirmation modal for a reversible action.
+4. Optimistic write with undo, never a confirmation modal for a reversible action,
+   except where [trust-surface](../../visant-frontend/references/trust-surface.md) says no.
 5. Error, empty and loading are three distinct states, and empty makes a case.
 6. Nothing lies: no silent zero, no zero denominator, no label that isn't the
-   status.
+   status (Q11 and Q12).
 7. Perceived latency handled where it is born (wait only for what the screen
    needs; the rest leaves the critical path).
 8. Motion from the SSoT, under 300ms, interruptible, and respecting

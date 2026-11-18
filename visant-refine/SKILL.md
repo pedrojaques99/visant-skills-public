@@ -112,8 +112,7 @@ Rules for all four, in any element:
   entity, never the ranking position.
 - **No number without a ruler.** A value without a qualifier is trivia.
   "R$ 25.201,42" says nothing; "11,3% da receita bruta" does.
-- **No denominator, no ratio.** Zero denominator is `null` and the row does not
-  render. "0,0%" states a false fact.
+- **No denominator, no ratio.** Rule and why: [devils-advocate.md](../visant-killer/references/devils-advocate.md#3-data-truth) (Q11, Q12).
 - **A shape is only valid inside its domain.** A ratio bar has scale while the
   value fits the limit; past it, the bar saturates and lies, and the number
   saying how far it went replaces the bar. This is not a detail, it is the rule

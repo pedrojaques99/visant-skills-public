@@ -39,6 +39,13 @@ const L = '(?<![\\p{L}\\p{N}])'; // word start, unicode
 const R = '(?![\\p{L}\\p{N}])'; // word end, unicode
 const rx = (src) => new RegExp(src, 'giu');
 
+/* Blanks what sits inside double quotes ("…", “…”, «…»): a testimonial, a
+   client's line or legal text is quoted, not written, so a rule with
+   `skipQuoted` never reads it. */
+const stripQuoted = (text) =>
+  text.replace(/"[^"\n]{2,}"|“[^”\n]{2,}”|«[^»\n]{2,}»/gu, (q) => ' '.repeat(q.length));
+const readable = (rule, text) => (rule.skipQuoted ? stripQuoted(text) : text);
+
 /* Each rule: id, what it matches, and the fix that almost always works.
    `hint` is read by the human AND by the agent that will rewrite the line.
    `family`: only the first rule of a family reports per excerpt, so three
@@ -46,8 +53,12 @@ const rx = (src) => new RegExp(src, 'giu');
 const RULES = [
   {
     id: 'em-dash',
-    re: /[—–]/gu,
-    hint: 'Dashes (travessão) are forbidden. Replace with a period, comma, colon or parentheses.',
+    /* An en dash between digits is a numeric range (2020–2024, 9–17h), not a
+       dash in prose. Text inside quotes is somebody's words and stays as said
+       (`skipQuoted`: see stripQuoted). */
+    re: /—|(?<![\d%h])–|–(?!\d)/gu,
+    skipQuoted: true,
+    hint: 'Dashes (travessão) are forbidden. Replace with a period, comma, colon or parentheses. A numeric range (2020–2024) and quoted text are exempt.',
   },
   {
     id: 'bullet-separator',
@@ -148,7 +159,7 @@ const RULES = [
         `corre\\s+que\\s+(?:acaba|t[áa]\\s+acabando)|n[ãa]o\\s+perca\\s+(?:essa|a)\\s+chance|` +
         `por\\s+tempo\\s+limitado|s[óo]\\s+hoje)${R}`
     ),
-    hint: 'Generic urgency. The Club\'s scarcity is real and countable: say the number ("este lote tem 30 vagas", "a cota sobe a cada compra").',
+    hint: 'Generic urgency. Scarcity must be countable: say the number ("este lote tem 30 vagas", "a cota sobe a cada compra").',
   },
   {
     id: 'pipe-separator',
@@ -161,7 +172,7 @@ const RULES = [
     /* Applies to every file: an emoji in visible .tsx/.md is the same defect as
        in .json. Code comments are already masked before this. */
     /* Emoji_Presentation instead of Extended_Pictographic: the latter includes
-       © ® ™, which are trademarks and stay (Visionário®, Visant Club®). */
+       © ® ™, which are trademarks and stay (Visionário®). */
     re: /[\p{Emoji_Presentation}\u{1F300}-\u{1FAFF}]/gu,
     hint: 'Zero emoji in page copy.',
   },
@@ -174,7 +185,7 @@ const RULES = [
   {
     id: 'pt-llm-connector',
     family: 'connector',
-    /* "Por fim," saiu em 2026-11-05: é junta falada do texto assinado da casa
+    /* "Por fim," is not listed: it is a spoken joint of signed text
        ("Por fim, esse é só o início dessa conversa"), voice.md §10. */
     re: rx(
       `(?:^|\\n)\\s*(?:Al[ée]m\\s+disso|Em\\s+resumo|` +
@@ -406,6 +417,8 @@ if (args.includes('--self-test')) {
     'More than 30 templates',
     'Real-time preview of every mockup.',
     'Seamless pattern generator',
+    'Atendemos de 2020–2024, das 9–17h.',
+    'Ela disse: "Rápido — e bonito, do jeito que pedi."',
     'Confirm your email to unlock your full account.',
     'A seamless white background behind the product.',
     'Empower mode is off.',
@@ -414,7 +427,7 @@ if (args.includes('--self-test')) {
   const falhas = [];
   const dispara = (rule, text) => {
     rule.re.lastIndex = 0;
-    return rule.re.test(text);
+    return rule.re.test(readable(rule, text));
   };
   for (const rule of [...RULES, ...REPEATS]) {
     for (const limpa of LIMPAS) {
@@ -669,7 +682,7 @@ for (const file of files) {
       if (rule.jsonOnly && !isJson) continue;
       if (rule.family && seen.has(rule.family)) continue;
       rule.re.lastIndex = 0;
-      const m = rule.re.exec(text);
+      const m = rule.re.exec(readable(rule, text));
       if (!m) continue;
       if (rule.family) seen.add(rule.family);
       found.push({ loc, rule, match: m[0].trim(), text });

@@ -4,6 +4,7 @@
  *   node preflight-scan.mjs --assets "H:/My Drive/Clients/Brand"
  *   node preflight-scan.mjs --fonts "Syncopate,Funnel Sans"
  *   node preflight-scan.mjs --assets <dir> --fonts "A,B" --report PREFLIGHT.md
+ *   node preflight-scan.mjs --fonts "Termina" --fonts-dir ./public   (local files count)
  *   node preflight-scan.mjs --self-test
  *
  * Answers the two questions nobody asks before designing and that always
@@ -24,7 +25,8 @@
  *
  * Exit 1 with --strict if any item fails.
  */
-import { readdirSync, statSync, openSync, readSync, closeSync, writeFileSync } from 'node:fs';
+import { readdirSync, statSync, openSync, readSync, closeSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, extname, basename, relative } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -132,6 +134,32 @@ export function inventario(raiz) {
   return { achados, pulados };
 }
 
+/* ── Local font files ───────────────────────────────────────────────
+   A licensed or custom family is fine when the project ships the file
+   (next/font/local, @font-face). A file counts when its name holds the
+   family name, ignoring case, spaces and punctuation. */
+const FONT_EXT = new Set(['.woff2', '.woff', '.ttf', '.otf']);
+const PULA_FONTES = new Set(['node_modules', '.git', '.next', 'dist', 'build', 'out', 'coverage']);
+
+export function arquivosDeFonte(raiz, fundo = 8) {
+  const out = [];
+  const andar = (dir, n) => {
+    if (n > fundo) return;
+    let itens;
+    try { itens = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const it of itens) {
+      if (it.isDirectory()) { if (!PULA_FONTES.has(it.name)) andar(join(dir, it.name), n + 1); continue; }
+      if (FONT_EXT.has(extname(it.name).toLowerCase())) out.push(join(dir, it.name));
+    }
+  };
+  andar(raiz, 0);
+  return out;
+}
+
+const chave = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+export const temArquivoLocal = (familia, arquivos) =>
+  arquivos.some((f) => chave(basename(f)).includes(chave(familia)));
+
 /* ── Fonts ──────────────────────────────────────────────────────────
    Google's css2 API answers 200 for an existing family and 400 for a
    missing one. Public endpoint, no key. A network failure becomes
@@ -174,6 +202,19 @@ if (flag('--self-test')) {
   casos.push(['font present', (await checarFonte('Exists', fake)) === 'google']);
   casos.push(['font missing', (await checarFonte('Missing', fake)) === 'ausente']);
   casos.push(['network down = undetermined', (await checarFonte('X', async () => { throw new Error('offline'); })) === 'indefinido']);
+
+  const locais = ['/p/public/fonts/Termina-Bold.woff2', '/p/fonts/FunnelSans.ttf'];
+  casos.push(['local file matches the family', temArquivoLocal('Termina', locais)]);
+  casos.push(['local file matches with a space in the name', temArquivoLocal('Funnel Sans', locais)]);
+  casos.push(['no local file for another family', !temArquivoLocal('Syncopate', locais)]);
+  const tmp = mkdtempSync(join(tmpdir(), 'preflight-fonts-'));
+  mkdirSync(join(tmp, 'public', 'fonts'), { recursive: true });
+  writeFileSync(join(tmp, 'public', 'fonts', 'Termina-Bold.woff2'), '');
+  writeFileSync(join(tmp, 'public', 'notes.txt'), '');
+  const achadas = arquivosDeFonte(tmp);
+  rmSync(tmp, { recursive: true, force: true });
+  casos.push(['licensed font with a local file passes', achadas.length === 1 && temArquivoLocal('Termina', achadas)]);
+  casos.push(['licensed font with no file and no Google match is not local', !temArquivoLocal('Termina', [])]);
 
   let ok = true;
   for (const [nome, passou] of casos) {
@@ -228,10 +269,12 @@ if (fontes) {
   diz('');
   diz('| Family | Status |');
   diz('|---|---|');
+  const arquivos = arquivosDeFonte(val('--fonts-dir') ?? '.');
   for (const fam of fontes.split(',').map((s) => s.trim()).filter(Boolean)) {
-    const s = await checarFonte(fam);
-    if (s !== 'google') reprovou = true;
+    const s = temArquivoLocal(fam, arquivos) ? 'local' : await checarFonte(fam);
+    if (s !== 'google' && s !== 'local') reprovou = true;
     const rotulo = {
+      local: 'local font file found: loads from the project',
       google: 'Google Fonts: loads directly',
       ausente: '**MISSING from Google Fonts**: own license, or wrong name in the vault',
       indefinido: 'could not check (network)',

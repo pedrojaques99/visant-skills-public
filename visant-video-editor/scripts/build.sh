@@ -64,7 +64,7 @@ fill_for() {   # $1 = file
 
 # --- vlog basics: audio ---
 # An inaudible take is vlog defect #1: phone clips from different days vary
-# a lot in volume. Target I=-16 LUFS (streaming/YouTube).
+# a lot in volume. Default I=-16 LUFS for speech (table: references/audio.md#target).
 #
 #   LOUD=2  two passes (DEFAULT): measures the cut, then applies LINEAR gain.
 #           Keeps the dynamics. Costs one audio analysis pass per cut.

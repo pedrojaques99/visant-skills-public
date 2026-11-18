@@ -56,7 +56,7 @@ route. A wrong number is bad; a wrong sentence is worse.
 - **A progress bar on the MEI card above 100%.** It had already been replaced by
   the overrun as a number earlier, and the slider did not bring it back.
 - **A second axis on the chart** to plot expenses next to the cumulative. Two y
-  axes is chart mistake number one; expenses are not this panel's question.
+  axes would need different units and labels; expenses are not this panel's question.
 - **Persisting the scenario in the URL.** Sharing a scenario was not in the
   request, and a scenario link without a scenario label is the same lie, now
   traveling.

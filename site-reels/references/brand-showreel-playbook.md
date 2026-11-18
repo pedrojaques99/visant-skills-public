@@ -34,20 +34,20 @@ Every ref changes subject by **transformation inside the shot** or by a **graphi
    - The pattern never stops: it slides, recedes or reshapes inside its module.
 5. **Show the system in use, not as a manual** (Caixa scene 2): a variable-weight slider, typing, a counting number, a blind revealing the background, and a cursor lighting icons.
 6. **Recap with a living bento**, where each card is a loop (Caixa), then end in a cell that becomes the signature.
-7. **End card:** a still logo for 2.1–2.3 s (Memorable, Whop), a mutating seal (a16z), or 6.4 s of silence on the logo (Caixa 135.1).
+7. **End card:** a still logo for about 2 s (two startup brand films), a mutating seal (a16z), or several seconds of silence on the logo (the rebrand film).
 
 ## Composition (instead of full-frame mocks)
 - **Giant crop, then reveal**, at roughly a 10× scale jump:
   - Arko: a glyph in edit mode, then the logo (1.67–3.29); the font name at 94%, then the specimen card (4.92–5.08).
-  - Whop: 4.8% → 66.7%.
+  - A startup brand film: the crop goes from about 5% to about 67% of the frame.
 - **Many layouts from one image:** a grid of 12 copies, then 3, then perspective panels (glitch 2.13–3.67). Three windows of the same scene at 7%, 18% and 27% (glitch 0.5–2.0).
 - **Layering:**
   - collage with overlap and opacity;
   - an isometric stack where one piece lifts out;
   - split screens inside a colour frame;
   - a hero card with works escaping behind it (Unsigned).
-- **An illustration recedes until it becomes the mockup:** full-screen art pulls back into a stadium screen or billboard (Caixa 72.5, 77.4).
-- **Real people in their natural colour, with the brand in the frame:** cards on the brand colour, and next to each photo a card holding the palette taken from it (Caixa 88.7–98.4).
+- **An illustration recedes until it becomes the mockup:** full-screen art pulls back into a stadium screen or billboard (Caixa).
+- **Real people in their natural colour, with the brand in the frame:** cards on the brand colour, and next to each photo a card holding the palette taken from it (Caixa).
 - **Grid rules from the older decupagens:**
   - margins of 3–8%;
   - only giant type bleeds;
@@ -97,6 +97,7 @@ Every ref changes subject by **transformation inside the shot** or by a **graphi
 - **Rejected by the user:** felt piano or neoclassical piano tracks, and EDM, corporate or trailer music.
 - **Closer to what the user wants:** afro house ("better, still not the one"), then bossa nova, jazz-funk or nu-disco with a real band groove.
 - **SFX:** interface ticks locked to typing in the intro and no kick (Arko, Unsigned). A low hit on the logo (Opus 17.25).
+- **Where SFX come from:** curated Freesound kit (the Biblioteca `Triagem ·` collections, favourites = approved), never the old packs. Sourcing, cutting and mixing: [sound-design.md](sound-design.md).
 - **Finding CC0 music:**
   - Search in parallel through an agent. Free Music Archive's CC0 filter works; check the license on each track's own page and save it in `<slug>.rights.json`.
   - Use librosa for structure: windowed RMS and onsets, with stems from demucs when useful. `beat_track` gets the BPM wrong often, so confirm it with kick or onset autocorrelation.

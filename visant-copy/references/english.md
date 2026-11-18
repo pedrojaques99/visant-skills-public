@@ -1,42 +1,39 @@
 # Writing English copy
 
-The same voice, carried into English. The prohibitions are the ones `copy-lint`
-enforces with its `en-` rules; the voice notes are what no linter catches.
+The same voice, carried into English. The punctuation bans (dash, separator dot,
+semicolon, emoji) live once, in [SKILL.md](../SKILL.md#the-prohibitions). Below is
+only the English wording that `copy-lint` catches with its `en-` rules, and the
+voice notes no linter catches.
 
-## The prohibitions
+## English wording
 
-Absolute, in headline, body, CTA, FAQ, email, alt text, error message and meta
-description.
+Absolute, in the same places as the Portuguese list.
 
-1. **Dash (— or –) never.** Period, comma, colon or parentheses. (`em-dash`)
-2. **Separator dot (`·`) never.** "34 pages. 9 stages, 1 full case", not
-   "34 pages · 9 stages". (`bullet-separator`)
-3. **"It's not X, it's Y" never**, split or not ("This isn't a list. It's a
+1. **"It's not X, it's Y" never**, split or not ("This isn't a list. It's a
    cascade."). Cut the negative half and say Y. (`en-not-x-but-y`)
-4. **"Not just X, but Y" / "more than just" never.** It promises depth and
+2. **"Not just X, but Y" / "more than just" never.** It promises depth and
    delivers none. (`en-not-just`, `en-more-than-just`)
-5. **"It's about X" / "isn't about X" never.** Use the verb of what the thing
+3. **"It's about X" / "isn't about X" never.** Use the verb of what the thing
    does. (`en-all-about`, `en-not-about`)
-6. **Hype never**: unlock your potential, unleash, supercharge, revolutionary,
+4. **Hype never**: unlock your potential, unleash, supercharge, revolutionary,
    game-changer, next-level, cutting-edge, seamless experience, elevate your,
    empower you, transform your, in today's fast-paced world. Swap it for a fact
    or a number. (`en-hype`)
-7. **Guru openers never**: "Imagine a world", "What if I told you", "Let's dive
+5. **Guru openers never**: "Imagine a world", "What if I told you", "Let's dive
    in", "Here's the thing", "Picture this". Start with the fact or the scene.
    (`en-guru-opener`)
-8. **Stock connectors never at sentence start**: Moreover, Furthermore,
+6. **Stock connectors never at sentence start**: Moreover, Furthermore,
    Additionally, Ultimately, In conclusion, It's worth noting. Start with the
    subject. (`en-llm-connector`)
-9. **Generic urgency never**: limited time only, act now, don't miss out, last
+7. **Generic urgency never**: limited time only, act now, don't miss out, last
    chance. Scarcity must be countable: "this batch has 30 seats".
    (`en-generic-urgency`)
-10. **Credibility seal at most once per piece**: truly, genuinely, authentic,
+8. **Credibility seal at most once per piece**: truly, genuinely, authentic,
     honestly, real. An adjective does not prove; numbers and scenes do.
     "Seven years of real projects" becomes "Seven years shipping brands".
     (`credibility-seal`)
-11. **Emoji never.** (`emoji`)
 
-**The rule that solves 3 to 5: cut the negative half.** The sentence that
+**The rule that solves 1 to 3: cut the negative half.** The sentence that
 remains is almost always the right one. If the contrast is the argument, show
 the consequence: not "It's not a talent problem, it's an order problem" but
 "You already have the talent. What's missing is order."
