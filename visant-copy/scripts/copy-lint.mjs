@@ -46,6 +46,23 @@ const stripQuoted = (text) =>
   text.replace(/"[^"\n]{2,}"|“[^”\n]{2,}”|«[^»\n]{2,}»/gu, (q) => ' '.repeat(q.length));
 const readable = (rule, text) => (rule.skipQuoted ? stripQuoted(text) : text);
 
+/* Separators a repo permits (`.copylintrc.json`, `copy-lint.config.json` or
+   `--allow-separator "·"`). A permitted character never counts. */
+const permitidos = new Set();
+
+/* First match of a rule in a text, or null. A rule with `min` only fires when
+   it matches at least that many times in the one string (the dense chain). */
+function acha(rule, text) {
+  const t = readable(rule, text);
+  if (!rule.min) {
+    rule.re.lastIndex = 0;
+    const m = rule.re.exec(t);
+    return m ? m[0] : null;
+  }
+  const todos = [...t.matchAll(rule.re)].filter((m) => !permitidos.has(m[0].trim()));
+  return todos.length >= rule.min ? todos[0][0] : null;
+}
+
 /* Each rule: id, what it matches, and the fix that almost always works.
    `hint` is read by the human AND by the agent that will rewrite the line.
    `family`: only the first rule of a family reports per excerpt, so three
@@ -76,7 +93,11 @@ const RULES = [
      * or more glued together never separate anything: a separator is always one.
      */
     re: /(?:\s[·•∙‧](?![·•∙‧])|(?<![·•∙‧])[·•∙‧]\s)/gu,
-    hint: 'The bullet separator (alt+7) is forbidden. In a metadata list, use periods and commas ("34 páginas. 9 etapas, 1 case"). In a label, a colon ("Fase 1: A Estratégia"). In a CTA with a price, a preposition ("Quero o e-book por R$ 47").',
+    /* A single " · " between two facts is a convention many products use. Only
+       the dense chain (3 or more separators in one string) is flagged, and a repo
+       can permit the character outright (see `permitidos`). */
+    min: 3,
+    hint: 'A chain of 3 or more bullet separators in one string is forbidden. In a metadata list, use periods and commas ("34 páginas. 9 etapas, 1 case"). In a label, a colon ("Fase 1: A Estratégia"). A repo that uses the dot on purpose can permit it with .copylintrc.json or --allow-separator.',
   },
   {
     id: 'hyphen-as-dash',
@@ -362,7 +383,14 @@ const REPEATS = [
   },
 ];
 
-const args = process.argv.slice(2);
+const bruto = process.argv.slice(2);
+const args = [];
+for (let i = 0; i < bruto.length; i++) {
+  const a = bruto[i];
+  if (a === '--allow-separator') for (const c of bruto[++i] ?? '') permitidos.add(c);
+  else if (a.startsWith('--allow-separator=')) for (const c of a.slice(18)) permitidos.add(c);
+  else args.push(a);
+}
 const quiet = args.includes('--quiet');
 const comentarios = args.includes('--include-comments');
 const resumo = args.includes('--summary');
@@ -375,7 +403,7 @@ const pulos = args.filter((a) => a.startsWith('--skip=')).map((a) => a.slice(7))
 if (args.includes('--self-test')) {
   const RUIM = {
     'em-dash': 'Rápido — e bonito.',
-    'bullet-separator': 'Marca · Site',
+    'bullet-separator': 'Marca · Site · Blog · Contato',
     'hyphen-as-dash': 'Rápido - e bonito.',
     'pt-not-x-but-y': 'Não é um site, é uma máquina de venda.',
     'pt-not-just': 'Não é apenas um site.',
@@ -411,6 +439,8 @@ if (args.includes('--self-test')) {
     'claude mcp add shadcn -- npx shadcn@latest mcp',
     '/shots/ - .webp',
     'Seu site novo fica pronto em uma semana.',
+    'Marca · Site',
+    'Marca · Site · Blog',
     'Your new site ships in one week.',
     'Unlock account',
     'Transform tool',
@@ -425,10 +455,7 @@ if (args.includes('--self-test')) {
     "This isn't available on the free plan.",
   ];
   const falhas = [];
-  const dispara = (rule, text) => {
-    rule.re.lastIndex = 0;
-    return rule.re.test(readable(rule, text));
-  };
+  const dispara = (rule, text) => acha(rule, text) !== null;
   for (const rule of [...RULES, ...REPEATS]) {
     for (const limpa of LIMPAS) {
       if (dispara(rule, limpa)) falhas.push(`${rule.id} fired on the clean sentence "${limpa}"`);
@@ -458,6 +485,10 @@ if (args.includes('--self-test')) {
   if (run('clean-code.tsx', 'clean-docs.md') !== 0) falhas.push('fixtures/clean-* flagged code or docs that are not copy');
   if (run('dirty.tsx') !== 1) falhas.push('fixtures/dirty.tsx passed: JSX text is not being linted');
   if (spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--quiet', '--skip=dirty', fx('dirty.tsx')]).status !== 0) falhas.push('--skip did not drop the file');
+  /* The dense chain, both ways: flagged by default, silent with the flag or a repo config. */
+  if (run('separators/chain.md') !== 1) falhas.push('fixtures/separators/chain.md passed: a chain of 3 separators was not flagged');
+  if (spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--quiet', '--allow-separator', '·', fx('separators/chain.md')]).status !== 0) falhas.push('--allow-separator did not permit the character');
+  if (run('separators/allowed') !== 0) falhas.push('copy-lint.config.json did not permit the character');
   if (falhas.length) {
     console.error(`✗ copy-lint --self-test\n  ${falhas.join('\n  ')}`);
     process.exit(1);
@@ -489,6 +520,20 @@ const alvos = args.filter((a) => !a.startsWith('--'));
 if (!alvos.length) {
   console.log('usage: copy-lint.mjs [--quiet] [--summary] [--skip=text] [--include-comments] <file or folder...>');
   process.exit(1);
+}
+/* Per-repo config at the target root: { "allowSeparator": ["·"] } (or a string). */
+for (const raiz of new Set([process.cwd(), ...alvos.filter((a) => existsSync(a) && statSync(a).isDirectory())])) {
+  for (const nome of ['.copylintrc.json', 'copy-lint.config.json']) {
+    const arq = join(raiz, nome);
+    if (!existsSync(arq)) continue;
+    try {
+      const cfg = JSON.parse(readFileSync(arq, 'utf8'));
+      for (const c of [cfg.allowSeparator ?? []].flat().join('')) permitidos.add(c);
+    } catch (e) {
+      console.error(`copy-lint: ${arq} is not valid JSON (${e.message})`);
+      process.exit(1);
+    }
+  }
 }
 const faltando = alvos.filter((a) => !existsSync(a));
 if (faltando.length) {
@@ -681,11 +726,10 @@ for (const file of files) {
     for (const rule of RULES) {
       if (rule.jsonOnly && !isJson) continue;
       if (rule.family && seen.has(rule.family)) continue;
-      rule.re.lastIndex = 0;
-      const m = rule.re.exec(readable(rule, text));
-      if (!m) continue;
+      const m = acha(rule, text);
+      if (m === null) continue;
       if (rule.family) seen.add(rule.family);
-      found.push({ loc, rule, match: m[0].trim(), text });
+      found.push({ loc, rule, match: m.trim(), text });
       byRule.set(rule.id, rule.hint);
       hits++;
     }

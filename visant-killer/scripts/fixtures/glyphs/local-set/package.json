@@ -1,0 +1,6 @@
+{
+  "name": "ruido-fixture-conjunto-local",
+  "private": true,
+  "description": "Fixture for noise-scan hand-drawn-icon: a monorepo with its own icon set and no icon library in package.json.",
+  "workspaces": ["packages/*", "apps/*"]
+}

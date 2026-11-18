@@ -4,6 +4,7 @@ export function Sujo({ go }: { go: () => void }) {
   return (
     <div className="bg-[#1a1a2e] p-4" data-k="ACUSA">
       <p className="text-purple-500" data-k="ACUSA">a</p>
+      <span style={{ color: '#000' }} data-k="ACUSA">not a mask</span>
       <span style={{ color: '#ff0000' }} data-k="ACUSA">b</span>
       <span style={{ background: 'rgba(0, 0, 0, 0.6)' }} data-k="ACUSA">c</span>
       <div className="border-[hsl(210_40%_50%)]" data-k="ACUSA" />
@@ -15,6 +16,8 @@ export function Sujo({ go }: { go: () => void }) {
       {/* EXCEPTION to token-fallback/hex-cru: brand swatch shown as data */}
       <span style={{ color: '#00ff00' }} data-k="CALA">swatch</span>
       <button onClick={go} data-k="CALA">&#9662; open</button>
+      <div style={{ maskImage: 'linear-gradient(#000, transparent)', WebkitMaskImage: 'linear-gradient(#fff, transparent)' }} data-k="CALA" />
+      <div className="[mask-image:linear-gradient(#000,transparent)]" data-k="CALA" />
     </div>
   );
 }

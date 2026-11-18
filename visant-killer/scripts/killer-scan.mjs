@@ -312,7 +312,10 @@ const TF_FUNC_CSS = /\b(?:rgba?|hsla?)\(\s*\d/;
 const TF_BLOCO_TEMA = /(:root|\.dark\b|\[data-theme|@theme)/;
 const TF_COMENTARIO = /^\s*(\{\s*)?(\/\/|\/\*|\*)/;
 const TF_DIR_ICONE = /\/(icons?|logos?)\//i;
-const TF_ATTR_GLIFO = /\b(?:fill|stroke|stopColor|stop-color)\s*=\s*["'{]/;
+/* `mask`, `mask-image`, `-webkit-mask-image` in CSS; `maskImage` / `WebkitMaskImage` in a style object; `[mask-image:...]` in Tailwind */
+const TF_MASCARA_CSS = /(?:^|[\s;{])(?:-webkit-)?mask(?:-image)?\s*:/i;
+const TF_MASCARA_JS = /\b(?:Webkit)?[mM]ask(?:Image)?\s*:|\[(?:-webkit-)?mask(?:-image)?:/;
+const TF_ATTR_GLIFO =/\b(?:fill|stroke|stopColor|stop-color)\s*=\s*["'{]/;
 
 function arquivoDeTema(f) {
   const n = norm(f);
@@ -409,7 +412,15 @@ export function scanTokenFallbackFull(lista, { tokenLayer = true } = {}) {
       }
       achados.push({ file: f, linha: i + 1, regra, amostra: lines[i].trim().slice(0, 80) });
     };
+    let mascaraAberta = false; // .css only: inside a mask declaration that runs over several lines
     lines.forEach((line, i) => {
+      /* Colors inside a mask are alpha (`#000` opaque, `transparent` gone), not paint: never a token. */
+      if (css) {
+        if (mascaraAberta || TF_MASCARA_CSS.test(line)) {
+          mascaraAberta = !/;|\}/.test(line.replace(/\/\*.*?\*\//g, ''));
+          return;
+        }
+      } else if (TF_MASCARA_JS.test(line)) return;
       if (css) {
         if (TF_COMENTARIO.test(line)) return;
         const corte = line.lastIndexOf('{') + 1;

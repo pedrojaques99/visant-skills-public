@@ -16,10 +16,15 @@
 //   --routes a,b        explicit routes. Without a slash also works ('apps' = '/apps')
 //   --routes-from X     'navConfig' (src/config/navConfig.ts) or a file path: takes every `to: '/...'`
 //   --widths 1366,390   viewport widths
-//   --theme dark|light|both   writes localStorage[--theme-key] before the app boots and checks the .dark class
+//   --theme dark|light|both   emulates prefers-color-scheme, writes localStorage[--theme-key] before the app boots, and
+//                       checks the result: the .dark class, data-theme="dark", or a dark painted body
 //   --theme-key theme   useTheme key (src/hooks/useTheme.ts)
-//   --login dev|none    dev = POST /api/auth/dev-login, token in localStorage.auth_token
-//   --email x           dev-login user (default: DEV_EMAIL, otherwise the first admin)
+//   --login dev|cookie|none   dev = POST /api/auth/dev-login, token in localStorage.auth_token
+//                       cookie = real sign-in with fetch (POST --signin-path, JSON {email,password}), the Set-Cookie
+//                       headers go into the Playwright context before any route opens
+//   --email x           dev-login user (default: DEV_EMAIL, otherwise the first admin). Required for --login cookie
+//   --password-file F   --login cookie: file with the password. The second line if it has more than one, else the whole file trimmed
+//   --signin-path P     --login cookie: sign-in endpoint on --api. Default /api/auth/sign-in/email
 //   --wait 7000         ms after networkidle (hydration + late fetch)
 //   --out DIR           screenshots + report.json. Default: <tmp>/verify-screens
 //   --skip-paid a,b     routes that fire AI on mount. Default: /naming (confirmed in code)
@@ -62,6 +67,8 @@ export function parseArgs(argv) {
     themeKey: 'theme',
     login: 'dev',
     email: process.env.DEV_EMAIL || '',
+    passwordFile: '',
+    signinPath: '/api/auth/sign-in/email',
     wait: 7000,
     out: path.join(os.tmpdir(), 'verify-screens'),
     skipPaid: DEFAULT_SKIP_PAID,
@@ -84,6 +91,8 @@ export function parseArgs(argv) {
     else if (a === '--theme-key') o.themeKey = val(i++);
     else if (a === '--login') o.login = val(i++);
     else if (a === '--email') o.email = val(i++);
+    else if (a === '--password-file') o.passwordFile = path.resolve(val(i++));
+    else if (a === '--signin-path') o.signinPath = val(i++);
     else if (a === '--wait') o.wait = Number(val(i++));
     else if (a === '--out') o.out = path.resolve(val(i++));
     else if (a === '--skip-paid') o.skipPaid = splitRoutes(val(i++));
@@ -93,7 +102,8 @@ export function parseArgs(argv) {
     else throw new Error(`unknown flag: ${a}`);
   }
   if (!['dark', 'light', 'both'].includes(o.theme)) throw new Error('--theme is dark|light|both');
-  if (!['dev', 'none'].includes(o.login)) throw new Error('--login is dev|none');
+  if (!['dev', 'cookie', 'none'].includes(o.login)) throw new Error('--login is dev|cookie|none');
+  if (o.login === 'cookie' && (!o.email || !o.passwordFile)) throw new Error('--login cookie needs --email and --password-file');
   o.api = o.api || o.base;
   return o;
 }
@@ -178,6 +188,35 @@ async function loadPlaywright() {
   throw new Error('playwright not found in the target repo or the npx cache. Run from the repo, or: npx playwright --version');
 }
 
+/* ── cookie login ─────────────────────────────────────────────────────── */
+/** The password from a file: the second line when there is one, otherwise the whole file trimmed. */
+export function readPassword(text) {
+  const lines = text.split(/\r?\n/);
+  return (lines.length > 1 && lines[1].trim() ? lines[1] : text).trim();
+}
+
+/** Set-Cookie header strings -> Playwright cookies for the app's host. */
+export function cookiesFromSetCookie(headers, base) {
+  const host = new URL(base).hostname;
+  return headers.map((h) => {
+    const [pair, ...attrs] = h.split(';').map((x) => x.trim());
+    const eq = pair.indexOf('=');
+    const c = { name: pair.slice(0, eq), value: pair.slice(eq + 1), domain: host, path: '/' };
+    for (const a of attrs) {
+      const [k, ...v] = a.split('=');
+      const key = k.toLowerCase();
+      const val = v.join('=');
+      if (key === 'path' && val) c.path = val;
+      else if (key === 'httponly') c.httpOnly = true;
+      else if (key === 'secure') c.secure = true;
+      else if (key === 'samesite') c.sameSite = { lax: 'Lax', strict: 'Strict', none: 'None' }[val.toLowerCase()] ?? 'Lax';
+      else if (key === 'max-age' && Number.isFinite(Number(val))) c.expires = Math.floor(Date.now() / 1000) + Number(val);
+      else if (key === 'expires' && !('expires' in c) && !Number.isNaN(Date.parse(val))) c.expires = Math.floor(Date.parse(val) / 1000);
+    }
+    return c;
+  }).filter((c) => c.name);
+}
+
 /* ── self-check (no browser) ──────────────────────────────────────────── */
 function selfCheck() {
   const t = [];
@@ -198,6 +237,18 @@ function selfCheck() {
   eq('no locale, domain', isRawKey('api.visantlabs.com', []), false);
   const o = parseArgs(['--routes', 'apps,/naming', '--theme', 'both', '--widths', '390']);
   eq('args', [o.routes, o.theme, o.widths], [['/apps', '/naming'], 'both', [390]]);
+  const oc = parseArgs(['--login', 'cookie', '--email', 'a@b.co', '--password-file', 'pw.txt', '--signin-path', '/api/login']);
+  eq('cookie args', [oc.login, oc.email, path.basename(oc.passwordFile), oc.signinPath], ['cookie', 'a@b.co', 'pw.txt', '/api/login']);
+  eq('signin default', parseArgs(['--login', 'cookie', '--email', 'a@b.co', '--password-file', 'pw.txt']).signinPath, '/api/auth/sign-in/email');
+  let needs = false;
+  try { parseArgs(['--login', 'cookie']); } catch { needs = true; }
+  eq('cookie needs email and file', needs, true);
+  eq('dev stays default', parseArgs([]).login, 'dev');
+  eq('password: second line', readPassword('user@x.co\r\nsecret pw\n'), 'secret pw');
+  eq('password: whole file', readPassword('  secret  \n'), 'secret');
+  eq('set-cookie', cookiesFromSetCookie(['sid=abc%3D; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=60'], 'http://localhost:5199')
+    .map(({ name, value, domain, path: pth, httpOnly, secure, sameSite }) => ({ name, value, domain, pth, httpOnly, secure, sameSite })),
+    [{ name: 'sid', value: 'abc%3D', domain: 'localhost', pth: '/', httpOnly: true, secure: true, sameSite: 'Lax' }]);
   let fail = 0;
   for (const [n, ok, got] of t) {
     if (!ok) fail++;
@@ -246,13 +297,30 @@ async function main() {
     if (!token) throw new Error(`dev-login returned no token (HTTP ${res.status})`);
   }
 
+  let cookies = [];
+  if (o.login === 'cookie') {
+    const password = readPassword(fs.readFileSync(o.passwordFile, 'utf8'));
+    const res = await fetch(`${o.api}${o.signinPath}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: new URL(o.base).origin },
+      body: JSON.stringify({ email: o.email, password }),
+    }).catch((e) => {
+      throw new Error(`sign-in unreachable at ${o.api}${o.signinPath} (${e.message}). Is the app running?`);
+    });
+    const setCookies = res.headers.getSetCookie();
+    if (!res.ok || !setCookies.length) throw new Error(`sign-in failed (HTTP ${res.status}, ${setCookies.length} cookies)`);
+    cookies = cookiesFromSetCookie(setCookies, o.base);
+  }
+
   const axe = axeSource();
   const { chromium } = await loadPlaywright();
   const browser = await chromium.launch();
   const report = [];
   for (const theme of themes) {
     for (const width of o.widths) {
-      const ctx = await browser.newContext({ viewport: { width, height: width > 500 ? 900 : 844 } });
+      // colorScheme too: many apps follow prefers-color-scheme, not a stored key.
+      const ctx = await browser.newContext({ viewport: { width, height: width > 500 ? 900 : 844 }, colorScheme: theme });
+      if (cookies.length) await ctx.addCookies(cookies);
       await ctx.addInitScript(
         ({ token, theme, key }) => {
           try {
@@ -329,7 +397,17 @@ async function main() {
               corta: c.slice(0, 8),
               ritmo: ri.slice(0, 8),
               rawKeys: raw,
-              darkClass: d.classList.contains('dark'),
+              // Dark by the class, the attribute, or what the page actually paints (an app on prefers-color-scheme
+              // sets neither): the body's background luminance.
+              darkClass:
+                d.classList.contains('dark') ||
+                d.dataset.theme === 'dark' ||
+                (() => {
+                  const m = getComputedStyle(document.body).backgroundColor.match(/\d+(\.\d+)?/g);
+                  if (!m || m.length < 3) return false;
+                  const [r, g, b] = m.map(Number);
+                  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 128;
+                })(),
               // a blank screen (lazy chunk never arrived, swallowed crash) passes overflow/clip/key checks: count text
               textLen: (document.body.innerText || '').trim().length,
               title: document.title,

@@ -19,3 +19,12 @@
 .btn {
   @apply text-red-500 px-2; /* ACUSA */
 }
+.fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent); /* CALA */
+  mask-image: linear-gradient( /* CALA */
+    to bottom, /* CALA */
+    #fff 70%, /* CALA */
+    rgba(0, 0, 0, 0) 100% /* CALA */
+  ); /* CALA */
+  color: #000; /* ACUSA */
+}

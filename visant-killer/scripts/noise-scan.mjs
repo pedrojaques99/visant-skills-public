@@ -672,13 +672,39 @@ REGRAS.push({
      * in a prop that names a key/shortcut. Outside that, the arrow is still the
      * habit the rule exists to catch.
      */
-    const TECLA = /[\u21B5\u21E7\u2318\u2325\u238B\u21E5\u23CE]/u;
-    const emTecla = (linhaTxt, ch) =>
-      TECLA.test(ch) && /<kbd>|<\/kbd>|(hint|Hint|atalho|shortcut|key|Key)\s*=/.test(linhaTxt);
+    const TECLA = /[\u21B5\u21E7\u2318\u2325\u238B\u21E5\u23CE\u2303]/u;
+    const NOME_DE_TECLAS = /\b\w*(?:KEYCAP|KEYS|keys|Keys|keycaps?|Keycaps?)\w*\s*(?::[^=;]*)?=\s*$|\b(?:keys|kbd|shortcut)\s*:\s*$/;
+    /* the glyph is a printed key when it sits in a key component or prop, or in a list named for keys */
+    const emTecla = (idx, ch) => {
+      const inicioLinha = limpo.lastIndexOf('\n', idx) + 1;
+      const fimLinha = limpo.indexOf('\n', idx);
+      const linhaTxt = limpo.slice(inicioLinha, fimLinha === -1 ? undefined : fimLinha);
+      if (TECLA.test(ch) && /<kbd>|<\/kbd>|(hint|Hint|atalho|shortcut|key|Key)\s*=/.test(linhaTxt)) return true;
+      /* inside <Kbd>...</Kbd> or <kbd>...</kbd>: the last opening tag before the glyph has no closing tag after it */
+      const antes = limpo.slice(Math.max(0, idx - 400), idx);
+      const abertas = [...antes.matchAll(/<[Kk]bd\b[^>]*>/g)];
+      if (abertas.length) {
+        const ult = abertas[abertas.length - 1];
+        if (!/<\/[Kk]bd>/.test(antes.slice(ult.index))) return true;
+      }
+      /* a kbd= or shortcut= prop, quoted or in braces */
+      if (/\b(?:kbd|shortcut)\s*=\s*(?:\{[^}\n]*|"[^"\n]*|'[^'\n]*)$/.test(limpo.slice(inicioLinha, idx))) return true;
+      /* a literal named KEYCAP / KEYS / keys: walk out through the unmatched brackets */
+      let fundo = 0;
+      for (let i = idx - 1; i >= 0 && idx - i < 1500; i--) {
+        const c = limpo[i];
+        if (c === ']' || c === '}' || c === ')') fundo++;
+        else if (c === '[' || c === '{' || c === '(') {
+          if (fundo > 0) fundo--;
+          else if (c !== '(' && NOME_DE_TECLAS.test(limpo.slice(Math.max(0, i - 80), i))) return true;
+        }
+      }
+      return false;
+    };
     for (const m of limpo.matchAll(RE)) {
       const inicio = limpo.lastIndexOf('\n', m.index) + 1;
       const fim = limpo.indexOf('\n', m.index);
-      if (emTecla(limpo.slice(inicio, fim === -1 ? undefined : fim), m[0])) continue;
+      if (emTecla(m.index, m[0])) continue;
       out.push({
         linha: limpo.slice(0, m.index).split('\n').length,
         amostra: limpo.slice(inicio, fim === -1 ? undefined : fim).trim().slice(0, 40),
@@ -759,6 +785,52 @@ function libDeIcone(file) {
   return lib;
 }
 
+/*
+ * A repo's OWN icon set counts as an installed library (K2). Two shapes:
+ *   - a local `Icon` component imported from a workspace package or a relative path and used as `<Icon name=...>`;
+ *   - an icon registry module: a file that exports a name -> glyph map. An inline SVG inside it IS the library.
+ * The repo-level check looks for an `Icon` / `icons` module in the monorepo's own packages, so a component that
+ * never imports it still bypasses it.
+ */
+const REGISTRO_DE_ICONES =
+  /\bexport\s+(?:const|default)\s+\w*(?:icons?|glyphs?|icon[-_]?paths?|iconregistry|registry)\w*\s*(?::[^=\n]+)?=\s*[{[]/i;
+const IMPORTA_ICON = /\bimport\s*\{[^}]*\bIcon\b[^}]*\}\s*from\s*["']((?:@[\w.-]+\/[\w./-]+)|\.{1,2}\/[^"']*)["']/;
+const ARQUIVO_DE_ICONES = /^(?:icon|icons|icon[-_]registry|icon[-_]paths)\.(?:tsx?|jsx?)$/i;
+const CACHE_DE_SET = new Map();
+
+function conjuntoLocalNoRepo(ini) {
+  if (CACHE_DE_SET.has(ini)) return CACHE_DE_SET.get(ini);
+  let achado = null;
+  for (let d = ini; !achado; d = path.dirname(d)) {
+    let ws = false;
+    try { ws = !!JSON.parse(fs.readFileSync(path.join(d, 'package.json'), 'utf8')).workspaces; } catch { /* none */ }
+    if (ws || ['pnpm-workspace.yaml', 'lerna.json'].some((f) => fs.existsSync(path.join(d, f)))) {
+      const pk = path.join(d, 'packages');
+      const dirs = fs.existsSync(pk) ? fs.readdirSync(pk) : [];
+      for (const n of dirs) {
+        for (const sub of ['', 'src', 'src/components', 'src/icons']) {
+          const dir = path.join(pk, n, sub);
+          if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) continue;
+          const f = fs.readdirSync(dir).find((x) => ARQUIVO_DE_ICONES.test(x));
+          if (f) { achado = `the repo's own icon set (packages/${n}/${sub ? sub + '/' : ''}${f})`; break; }
+        }
+        if (achado) break;
+      }
+      break;
+    }
+    if (fs.existsSync(path.join(d, '.git')) || path.dirname(d) === d) break;
+  }
+  CACHE_DE_SET.set(ini, achado);
+  return achado;
+}
+
+/** The repo's own icon set this file can use, or null. */
+function iconeLocal(src, file) {
+  const imp = src.match(IMPORTA_ICON);
+  if (imp && /<Icon\b/.test(src)) return `the local Icon component (${imp[1]})`;
+  return conjuntoLocalNoRepo(path.dirname(path.resolve(file ?? '.')));
+}
+
 /** Is this `<svg ...>...</svg>` a brand mark rather than a UI glyph? See the block above. */
 function marcaDeMarca(svg) {
   const abre = svg.match(/^<svg\b[^>]*>/)?.[0] ?? '';
@@ -782,9 +854,11 @@ REGRAS.push({
     /* only the folders near the file: a repo cloned under some `icons/` path is not an icon set */
     const pastas = path.dirname(path.resolve(file ?? '.')).split(/[\\/]/).slice(-3);
     if (pastas.some((p) => /^icons?$/i.test(p)) || /(icon|logo)/i.test(path.basename(file ?? ''))) return [];
+    /* an icon registry module (name -> glyph map) is the library itself */
+    if (REGISTRO_DE_ICONES.test(src)) return [];
     const linhas = src.split('\n');
     const out = [];
-    const GRADE = /<svg\b[^>]*viewBox\s*=\s*["']0 0 (16 16|20 20|24 24)["']/g;
+    const GRADE =/<svg\b[^>]*viewBox\s*=\s*["']0 0 (16 16|20 20|24 24)["']/g;
     for (const m of src.matchAll(GRADE)) {
       const fim = src.indexOf('</svg>', m.index);
       const svg = src.slice(m.index, fim === -1 ? m.index + 4000 : fim + 6);
@@ -795,7 +869,7 @@ REGRAS.push({
       out.push({ linha, grade: m[1] });
     }
     if (!out.length) return [];
-    const lib = libDeIcone(file);
+    const lib = libDeIcone(file) ?? iconeLocal(src, file);
     if (lib) return out.map((h) => ({ linha: h.linha, amostra: `viewBox 0 0 ${h.grade}: import it from ${lib}` }));
     /* No library installed: one finding per file, the fix is adopting one. */
     return [{
@@ -2272,9 +2346,11 @@ function selfTest() {
      * 0 0 1017 135, stays out) + 3 glyphs in glyphs/with-lib/panel.tsx (lucide
      * installed: one finding per glyph; its four brand marks stay out) + 1 in
      * glyphs/no-lib/card.tsx (three glyphs, no library: one per file). The
-     * `icons/` folder file and the `*logo*` file add zero.
+     * `icons/` folder file and the `*logo*` file add zero. 7 = + 2 in glyphs/local-set
+     * (a repo with its own Icon set: the bypass next to `<Icon>` and the one that never
+     * imports it). Its icon registry module adds zero.
      */
-    'hand-drawn-icon': 5,
+    'hand-drawn-icon': 7,
     /*
      * 1 = the `on: true` in the card factory. The two negatives exist to lock
      * the two ways the rule turns into noise: the call argument

@@ -75,6 +75,7 @@ one is rule 3, and context decides it: [a real reversal is not the AI tic](refer
    a price, not in a phase label, not on the social card. In a list it becomes
    period and comma ("34 páginas. 9 etapas, 1 case inteiro"), in a label a colon
    ("Fase 1: A Estratégia"), in a CTA a preposition ("Quero o e-book por R$ 47").
+   The linter flags only a chain of 3 or more in one string, and a repo that uses the dot on purpose permits it in `.copylintrc.json` (`{ "allowSeparator": ["·"] }`) or with `--allow-separator "·"`.
 3. **"Não é X, é Y" never.** Not split in two sentences ("Não é uma lista. É uma
    cascata."). Not the sentence that defines by negation ("Não é slogan.").
 4. **"É sobre X" never.** It asserts nothing. Swap it for the verb of what the

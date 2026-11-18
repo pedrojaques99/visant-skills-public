@@ -430,6 +430,25 @@ export function TeclaDeAtalho({ Btn }: { Btn: React.ComponentType<{ hint: string
   );
 }
 
+/* KEY COMPONENTS AND LISTS: a `<Kbd>` component, a `kbd=` or `shortcut=` prop and
+ * a literal named KEYS hold printed keys, arrow keys included.
+ * EXPECTED arrow-glyph: zero of these. */
+const KEYCAP = { enter: "↵", mod: "⌘", up: "↑" };
+const KEYS = [
+  { label: "Next", keys: ["⌃", "→"] },
+];
+export function TeclasEmComponente({ Kbd, Row }: { Kbd: React.ComponentType<{ children: React.ReactNode }>; Row: React.ComponentType<Record<string, string>> }) {
+  return (
+    <>
+      <Kbd>
+        ⌘
+      </Kbd>
+      <Kbd>←</Kbd>
+      <Row kbd="⌥↓" shortcut={"⏎"} />
+    </>
+  );
+}
+
 /* AN OBJECT NESTED INSIDE AN ARGUMENT is still an argument. Before the fix of
  * 2026-09-21 the rule climbed ONE level and stopped: the brace containing `on: true`
  * is preceded by `? `, not by `name(`, and a room config setter became
