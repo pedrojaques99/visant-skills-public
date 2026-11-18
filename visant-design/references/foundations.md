@@ -121,7 +121,7 @@ Nielsen's 10 usability heuristics. Answer from the screen:
 The one home for zero, repeated badges and the empty state. Other files link here.
 
 - **Zero.** A zero from a failed or unfed source does not render: show the error, or nothing. A measured zero stays on health and trust surfaces, where "0 failed jobs" is the answer. A breakdown that reads zero is noise until it moves. A total may stay when it is the subject of the page.
-- **A badge on 100% of rows distinguishes nothing.** Render it once rows differ.
+- **A badge on 100% of rows distinguishes nothing.** Render it once rows differ, and say it once where the whole list is in view. When it leaves, the row leaves that slot empty: a row whose caption falls back (status, then role, then presence) must not hand the slot to the next fallback, or the cut caption comes back as a longer, cut one or as a word the group heading already says. Look at the row after the change, not only at the caption you removed.
 - **Empty.** The empty state is an invitation: the product's object, one line of what will appear, one action that starts filling it. Zeros stay hidden until a first item. The absence of a field on a record can itself be the signal: draw the gap as a deliberate state, not a hole. An empty shared space is a content problem, so seed it.
 
 ## Sources
