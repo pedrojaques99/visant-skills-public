@@ -22,6 +22,8 @@ items got processed. Every rule below moves one of the two.
 - [A control pair is one unit, not two ends](#a-control-pair-is-one-unit-not-two-ends)
 - [A label becomes an icon when the option HAS a shape](#a-label-becomes-an-icon-when-the-option-has-a-shape)
 - [Render tool: preview in a fixed column, controls in another](#render-tool-preview-in-a-fixed-column-controls-in-another)
+- [Mode rail: one tab per task](#mode-rail-one-tab-per-task)
+- [Presence of others](#presence-of-others)
 - [Anti-patterns](#anti-patterns)
 
 ## Chrome budget
@@ -448,11 +450,47 @@ whole stage, and the picture is covered in three places.
 
 In a "configure, generate, see the result" tool, the preview lives in its own fixed column (`lg:sticky lg:top-*`) beside the controls column, so a parameter is never changed out of sight of its effect. The column exists before the first render, with an empty state in it, so the layout never jumps from one column to two.
 
+## Mode rail: one tab per task
+
+An editor's icon rail beside the panel grows one tab per feature release. Each
+tab is a task the person switches into: inspect the selection, sound, assemble
+the whole edit, layers, comments. Not one per feature, and rarely more than six.
+
+- **Name each tab by the task, not by the data type** ("Assemble", not "Video").
+  When two tabs are used together all the time, they are one task.
+- **The selection tab follows the selection.** Picking something on the canvas
+  or the timeline opens it; the other tabs stay where the person left them.
+- **The active tab says so by color and a second cue** (fill, edge mark):
+  [focus and selection](../../visant-design/references/foundations.md#8-interaction).
+- **A tab with nothing to act on says why** ("select a clip"), instead of an empty
+  column or a disappearing tab that moves the others.
+- What goes inside the selection tab: [control panels](../../visant-refine/references/control-panels.md#the-selection-decides-the-panel).
+
+## Presence of others
+
+A shared document shows who else is in it. Drawn one chip per connection, it
+repeats people and says nothing.
+
+- **One mark per person, never one per tab or device.** Merge the connections
+  of the same person.
+- **You are not on your own list.** Your position is already the cursor and the
+  playhead.
+- **Stack avatars**, overlapping, with `+N` after three. A person who is not
+  here leaves the stack.
+- **Detail on hover and focus** (name, where they are, what they are doing).
+  Their position shows inline only when it differs from yours or when you
+  follow them.
+- **An agent working in the document is a presence too,** with a live state
+  (working, waiting) on its mark, and its edits arrive in the view as they land.
+
 ## Anti-patterns
 
 | Pattern | Why it fails |
 |---|---|
 | Bars and floating groups scattered over the stage | The picture is covered in three places and every tool has to be hunted; one bar, one panel |
+| One presence chip per open tab, yourself included | The same person three times with a position that says nothing; one avatar per other person, detail on hover |
+| Inspector showing every folder for every selection | Each folder is right alone and the panel is a wall; one view per selection type |
+| A rail tab per feature release | The rail maps the roadmap, not the work; one tab per task |
 | Gradient hero on a work surface | Acquisition instinct on class B; 88px for a title already in the tab |
 | Control stacked ABOVE the `<h1>`, repeating what the title says | The screen's subject arrives before its name, and the same information takes two heights; it belongs in the header, next to the action |
 | Three alignment axes in the same fold (title left, piece centered, action at the edge) | No anchor shares a column; on a wide screen the primary sits over 1000px from the title and the page reads as assembled |

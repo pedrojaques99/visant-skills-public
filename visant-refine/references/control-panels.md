@@ -35,6 +35,34 @@ shape of its data. Measured in the screenshots (2026-10-29):
 The pattern under all ten: **the control takes the shape of the data, the
 chrome takes the shape of the state, and depth is drawn with lines, not boxes.**
 
+## The selection decides the panel
+
+An inspector grows one folder per feature, and each folder obeys every rule
+below while the panel as a whole shows everything to everyone. The cause is one
+level up: what the panel shows is a function of what is selected.
+
+- **One view per selection type.** An element, a container (scene, clip, group,
+  artboard), a media or audio clip, and nothing selected each get their own
+  view. A folder that does not change the current selection is not in that view.
+- **Nothing selected shows structure, not emptiness.** The layer list of what is
+  in view, plus the one next action ("select something on the canvas").
+- **At most three groups per view, named by intent.** For an element:
+  Shape (position, scale, rotation, anchor, size), Style (color, type, fill,
+  blend), Motion (keyframes, entrance and exit). The group switch is a mode
+  selector, so it sits above its content ([§5](#5-input-discipline)). The rare part
+  of a group (filters, blend) stays one click away inside it.
+- **Name the selection once, in the panel header,** with its own actions
+  (duplicate, delete, order). A type label repeated in every folder header
+  ("Image", "img") says what the header already said.
+- **Work on the whole document is not under the selection.** Cuts of the
+  whole edit, export framing, raw footage, project settings live in their own
+  task tab ([mode rail](../../visant-frontend/references/work-surface.md#mode-rail-one-tab-per-task)).
+- **Switching selection swaps the content in place,** with no close and reopen
+  ([side panel](../../visant-frontend/references/work-surface.md#side-panel-non-blocking-inspector)).
+- **Test it by selecting each type.** For each one, count the folders in view and
+  ask which of them change what is selected. Any that does not is in the wrong
+  view.
+
 ## 1. The control takes the shape of the data
 
 Choose the control from the data, never from what the primitive library has
@@ -156,6 +184,7 @@ the argument: rows per decision (11 → 7 for the gradient), clicks per change
 
 ## Checklist before shipping a panel
 
+- [ ] Each selection type has its own view; nothing in view fails to change the selection; at most three groups named by intent
 - [ ] Every control chosen by the data table in section 1 (labels covered, shapes still say what they edit)
 - [ ] Values `tabular-nums`, units dimmer, display normalized
 - [ ] No global Reset; per-folder reset only when dirty

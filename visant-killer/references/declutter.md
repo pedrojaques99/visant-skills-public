@@ -87,7 +87,14 @@ defect. That's yours, and it takes thirty seconds:
    thing (two urls, two uploads, two searches) on the same screen: either one
    goes, or the names start stating the difference. If both write to different
    places and nothing on screen says so, it's a lottery, not an interface.
-6. **Run `corta-scan.js`** (console, at 390px). A half-cut word and a stacked
+6. **Count the same object repeated side by side.** Three chips that name the
+   same person, the same status on every row, a type label in every section
+   header: one mark stays, the rest is noise
+   ([presence](../../visant-frontend/references/work-surface.md#presence-of-others)).
+7. **On a panel, select each type of thing and count what does not change it.**
+   Every section still in view for a selection it does not edit is accumulation
+   ([control panels](../../visant-refine/references/control-panels.md#the-selection-decides-the-panel)).
+8. **Run `corta-scan.js`** (console, at 390px). A half-cut word and a stacked
    overlay aren't seen by scanning with your eyes, they're seen in measured
    pixels.
 

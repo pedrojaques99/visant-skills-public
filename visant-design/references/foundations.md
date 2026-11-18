@@ -64,6 +64,7 @@ Gestalt is why a screen with every token right can still read wrong.
 - **Recognition over recall** (Nielsen). Show the options and the state. Don't make people remember them from another screen.
 - **Familiar beats clever** (Jakob's law). People spend most of their time on other products. A reinvented date picker costs attention you needed elsewhere.
 - **Progressive disclosure.** Show what most people need now, and put the rest one step away.
+- **Count the concepts in view, not only the controls.** On a work surface, every open section, tab, chip and floating group competes for the same glance. Each one can be right alone and the sum still too much. When the count grows, group by intent or move the group to the task it belongs to. On a panel, the selection decides what is in view: [control panels](../../visant-refine/references/control-panels.md#the-selection-decides-the-panel). Across a work surface, one rail tab per task: [mode rail](../../visant-frontend/references/work-surface.md#mode-rail-one-tab-per-task).
 - **The default is a decision.** Most people keep it. Choose it for them.
 
 ## 8. Interaction
