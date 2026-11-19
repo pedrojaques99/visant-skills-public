@@ -1,0 +1,74 @@
+{
+  "out": "final/CLIENT-TASK_v1_1080x1920.mp4",
+  "size": [
+    1080,
+    1920
+  ],
+  "fps": 24,
+  "xfade": 0.5,
+  "font": "brand/font.ttf",
+  "scenes": [
+    {
+      "file": "takes/s1.mp4",
+      "note": "wide establishing shot, from behind"
+    },
+    {
+      "file": "takes/s2.mp4",
+      "note": "reaction: product pulled out of the box, joyful"
+    },
+    {
+      "file": "takes/s3.mp4",
+      "note": "closing location shot"
+    }
+  ],
+  "texts": [
+    {
+      "text": "This Christmas,",
+      "start": 0.5,
+      "dur": 3.7,
+      "y": 330
+    },
+    {
+      "text": "the gift is the game.",
+      "start": 0.8,
+      "dur": 3.4,
+      "y": 420,
+      "color": "BFFF53"
+    },
+    {
+      "text": "New shoes. New game.",
+      "start": 5.2,
+      "dur": 3.5,
+      "y": 360
+    },
+    {
+      "text": "Merry Christmas & happy holidays.",
+      "start": 9.6,
+      "dur": 3.6,
+      "y": 380,
+      "size": 68
+    }
+  ],
+  "endcard": {
+    "dur": 3.0,
+    "xfade": 0.6,
+    "bg": "001302",
+    "logo": "brand/logo-lime.png",
+    "logo_w": 760,
+    "bar_color": "BFFF53",
+    "text": "The gift is the game.",
+    "text_size": 54
+  },
+  "music": {
+    "file": "music/track_CC0.wav",
+    "start": 47.6
+  },
+  "loudness": -14,
+  "_doc": {
+    "scenes[].dur": "optional, defaults to the clip length",
+    "texts[]": "start/dur in seconds of the final timeline; y in px from top; color hex without #; size px",
+    "endcard": "optional; logo PNG on bg colour, accent bar, tagline",
+    "music.start": "seconds into the track",
+    "loudness": "integrated LUFS target, true peak -1 dBTP"
+  }
+}
