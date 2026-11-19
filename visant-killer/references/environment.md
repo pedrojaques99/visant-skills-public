@@ -181,6 +181,10 @@ mistakes below happened in one real session.
 - **Read the push's exit code, not its output.** In `git push 2>&1 | tail -5` the
   status is `tail`'s, so a rejected push reads as success. Don't pipe it, or use
   `set -o pipefail`.
+- **Locally too: who is serving the port?** A killed wrapper can leave its child
+  dev server alive, still answering on the same port from an old worktree, and
+  every "after" capture shows the old code. Before measuring, check that the
+  process listening on the port runs from the directory you edited.
 
 ## Your own tools lie too (Windows, scripts, test doubles)
 
@@ -193,6 +197,13 @@ From one long redesign session (2026-11-11); each one cost a round.
   rewrites the other selectors' rules too. Match the whole selector list, or edit by hand.
 - **jsdom does not fire `onChange` on a synthetic checkbox click.** Use
   `fireEvent.click` from Testing Library or `user-event`, not `element.click()`.
+- **`click()` is not a touch.** With touch emulated, Playwright's `.click()` still
+  fires `mouseover`: a sidebar that expands on hover showed its labels, and an
+  icons-only phone menu did not reproduce, nearly closing a P0 as "not confirmed".
+  `.tap()` reproduced it. Verify touch with `tap()`.
+- **A full-page screenshot stops at an inner scroller.** In an `h-screen` shell
+  whose content scrolls inside a child, `screenshot({ fullPage: true })` captures
+  only the fold. Read that scroller's `scrollHeight` and grow the viewport to it.
 - **A short splash races the capture script.** Wait for a DOM mark of the real
   screen, never a fixed delay.
 - **Every full run leaves temp folders.** About 1,900 per run of a 45-screen
@@ -208,6 +219,7 @@ From one long redesign session (2026-11-11); each one cost a round.
 [ ] real data: best record, worst record, and backend stopped
 [ ] node count matches the page opened by hand
 [ ] overflow measured on the document, with ancestor overflow checked
+[ ] the process on the port runs from the edited directory
 [ ] production only: deploy confirmed by a value from the new commit
 ```
 

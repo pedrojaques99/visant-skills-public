@@ -173,7 +173,11 @@ stays at symptom, fix, test and detector. Optional context, never required readi
 **12, eternal skeleton.** Seen in a naming screen, in a profile referral block and
 in an API helper where a network failure became an empty list in the SERVICE,
 before the page had a chance to show an error. The page's error state was
-unreachable even after it was written.
+unreachable even after it was written. A later audit of a ~30-screen panel found
+the same defect on about 25 screens: a `fetch` with no `res.ok` check and an empty
+`catch` painted "No items", a zero total, or even a success toast on a 500. Fixing
+25 leaves would have left the 26th; the fix was one shared fetch helper that
+throws when the response is not ok, plus one error piece with "try again".
 
 **13 and 20, why the sum is invisible.** Counting what existed before the first
 pixel of product in a real showcase: position tag, title, thesis, count line,

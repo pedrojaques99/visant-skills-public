@@ -112,6 +112,10 @@ too, and that one is the serious one.
 
 - **Before and after of text: always the text.** The user approves copy by
   reading copy, never a summary of copy.
+- **A visual before and after carries a decision per item.** Approve or reject,
+  plus a comment, on each pair, saved where the agent reads it back. Without it
+  the owner reads passively; with it, one owner decided 29 items in 15 minutes and
+  every rejection arrived as a concrete instruction.
 - **Taste proposal kept apart from the fix.** Mixing them forces the user to
   review the reviewer.
 - **No "I improved the hierarchy".** Say which element went up, which went down,
