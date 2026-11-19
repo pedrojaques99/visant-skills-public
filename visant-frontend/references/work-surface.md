@@ -466,6 +466,19 @@ the whole edit, layers, comments. Not one per feature, and rarely more than six.
   column or a disappearing tab that moves the others.
 - What goes inside the selection tab: [control panels](../../visant-refine/references/control-panels.md#the-selection-decides-the-panel).
 
+## Navigation depth: tabs inside tabs are a map
+
+Each request adds a level that was fine alone: sidebar, a tab param, sub-tabs, a
+panel, the panel's tabs, a collapsible. Map it before cutting: list every level
+per destination with `file:line`. A ~30-screen panel came out at six levels, three
+screens with two addresses each, and three doors to the same list.
+
+- **The target:** one route per destination, at most one level of tabs, every
+  level in the URL, and the phone's back button goes back one step.
+- **Two addresses for one screen** keep the older one as an alias, never as a
+  second screen.
+- Three doors to the same list is [catalog 21](../../visant-killer/references/slop-catalog.md#21-two-doors-for-the-same-gesture).
+
 ## Presence of others
 
 A shared document shows who else is in it. Drawn one chip per connection, it
