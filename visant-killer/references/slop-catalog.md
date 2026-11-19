@@ -213,7 +213,10 @@ files. It flags the two doors only **on the same screen** (common ancestor in th
 import graph, with no early `return` or ternary separating them).
 **Judgment, not detector.** The same name for different things on different
 screens is a vocabulary defect: does each name repeated across screens mean the
-same thing? Sister tools, the same job with the same selector in a different
+same thing? A new aggregating screen (a home, an inbox) that repeats an existing
+tab's queue, poorer, is two doors too: the aggregator renders the tab's rich
+component, inline action included, and the tab leaves, with an alias for its old
+link. Sister tools, the same job with the same selector in a different
 place, show only with the frames side by side.
 
 ## 22. The highlight that highlights everything

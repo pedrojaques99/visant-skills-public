@@ -165,7 +165,7 @@ ammunition).
 
 Read [slop-catalog.md](references/slop-catalog.md) before judging (slop that
 passes every linter: symptom, cause, fix). **Several agents at once:** exclusive file ownership, i18n by fragment merged
-once, measure after edits stop ([multi-agent.md](references/multi-agent.md)).
+once, measure after edits stop, then one fresh review of the whole diff for the seams ([multi-agent.md](references/multi-agent.md)).
 
 ## Step 4: Devil's advocate
 

@@ -63,3 +63,9 @@ Each rule here came from an owner pointing at a real screen and saying what was 
 **Tell:** a sidebar listing every tool in the same order for everyone, the five a person uses buried among ten they never open. The opposite failure: a menu that reorders itself by use, so the item is never where the hand remembers it.
 
 **Instead:** a lean default (what waits on the user, plus the few they use most, learned from their own visits with recent use weighing more), everything else one click away in a "More". Learning decides which items are in sight, never their order. The set changes rarely (between sessions, and only when a newcomer clearly beats the weakest), never under the pointer. A place the person chose by hand always wins. With no history yet, start from the product's defaults.
+
+## 11. A warning is a chip that opens, not a band
+
+**Tell:** a warning or error strip across the middle of the content, pushing the work down to announce something about one block. One owner rejected six screens for this same reason in one review.
+
+**Instead:** a block's warning becomes a quiet chip on that block ("2 warnings") that expands in place, with a short, friendly line and the action that resolves it. Only an error that stops the whole screen takes the screen. A warning nobody on the screen can act on is not shown there.

@@ -32,6 +32,9 @@ that person do instead?**
 was available?**
 The core vice of admin dashboards. Available data is raw material, not a reason.
 If the origin was availability, the element becomes a log line, not a card.
+Its usual form is a home of stock totals (all customers, all requests) that ask
+for no gesture. The home becomes the queue of what waits on the user, each row
+opening the record that resolves it, and the totals drop to a context footer.
 
 **Q3 `[T2]` What is the version of this that would fit in one sentence of text? Why
 is the screen better than the sentence?**
@@ -85,11 +88,13 @@ Mechanism: **expansion is born from usage** (RCD 8), never from interruption.
 ## 3. Data truth
 
 **Q11 `[T1]` In which scenario does this number lie?**
-The four classics, all seen in production: a fetch that failed and paints zero; a
+The five classics, all seen in production: a fetch that failed and paints zero; a
 zero denominator becoming "0,0%"; a stock (queue, balance, pipeline) receiving a
 date filter that only events should receive; two numbers of the same unit and
 different kinds (budgeted and actual) side by side with no label saying which is
-which. This is the home of the silent zero and no-denominator rules: other
+which; a total summed on the client over a paginated list (the year's total read
+50 of 90 rows, about half, and looked right). A total comes from the server, or it
+is `null`; a count badge and its total share that source. This is the home of the silent zero and no-denominator rules: other
 files link here. Without a denominator there is no ratio, so the value is `null`
 and the line does not appear.
 
@@ -102,7 +107,10 @@ backend stopped**.
 **Q13 `[T2]` What promise does this make that the database doesn't back?**
 Price typed in copy while the charged value lives on the server; a status label
 that isn't the status; a count that excludes what the list includes. The fix isn't
-vigilance, it is a build lock.
+vigilance, it is a build lock. The same promise rides on a link: "+N overdue"
+counted over every period opened a list of this month under one status, another
+list. The count and its destination call one function, and the destination shows
+the applied filter as a chip with "clear".
 
 **Q14 `[T3]` If the optimistic write fails, what gets recorded?**
 UI can't lie to the database. Recording an action that didn't happen corrupts the

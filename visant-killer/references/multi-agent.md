@@ -1,6 +1,6 @@
 # Several agents at once
 
-A T3 target split across parallel agents breaks in three known places, and each
+A T3 target split across parallel agents breaks in four known places, and each
 one has a rule.
 
 ## Exclusive file ownership
@@ -33,6 +33,24 @@ approved translation or name), never a general force.
 One agent's HMR recompiles the route another is measuring: an empty screen and
 an "unapplied" theme appear and vanish. Measure after edits have stopped, or
 re-measure whatever flagged before calling it a bug.
+
+## The seam belongs to nobody
+
+Exclusive ownership protects each file, not the joints between them. In one round
+five agents each came back green on their slice (types, tests, lint), and three
+adversarial reviews found 24 bugs (12, then 10, then 2), every one of them between
+slices. So after parallel agents, one [fresh reviewer](devils-advocate.md#fresh-reviewer)
+reads the **whole diff**: it gets the code and never the authors' defense, and it
+gets the seam classes that showed up, to hunt for by name:
+
+- **A hidden panel still reads and writes the URL.** Tabs kept mounted while
+  hidden (keep-alive) share generic params (`?search=`, `?sub=`): one tab's search
+  filtered another behind it, and a tabs hook canonicalized the URL while hidden,
+  writing into the neighbor's address.
+- **An inner tab stacks history.** A panel's own tabs pushed entries, so "back"
+  reopened the panel it was supposed to close.
+- **One rule, two implementations.** The same "day" computed in UTC in one place
+  and in local time in another: each slice is right, and they disagree at midnight.
 
 ## Baselines
 

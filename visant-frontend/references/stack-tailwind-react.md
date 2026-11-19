@@ -11,7 +11,10 @@ before assuming:
 - **Primitives:** is there a `components.json` at the root? Then it is shadcn/ui
   and `npx shadcn@latest add` applies. No `components.json` but `@radix-ui/*`
   packages in `package.json`? Then it is raw Radix with its own `ui/` folder, and
-  `npx shadcn add` does not apply.
+  `npx shadcn add` does not apply. When `add` would run an install you cannot
+  afford (a worktree whose `node_modules` is a link to another checkout: the
+  install replaces the link), fetch the item's `r/<name>.json`, write its files,
+  and point its imports at the equivalent packages already installed.
 - **DS pieces:** find the `components/ui/` (or `src/components/ui/`) folder and
   read what already exists (media card, segmented picker, tab strip, dropzone,
   modal) before using the generic snippets below.
@@ -49,6 +52,7 @@ is what makes both themes work without a second pass.
 - [Route group is the chrome boundary](#route-group-is-the-chrome-boundary)
 - [A class name assembled at runtime does not exist](#a-class-name-assembled-at-runtime-does-not-exist)
 - [A regression guard that reads source](#a-regression-guard-that-reads-source)
+- [The server and the client draw the same first frame](#the-server-and-the-client-draw-the-same-first-frame)
 - [Keyboard guard order](#keyboard-guard-order)
 
 ## Reveal on hover — the touch-safe way
@@ -56,7 +60,9 @@ is what makes both themes work without a second pass.
 `sm:opacity-0 sm:group-hover:opacity-100` is the trap. It uses **width as a proxy
 for "has a mouse"**, and the proxy is wrong on the most common field device: a
 tablet has ≥640px and *no* hover, so the control renders invisible **and**
-unreachable — no intermediate state ever hints it's there. Ask the real question
+unreachable — no intermediate state ever hints it's there. Worse when it is
+reachable: `opacity-0` keeps the hit area, so a tap on the row fired an invisible
+delete. Approve, delete and edit that exist only on hover do not exist on touch. Ask the real question
 with `(hover: hover)`, and always pair it with `focus-visible` for the keyboard:
 
 ```ts
@@ -520,6 +526,37 @@ not for anything a type or a unit test already covers.
 ### Test the exemption, not only the detection
 
 A guard's allowlist can swallow real hits (a unit regex that read `mb-2` as "MB"). Assert it in both directions: one line that must flag, one that must stay exempt. Fixtures cover this: `visant-killer/scripts/fixtures`.
+
+A flow test (end to end, a leak check across panels) needs the same proof: run it
+once against the version that still has the defect. One cross-panel search-leak
+test only counted after it flagged the old build (206 rows against 117). Green
+that was never red proves nothing.
+
+## The server and the client draw the same first frame
+
+A hydration mismatch throws the server's tree away and rebuilds it on the client.
+It passes every gate on desktop; on a phone it was regenerating 16 of 16 routes.
+
+- **Viewport read in an effect, inside a Suspense boundary.** The boundary
+  hydrates after the provider's effect has run, so the client drew the mobile
+  `Sheet` while the server had drawn the desktop rail. Read `isMobile` with
+  `useSyncExternalStore` and a server snapshot of `false`: it holds across any
+  boundary.
+
+  ```ts
+  const subscribe = (cb: () => void) => {
+    const mq = matchMedia("(max-width: 767px)")
+    mq.addEventListener("change", cb)
+    return () => mq.removeEventListener("change", cb)
+  }
+  export const useIsMobile = () =>
+    useSyncExternalStore(subscribe, () => matchMedia("(max-width: 767px)").matches, () => false)
+  ```
+
+- **`Intl` output differs between runtimes.** `Intl.NumberFormat` with
+  `notation: "compact"` prints "81 mil" in Node's ICU and "81,0 mil" in Chrome's.
+  A format rendered on the server is written by hand, with a test that forbids
+  going back to compact `Intl` there.
 
 ## Keyboard guard order
 
