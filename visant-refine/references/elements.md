@@ -42,6 +42,15 @@ Own rules:
 - One tile per surface carries weight; two tiles of equal weight become none.
 - Zero and empty: see [foundations.md](../../visant-design/references/foundations.md#12-states).
 - Without the qualifier it is not a tile, it is a loose number.
+- **Alive is not decorated.** A label and a still number in a grey card read as
+  the stock kit (an owner's repeated rejection: "generic shadcn"). Life is the
+  number moving when it changes (`count-up`), a signal of its state (a
+  [ratio gauge](#ratio-gauge) for goal or usage, a [change badge](#change-badge)
+  against the previous period, semantic color only for risk) and a shape that
+  says the data's kind. Not a gradient, a glow, a blur, a hover that jumps, or
+  more cards. The pieces come from the library first ([before drawing](../SKILL.md#before-drawing-discover-what-the-repo-already-has)): in one
+  review the whole rejection-to-piece map came from it, and the only new piece was
+  the one it lacked.
 
 ## Sparkline
 
