@@ -366,14 +366,16 @@ const REPEATS = [
        brasileiro", "1200 reais": none of them defends an argument. The
        lookbehind covers the attached number ("47 reais") and the currency
        name; `R$` in the same unit is handled outside the regex, in the
-       currency filter below. */
+       currency filter below. "em reais" ("vendas em reais", "pagas em reais")
+       is the currency too: a sales dashboard said it seven times and the
+       rule read seven seals. */
     /* English joins the same budget (one seal per piece, whichever language):
        "truly", "genuinely", "authentic", "honestly", "real". "real-time" and
        "real estate" are the English "tempo real": they say WHAT, not "trust me".
        `genu[íi]n\\w+` already covers "genuine"/"genuinely" and `honest\\w+`
        covers "honestly", so the English branch does not repeat them. */
     re: rx(
-      `${L}(?:(?<!tempo\\s)(?<!\\d\\s)(?<!brasileiro\\s)(?:real|reais)(?![-\\s]+(?:time|estate)${R})|de\\s+verdade|` +
+      `${L}(?:(?<!tempo\\s)(?<!\\d\\s)(?<!brasileiro\\s)(?<!\\bem\\s)(?:real|reais)(?![-\\s]+(?:time|estate)${R})|de\\s+verdade|` +
         `na\\s+pr[áa]tica|de\\s+fato|genu[íi]n\\w+|aut[êe]ntic(?:o|a|os|as|idade)|` +
         `honest\\w+|truly|authentic(?:ally|ity)?)${R}`
     ),
@@ -453,6 +455,7 @@ if (args.includes('--self-test')) {
     'A seamless white background behind the product.',
     'Empower mode is off.',
     "This isn't available on the free plan.",
+    'Só as vendas em reais, pagas em reais.',
   ];
   const falhas = [];
   const dispara = (rule, text) => acha(rule, text) !== null;
