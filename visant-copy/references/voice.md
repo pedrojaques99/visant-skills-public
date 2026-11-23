@@ -143,6 +143,47 @@ fails in three ways:
   "treinado" or "em minutos", open what the product really does. A claim the
   demo beside it contradicts costs more than a flat line.
 
+### Naming a lesson, module or list item
+
+A course grid, a module list or a catalog is read as a list, top to bottom, by
+someone deciding whether to buy or what to open next. Each name has one job: say
+what comes out of that item. Learned from the owner renaming a 39-lesson course
+(what he kept, changed and rejected from a suggested pass, case in
+[cases.md](cases.md#the-owner-renamed-the-course)):
+
+1. **Rename only what is opaque.** A title that already carries the voice stays,
+   even if it is a slogan: "O tempo é nosso ouro", "Não venda sua alma", "A meta é
+   ganhar tempo", "O terminal sem medo", "Minhas ferramentas". What goes is the
+   title that names a topic nobody can picture: "Onde construir e Efeitos
+   Visuais", "É no desenvolvimento", "Exemplo 01: ...".
+2. **A slogan that stays can take a clarifier**, never lose its hook: "O novo
+   punk: nem tudo-IA, nem anti-IA".
+3. **For the beginner, the gain or the situation beats the tool's name.** "Onde
+   experimentar com IA sem custo", not "App de halftone no Google AI Studio".
+   Tool names are fine where the reader already knows them (advanced, bonus):
+   "Showreel de marca com Figma Motion, Premiere e HyperFrames". A product name
+   that is the thing itself stays ("Liquid Type Machine").
+4. **Problem, then the move, in one line.** "Não deixe seu agente esquecer, crie
+   uma memória" beat "Dar memória ao agente". A possibility beats an order: "O que
+   deu certo pode virar uma skill", not "Transformar o que deu certo numa skill".
+5. **A question is welcome when it is the reader's own question.** Module "Onde
+   nosso tempo vale mais?", lesson "Como vender e faturar com a IA?". Money said
+   plainly is fine; an invented figure is not.
+6. **No numbering or series prefix inside the name.** The list already shows the
+   order. "Site 1:", "Exemplo 01:" and "Na prática:" (×3, also a
+   `credibility-seal` hit) all came out: "Publicando o site", "Arte final do
+   outdoor em PDF".
+7. **Process in the gerund** when the lesson is the doing: "Publicando o site".
+8. **"Você/sua/nosso" by default in names**, "teu" only where it already sounds
+   natural ("do teu jeito"). Drop a possessive that adds nothing: "Primeiro app,
+   sem código", not "Teu primeiro app, sem código".
+9. **Keep the working noun, drop the clever one.** "Demanda no Figma + Drive
+   (MCP)" kept "demanda" and the technical acronym the lesson teaches; a cute
+   "sem mão" was cut.
+
+Where the names are generated into another page (a sales page listing the
+course), rename at the source and regenerate. Never fix the copy on the page.
+
 **Mechanism.** The causal chain with a repeated subject (the page's anaphora).
 The repetition shows the chaining without having to say "chained".
 

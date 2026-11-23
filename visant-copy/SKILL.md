@@ -193,6 +193,11 @@ into Google?** Full test, examples and the wrong-task trap:
 a list of nouns, or a promise the demo beside it contradicts. Full failure
 modes: [voice.md → The product line](references/voice.md#the-product-line-says-what-the-reader-gets).
 
+**A list item's name (lesson, module, catalog entry) says what comes out of it.**
+Rename only the opaque ones, keep titles that carry the voice, no series prefix,
+gain over tool name for beginners. The nine rules, from a real renaming:
+[voice.md → Naming a lesson](references/voice.md#naming-a-lesson-module-or-list-item).
+
 Visant's own brand terms: [glossary](references/voice.md#brand-glossary-visants-own-copy-only). In client copy, the glossary is the client's.
 
 ## If the repo uses Visant's pipeline (`copy.json`)

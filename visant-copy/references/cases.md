@@ -47,6 +47,34 @@ output, most from generated JSON, deliberate bad samples and CLI commands. So
 `--summary`, `--skip` and the skipping of `*.generated.*` exist, and
 [audit.md](audit.md) starts from what is painted on screen.
 
+## The owner renamed the course
+
+A 39-lesson course had names that confused its own author: topics ("Onde
+construir e Efeitos Visuais"), series prefixes ("Exemplo 02: ..."), and a module
+numbered 3.x sitting in fifth place. A suggested pass, built from each lesson's
+description and the opening of its transcript, went into a spreadsheet with a
+"new name" column the owner could edit. Comparing his final column with the
+suggestion is where the rules in
+[voice.md → Naming a lesson](voice.md#naming-a-lesson-module-or-list-item) came
+from:
+
+| Suggested | Owner's final | What it taught |
+|---|---|---|
+| Por que a gente usa IA: tempo | O tempo é nosso ouro (kept) | a title with voice stays |
+| IA sem perder a tua cara | Sua ferramenta, IA que cria do seu jeito | "sua" over "tua"; ownership over fear |
+| App de halftone no Google AI Studio | Onde experimentar com IA sem custo | gain over tool name, for beginners |
+| Dar memória ao agente | Não deixe seu agente esquecer, crie uma memória | problem, then move |
+| Transformar o que deu certo numa skill | O que deu certo pode virar uma skill | possibility over order |
+| Site 5: publicar | Publicando o site | no series prefix; gerund for the doing |
+| O que fica com você (module, kept in suggestion) | Onde nosso tempo vale mais? | the reader's question as a module name |
+| Onze serviços pra vender com o que você aprendeu | Como vender e faturar com a IA? | money said plainly, no count |
+| Na prática: do Drive pro Figma, sem mão | Demanda no Figma + Drive (MCP) | working noun stays, cute slang goes |
+
+He also wrote "Na prática:" on three lessons; `copy:lint` flagged it as a
+repeated seal and he chose to drop it. 17 of the 39 suggested lesson names went
+through word for word and most of the rest kept the suggestion's idea, so the
+pass is worth doing; the owner's column is what calibrates it.
+
 ## Quotes are not edited
 
 The linter skips keys ending in `quote`, `quote_by` or `depoimento`. A quote is a
