@@ -188,7 +188,9 @@ here video and audio never separate):
 Hard rule: **never cut in the middle of a word or of a line of reasoning in progress.** Tighten
 silence to almost zero, but only at the real boundary between sentences/clauses. See
 [references/course-lessons.md](references/course-lessons.md) for finding that boundary in
-whisper's timestamps without guessing.
+whisper's timestamps without guessing. **Tightness depends on the format:** a lesson keeps pauses
+up to 0.24 s, a reel or vertical cut keeps up to 0.18 s and loses fillers bounded by silence (the
+table is in the same reference).
 
 **The end of the lesson is where this breaks most.** The final cut lands on a "to recap…" and the
 evaluation that closes the reasoning ("took 7 minutes, had one error, grade 8") gets left out,

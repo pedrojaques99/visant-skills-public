@@ -16,6 +16,20 @@ Whisper (`transcribe.sh`, uses `faster_whisper` small on CPU) returns segments w
    residue (~0.1–0.15 s each side), do not delete it entirely. Zero silence between EVERY sentence
    sounds robotic; "YouTube rhythm" means *little* silence, not *none*.
 
+**How tight depends on the format.** The house numbers, measured on finished pieces:
+
+| Format | Pause longer than | becomes | Fillers ("é", "ahn", "tipo", "né", "cara" as a crutch) |
+|---|---|---|---|
+| Lesson (horizontal, long) | 0.45 s | 0.24 s | only when the cut lands in silence |
+| Reel / vertical cut (9:16, under ~90 s) | 0.30 s | 0.18 s | cut when bounded by silence on both sides; a filler glued to the next word stays |
+
+The vertical rule came from a batch of live-stream cuts whose source already had the lesson rule
+applied: the lesson numbers changed almost nothing there, and the owner asked for "more tight" on
+reels. The floor stays above zero (0.18 s), so sentences never run into each other. A filler with
+no silence between it and the next word is left in: cutting it eats a syllable, which is worse than
+the crutch. Re-encode at -14 LUFS after the cuts, and remap every overlay time through the cut map
+by code, never by eye.
+
 Practice: take the raw `start`/`end` from whisper, pick the sentences that stay, and around each
 apply a small margin (`start - 0.05` to `start - 0.1`, `end + 0.1` to `end + 0.15`), **always
 checking the real neighbor in the source file**: if the unwanted neighbor is less than 0.15 s
