@@ -30,6 +30,13 @@ Index:
 | investimento | preço, R$ 47 |
 | adquirir | comprar |
 | jornada, experiência | what the person does: ler, aplicar, entregar |
+| call (com cliente) | reunião |
+| board de Figma | arquivo de Figma |
+| case (de cliente) | projeto |
+| brand system | sistema da marca |
+| feeling | instinto |
+| colaboradores (de uma empresa pequena) | funcionários |
+| padrão financeiro (do público) | poder de compra |
 
 **"para" or "pra" is decided by ear.** Signed text leans "para" (22 to 0 in the
 excerpts measured), with "pra" in spoken turns ("daqui pra frente"). Landings use
@@ -44,6 +51,24 @@ from written text.
 live, vibe coding, brief, design system. **Out:** insight, delivery, mindset,
 framework, pipeline, discovery, growth. The test: if a designer says it in a
 client meeting without sounding like a consultant, it goes in.
+
+**Taking out jargon has three limits** (owner review of the sales pages,
+23/11/2026; every case below was marked by him):
+
+1. **Never swap the thing the product teaches for a generic word.** "Do primeiro
+   app no navegador ao agente fechando a arte final" became "à IA fechando…" and
+   was **rejected**: the course teaches agents, and "IA" erases the promise.
+   Jargon the product exists to teach stays; jargon the reader has to decode goes.
+2. **Name what the reader sees, not the technique.** "Teus projetos, com
+   retícula" became "Teus projetos, com efeitos únicos" (his rewrite). The
+   technique belongs in the description, the gain in the title.
+3. **A trade term that has to stay is explained by what it guarantees, not by a
+   cute metaphor.** "uma skill: uma receita que o Claude repete" became "Quando
+   dá certo, a gente cria uma skill que ensina e mantém um processo consistente e
+   previsível" (his rewrite).
+
+Tu and você stay mixed where the page already mixes them (owner, 17/11 and
+20/11): taking out jargon is not the moment to standardize treatment.
 
 **Not in the Visant voice:** revolucionário, transformador, desbloquear,
 potencial máximo, eleve seu, nunca foi tão, no mundo de hoje, mercado cada vez
@@ -286,6 +311,11 @@ Applied on Visant's own landings. A rewrite answer key.
 | `boxy hero lead` | Abrir o PSD, achar o smart object, colar a arte, esperar, exportar. Por mockup. | Você garimpa pasta, abre PSD atrás de PSD e ainda erra a cena. |
 | `boxy meta.title` | Mockups do seu disco, renderizados na sua máquina | Sua biblioteca de mockups num lugar só, com busca |
 | `boxy hero img.alt` | mockups reais indexados em grade | a biblioteca do disco indexada em grade |
+| `ia-labs hero.sub` (rejected fix) | ao agente fechando a arte final | **kept** "ao agente": "à IA" was rejected, see the three limits in §1 |
+| `ia-labs vitrine.casos_t` | Teus casos, com retícula | Teus projetos, com efeitos únicos |
+| `ia-labs vitrine.skill` | A sessão do outdoor vira uma skill que o agente repete do teu jeito. | Quando dá certo, a gente cria uma skill que ensina e mantém um processo consistente e previsível. |
+| `imersao case.title` | Uma call de cliente inteira, com hora marcada. | Uma reunião inteira com cliente, minuto a minuto. |
+| `ebook steps.s9` | O brand system e o Decálogo | O sistema da marca e o Decálogo |
 
 Pattern that jumps out of the table: **the after is always shorter.** If the
 rewrite got longer, it probably swapped one tic for another.
