@@ -637,7 +637,7 @@ REGRAS.push({
  * "Exatas → engenharia"). In both cases the arrow is real text, not interface
  * chrome.
  */
-const SETA_GLIFO = /[←-⇿⟰-⟿⤀-⥿⬀-⬑➜-➾]/u;
+export const SETA_GLIFO = /[←-⇿⟰-⟿⤀-⥿⬀-⬑➜-➾]/u;
 
 /*
  * It runs on the CODE, not on the extracted text, and that is a fix, not a
@@ -1999,7 +1999,7 @@ function reExcecao(regraId) {
   return RE_EXCECAO.get(regraId);
 }
 
-function temMotivoEscrito(linhas, linhaDoAchado, regraId) {
+export function temMotivoEscrito(linhas, linhaDoAchado, regraId) {
   const re = reExcecao(regraId);
   const i = linhaDoAchado - 1;
   for (let k = Math.min(i, linhas.length - 1); k >= Math.max(0, i - JANELA_DA_EXCECAO); k--) {

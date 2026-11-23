@@ -1,0 +1,9 @@
+:root { --fg: #ededee; --bg: #0a0a0b; }
+.dark { --fg: #111; }
+.card { color: var(--fg); background: var(--bg); }
+.btn { transition: background-color 0.15s ease-out; }
+.btn:hover { background: var(--fg); color: var(--bg); }
+.rotulo { white-space: nowrap; max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
+.pontos { -webkit-mask-image: radial-gradient(circle, #000 1px, transparent 1.3px); mask-image: radial-gradient(circle, #000 1px, transparent 1.3px); }
+.so-em-outra-pagina { color: #ff0000; transition: all 2s; backdrop-filter: blur(4px); }
+.barra { position: fixed; bottom: 0; backdrop-filter: blur(8px); }

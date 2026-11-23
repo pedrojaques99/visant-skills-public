@@ -240,6 +240,35 @@ When to re-record (`--save-baseline` on each scanner):
 - **Measure the whole app**, never combined with `--page` or a target. With
   parallel agents, re-record once, by whoever closes the round, after the edits.
 
+## Plain HTML + CSS
+
+Since 2026-11 the four detectors also read a static site (`html-css.mjs`, no
+dependency). Each `.html` in the target is a route for `--init-report`.
+
+- **Scope rule.** A linked stylesheet (`<link rel="stylesheet">`, local only)
+  and inline `<style>` count **only where a rule reaches the page**: every class
+  and id in its selector is in that page's HTML, or it has no class/id and its
+  elements are on the page. A shared 6,000-line `styles.css` otherwise floods one
+  page with every other page's debt. Blind spot, printed on every run: rules for
+  classes only JS adds (state classes) are not read; check them on the open screen.
+- **token**: raw hex/rgb/hsl in reached declarations (outside `:root`/`.dark`/
+  `[data-theme]`/`@theme`, custom-property definitions and masks), in `style="..."`
+  and in `fill`/`stroke` attributes (a `<path>`/`<polygon>` glyph stays free);
+  a Tailwind palette class in `class="..."` when there is a token layer. An
+  HTML-only target uses this built-in even if the repo has its own JSX token gate.
+- **copy**: text nodes, `alt`/`title`/`aria-label`/`placeholder` and the share-card
+  `<meta>` text, one document per page; never `<script>`, `<style>` or comments.
+  Entities are decoded (`&mdash;` is a dash on screen).
+- **noise**: only rules with a real CSS/HTML equivalent. Gate: `transition-all`,
+  `ui-duration` (over 300ms on an interactive selector), `arrow-glyph` (an arrow
+  character as the label of `<a>`/`<button>`/`.btn`; prose arrows and `<kbd>`
+  stay free). Warn-only: `hover-lift`, `backdrop-blur`, `nowrap-no-max-width`.
+- **impeccable** reads the whole linked sheet; a finding that names a selector
+  no page in the target uses is dropped, and the drop is printed.
+- Written exceptions are the same contract, in a CSS or HTML comment:
+  `/* EXCEÇÃO ao token-fallback/raw-hex: reason */`, `<!-- EXCEPTION to noise-scan/arrow-glyph: reason -->`.
+- `--roots` is JSX-only (the import graph reads JS/TS) and says so on an HTML target.
+
 ## How `--roots` ranks
 
 It joins findings from every detector by the file they live in and keeps only

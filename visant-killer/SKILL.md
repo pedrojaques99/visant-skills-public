@@ -20,7 +20,7 @@ loaded), because AI slop survives any linter: the problem is decision, not synta
 
 > **The score is not the verdict, and cleaning is not the goal.** Removing used to always improve the score: a screen stripped of its cards scored zero and read as "too clean" (detectors count only what is left, so deleting always scores), and a first run wiped of its tells "lost its soul". Now a `shine` row needs its brand moment, a dead core costs 8, and `regressao` flags lost brand art. Compare before and after side by side and show the owner before shipping; `--report` asks for it in `## Before and after`.
 
-Where each rule came from: [references/cases.md](references/cases.md), optional context, never required reading. **Stack.** The gate reads React JSX. On Vue, Svelte, Astro or HTML it refuses (exit 2): audit by hand, plus the browser scans.
+Where each rule came from: [references/cases.md](references/cases.md), optional context, never required reading. **Stack.** The gate reads React JSX and plain HTML + CSS (each `.html` is a route; a linked stylesheet counts only where its rules reach the page, [how](references/gates.md#plain-html--css)). On Vue, Svelte or Astro it refuses (exit 2): audit by hand, plus the browser scans.
 
 ## Hard prohibitions (you break them while writing, not reviewing)
 

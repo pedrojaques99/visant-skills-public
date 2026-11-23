@@ -28,6 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir, homedir } from 'node:os';
 import { scanRuido } from './noise-scan.mjs';
 import { montarGrafo, fanOut, normP, semComentario } from './grafo.mjs';
+import { HTML_EXT, lerHtml, copyDoHtml, cssDaPagina, alcanca, emBlocoDeTema, ruidoHtmlCss } from './html-css.mjs';
 
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
@@ -74,7 +75,7 @@ const norm = (p) => p.split(sep).join('/');
 
 /* ---------- target: expands a folder into a file list ---------- */
 
-const EXT = /\.(tsx|jsx|ts|js|css)$/;
+const EXT = /\.(tsx|jsx|ts|js|css|html?)$/;
 /* `__tests__` is here because the copy extractor read `describe` and `it`
    names as if they were interface text: a test title with a dash became a
    dash finding in a place no user ever reads. Test names are code
@@ -125,28 +126,37 @@ if (!selfTest) {
   }
 }
 const uiFiles = files.filter((f) => /\.(tsx|jsx)$/.test(f));
+/* Plain HTML + CSS pages (see html-css.mjs). Read once, shared by the token,
+   copy and noise detectors. */
+const htmlFiles = files.filter((f) => HTML_EXT.test(f));
+const paginas = htmlFiles.map((f) => lerHtml(f, ROOT));
+const cssCache = new Map();
+/* Stylesheets a page links: the page reads them through the scope rule, so the
+   whole-file token sweep must not read them again. */
+const cssDasPaginas = new Set(paginas.flatMap((p) => p.cssLinks));
 
-/* The detectors are calibrated on JSX. On a Vue, Svelte, Astro or plain HTML
-   target they read nothing and every line came out "[OK] zero": a green gate
-   that never looked. Say so and stop; exit 2, the same as any run that could not
-   happen. A mixed repo still scans its JSX. */
-if (!selfTest && !initReport && !uiFiles.length) {
+/* The detectors read React JSX and, since 2026-11, plain HTML + CSS
+   (html-css.mjs). On a Vue, Svelte or Astro target they read nothing and every
+   line came out "[OK] zero": a green gate that never looked. Say so and stop;
+   exit 2, the same as any run that could not happen. A mixed repo still scans
+   what it can read. */
+if (!selfTest && !initReport && !uiFiles.length && !htmlFiles.length) {
   const other = [];
   const look = (p) => {
     if (other.length >= 3 || !existsSync(p)) return;
     if (statSync(p).isDirectory()) {
       if (/(^|[\\/])(node_modules|dist|build|\.git|\.next|\.nuxt|\.svelte-kit)$/.test(p)) return;
       for (const e of readdirSync(p)) look(join(p, e));
-    } else if (/\.(vue|svelte|astro|html?)$/.test(p)) other.push(p);
+    } else if (/\.(vue|svelte|astro)$/.test(p)) other.push(p);
   };
   targets.forEach((t) => look(resolve(t)));
   if (other.length) {
-    console.log('NOT SCANNED: these detectors read React JSX (.tsx, .jsx), and this target has none.');
+    console.log('NOT SCANNED: these detectors read React JSX (.tsx, .jsx) and plain HTML (.html), and this target has neither.');
     console.log(`  found: ${other.map((p) => p.split(/[\\/]/).pop()).join(', ')}`);
     console.log('  What still works on this stack:');
     console.log('  - the judgment: references/declutter.md, references/devils-advocate.md, visant-frontend, visant-motion');
     console.log('  - the open screen: corta-url.mjs <url>, or corta-scan.js, ritmo-scan.js and tela-scan.js in the browser console');
-    console.log('  - the words: visant-copy/scripts/copy-lint.mjs reads .vue, .svelte, .astro and .html');
+    console.log('  - the words: visant-copy/scripts/copy-lint.mjs reads .vue, .svelte and .astro');
     console.log('  Report this audit as manual. A zero here would mean nothing.');
     process.exit(2);
   }
@@ -185,6 +195,21 @@ function runImpeccable() {
     .filter((l) => /\[[A-Z_]{3,}\]|✖|error/i.test(l) && l.trim())
     .map((l) => l.trim());
   const clean = r.status === 0 && !findings.length;
+  /* On an HTML page impeccable reads the WHOLE linked stylesheet: on the sales
+     page of 2026-11-23 it flagged `.marquee-track`, a rule of another page of the
+     same styles.css. A finding that names a selector goes through the same scope
+     rule as the other detectors (html-css.mjs); one with no selector stays. */
+  if (!clean && paginas.length) {
+    const fora = [];
+    const dentro = findings.filter((l) => {
+      const m = l.match(/\]\s*([.#][\w-][^—]*?)\s+—/);
+      if (!m || paginas.some((p) => alcanca(m[1].trim(), p))) return true;
+      fora.push(m[1].trim());
+      return false;
+    });
+    const via = fora.length ? `impeccable; ${fora.length} finding(s) on selectors no page in the target uses, dropped: ${fora.join(', ')}` : undefined;
+    return { skipped: null, findings: dentro, via };
+  }
   return { skipped: null, findings: clean ? [] : findings };
 }
 
@@ -470,11 +495,70 @@ export function scanTokenFallback(lista, opts) {
   return scanTokenFallbackFull(lista, opts).achados;
 }
 
+/**
+ * The same three rules on a plain HTML page (`paginas` from html-css.mjs).
+ *
+ * CSS: every declaration of every rule that REACHES the page (the scope rule in
+ * html-css.mjs), outside theme blocks, custom-property definitions and masks;
+ * linked stylesheets and inline <style>. A token/theme stylesheet
+ * (`tokens.css`, `theme.css`...) is skipped whole, as in the JSX path.
+ * HTML: a raw color in a `style="..."` or in a `fill`/`stroke`/`stop-color`
+ * attribute (a `<path>`/`<polygon>` glyph stays free, as in JSX), and a Tailwind
+ * palette class in `class="..."` when the repo has a token layer.
+ * `<meta name="theme-color">` is not read: the browser needs a literal there.
+ */
+export function scanTokenHtml(lista, { tokenLayer = true } = {}, cache = new Map()) {
+  const achados = [];
+  const visto = new Set();
+  const push = (file, linhas, linha, regra, amostra) => {
+    const k = `${file}:${linha}:${regra}`;
+    if (visto.has(k) || excecaoTF(linhas, linha - 1, regra)) return;
+    visto.add(k);
+    achados.push({ file, linha, regra, amostra: amostra.trim().slice(0, 80) });
+  };
+  for (const pag of lista) {
+    for (const fonte of cssDaPagina(pag, cache)) {
+      if (fonte.arquivo !== pag.file && arquivoDeTema(fonte.arquivo)) continue;
+      for (const r of fonte.regras) {
+        if (emBlocoDeTema(r) || !alcanca(r.selector, pag)) continue;
+        for (const d of r.decls) {
+          if (d.prop.startsWith('--') || /^(-webkit-)?mask(-image)?$/.test(d.prop)) continue;
+          if (TF_HEX_CSS.test(d.valor)) push(fonte.arquivo, fonte.linhas, d.linha, 'raw-hex', `${r.selector} { ${d.prop}: ${d.valor} }`);
+          else if (TF_FUNC_CSS.test(d.valor)) push(fonte.arquivo, fonte.linhas, d.linha, 'raw-rgb-hsl', `${r.selector} { ${d.prop}: ${d.valor} }`);
+        }
+      }
+    }
+    const icone = TF_DIR_ICONE.test(pag.file);
+    pag.masked.split(/\r?\n/).forEach((l, i) => {
+      for (const m of l.matchAll(/\bstyle\s*=\s*("([^"]*)"|'([^']*)')/gi)) {
+        const v = m[2] ?? m[3];
+        for (const decl of v.split(';')) {
+          if (/^\s*--/.test(decl) || /^\s*(-webkit-)?mask/i.test(decl)) continue;
+          if (TF_HEX_CSS.test(decl)) { push(pag.file, pag.linhas, i + 1, 'raw-hex', m[0]); break; }
+          if (TF_FUNC_CSS.test(decl)) { push(pag.file, pag.linhas, i + 1, 'raw-rgb-hsl', m[0]); break; }
+        }
+      }
+      if (!icone && /\b(?:fill|stroke|stop-color)\s*=\s*["'](?:#|rgba?\(|hsla?\()/i.test(l) && !corDeGlifo(pag.masked.split(/\r?\n/), i)) {
+        push(pag.file, pag.linhas, i + 1, /=\s*["']#/.test(l) ? 'raw-hex' : 'raw-rgb-hsl', l);
+      }
+      if (tokenLayer) {
+        for (const m of l.matchAll(/\bclass\s*=\s*("([^"]*)"|'([^']*)')/gi)) {
+          if (TF_PALETA.test(m[2] ?? m[3])) push(pag.file, pag.linhas, i + 1, 'tailwind-palette', m[0]);
+        }
+      }
+    });
+  }
+  return achados;
+}
+
 const TF_ROTULO = 'killer-scan built-in FALLBACK (raw hex/rgb/hsl, Tailwind palette)';
 
 function runTokenFallback(motivo) {
   const camada = detectTokenLayer(ROOT);
-  const { achados, hues } = scanTokenFallbackFull(files, { tokenLayer: camada.present });
+  /* A stylesheet linked by a page in the target is read through that page (only
+     the rules that reach it), never whole: see the scope rule in html-css.mjs. */
+  const { achados: jsx, hues } = scanTokenFallbackFull(files.filter((f) => !cssDasPaginas.has(f)), { tokenLayer: camada.present });
+  const achados = [...jsx, ...scanTokenHtml(paginas, { tokenLayer: camada.present }, cssCache)];
   const nota = camada.present
     ? `token layer found (${camada.via}): palette classes bypass it`
     : `no token layer; Tailwind palette used as the design system (${hues.neutral.size} neutral, ${hues.accent.size} accent hues)`;
@@ -488,6 +572,10 @@ function runTokenFallback(motivo) {
 }
 
 function runAuditDesign() {
+  /* A repo's own token gate reads its JSX; on an HTML-only target it would
+     sweep the repo and match nothing in the page. The built-in reads the page
+     and the CSS that reaches it, so it goes first here. */
+  if (paginas.length && !uiFiles.length) return runTokenFallback('HTML target, read page by page with the CSS that reaches it');
   const pkgPath = join(ROOT, 'package.json');
   if (!existsSync(pkgPath)) return runTokenFallback('repo has no package.json');
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
@@ -1002,7 +1090,7 @@ function runCopy() {
     join(homedir(), '.claude', 'skills', 'visant-copy', 'scripts', 'copy-lint.mjs'),
   ].find((p) => existsSync(p));
   if (!script) return { skipped: "visant-copy's copy-lint not found (npx skills add pedrojaques99/visant-skills-public --skill visant-copy)", findings: [] };
-  if (!uiFiles.length && !libFiles.length) return { skipped: 'no .tsx/.ts in the target', findings: [] };
+  if (!uiFiles.length && !libFiles.length && !paginas.length) return { skipped: 'no .tsx/.ts/.html in the target', findings: [] };
 
   /* One JSON PER FILE, not a bag for the whole target. copy-lint's family
      rules count per document ("credibility seal at most once per page"), so
@@ -1012,6 +1100,9 @@ function runCopy() {
   const perFile = [
     ...uiFiles.map((f) => [f, extractCopy(f)]),
     ...libFiles.map((f) => [f, extractLibCopy(f)]),
+    /* An HTML page is one document: its text nodes, alt/title/aria-label/
+       placeholder and the share-card meta, never <script>, <style> or comments. */
+    ...paginas.map((p) => [p.file, copyDoHtml(p)]),
   ].filter(([, bag]) => Object.keys(bag).length);
   const bag = Object.fromEntries(perFile.flatMap(([, b]) => Object.entries(b)));
   const strings = Object.keys(bag).length;
@@ -1183,6 +1274,8 @@ function lerNav(root, navRel = null) {
  * router's routes whose page is in the target, else every interface file in the target.
  */
 function telasDoAlvo() {
+  /* A static site: each .html file is a route. */
+  if (!uiFiles.length && htmlFiles.length) return { cobrados: htmlFiles, porRota: null };
   const routeLike = uiFiles.filter((f) => /(^|\/)(page|layout|template)\.(tsx|jsx)$/.test(f));
   if (routeLike.length) return { cobrados: routeLike, porRota: null };
   const lidas = lerRotas(ROOT);
@@ -1477,7 +1570,44 @@ function runSelfTest() {
     console.log('[OK]    craft column (a "shine" row needs its brand moment; calm rows and old reports pass)');
   }
 
-  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length + idFalhas.length + craftFalhas.length;
+  /* Plain HTML + CSS (html-css.mjs), both ways. The dirty page must fire each
+     rule at the exact line; the clean page, the theme block, a mask, a glyph
+     fill, a key glyph, a prose arrow, a written exception and a rule for a class
+     the page never uses must stay silent. The scope rule is the whole point: a
+     shared stylesheet would otherwise flood one page with another page's debt. */
+  const htmlFalhas = [];
+  {
+    const dirH = join(here, 'fixtures', 'html');
+    const suja = lerHtml(join(dirH, 'dirty.html'), dirH);
+    const limpa = lerHtml(join(dirH, 'clean.html'), dirH);
+    const curto = (a) => `${a.file.split('/').pop()}:${a.linha} ${a.regra}`;
+    const tok = (p) => scanTokenHtml([p], { tokenLayer: true }).map(curto).sort();
+    const rui = (p) => ruidoHtmlCss([p]).map(curto).sort();
+    const casos = [
+      ['token on the dirty page', tok(suja), ['dirty.css:12 raw-rgb-hsl', 'dirty.css:2 raw-hex', 'dirty.html:7 raw-hex', 'dirty.html:17 raw-hex']],
+      ['noise on the dirty page', rui(suja), ['dirty.css:4 transition-all', 'dirty.css:5 hover-lift', 'dirty.css:6 ui-duration', 'dirty.css:7 backdrop-blur', 'dirty.css:8 nowrap-no-max-width', 'dirty.html:16 arrow-glyph']],
+      ['token on the clean page', tok(limpa), []],
+      ['noise on the clean page', rui(limpa), []],
+    ];
+    for (const [nome, got, esperado] of casos) {
+      if (JSON.stringify(got) !== JSON.stringify([...esperado].sort())) htmlFalhas.push(`${nome}: expected ${JSON.stringify([...esperado].sort())}, got ${JSON.stringify(got)}`);
+    }
+    const bagH = Object.values(copyDoHtml(suja)).join(' | ');
+    for (const quer of ['Texto visível da página', 'Descrição da imagem', 'Página suja de teste']) {
+      if (!bagH.includes(quer)) htmlFalhas.push(`copy: "${quer}" was not extracted (false negative)`);
+    }
+    for (const nao of ['naoExtrai', 'comentário que não é copy', '.inline']) {
+      if (bagH.includes(nao)) htmlFalhas.push(`copy: "${nao}" was extracted from script/comment/style (false positive)`);
+    }
+  }
+  if (htmlFalhas.length) {
+    console.log(`[FAIL]  html + css: ${htmlFalhas.length}`);
+    for (const f of htmlFalhas) console.log(`          ${f}`);
+  } else {
+    console.log('[OK]    html + css (token, noise and copy on a plain page; scope rule keeps another page\'s CSS out)');
+  }
+
+  const failed = falsePositives.length + falseNegatives.length + rotasFalhas.length + tokenFalhas.length + idFalhas.length + craftFalhas.length + htmlFalhas.length;
   console.log('-'.repeat(64));
   console.log(
     failed
@@ -1807,7 +1937,9 @@ The score is not the verdict. Screens compared side by side (\`regressao.mjs\`),
  * text, not just a screen without bugs.
  */
 function runRuido() {
-  const achados = scanRuido(uiFiles);
+  /* HTML pages get the rules that exist in HTML + CSS (html-css.mjs): the JSX
+     rules read Tailwind classes and React props and would fire on nothing. */
+  const achados = [...scanRuido(uiFiles), ...ruidoHtmlCss(paginas, cssCache)];
   const linha = (a) => `${disp(a.file)}:${a.linha}  ${a.regra}  ${a.amostra}`;
   /* warn-only rules (see AVISOS in noise-scan.mjs) are listed but never close the gate */
   return {
@@ -1841,7 +1973,13 @@ const bar = '-'.repeat(64);
 
 if (!quiet) {
   console.log(`\nkiller-scan  target: ${targets.join(' ')}`);
-  console.log(`files in target: ${files.length} (${uiFiles.length} interface)\n`);
+  console.log(`files in target: ${files.length} (${uiFiles.length + htmlFiles.length} interface)`);
+  if (paginas.length) {
+    const css = [...cssDasPaginas].map((f) => disp(f));
+    console.log(`html: ${paginas.length} page(s); CSS read only where a rule reaches the page (its classes/ids are in the HTML)${css.length ? `: ${css.join(', ')}` : ''}`);
+    console.log('      blind spot: rules for classes that only JS adds (state classes) are not read; check those on the open screen');
+  }
+  console.log('');
 }
 
 for (const g of gates) {
@@ -1925,7 +2063,12 @@ function raizPrimeiro() {
 if (roots) {
   const lista = raizPrimeiro();
   console.log(bar);
-  if (!lista.length) {
+  if (!uiFiles.length && htmlFiles.length) {
+    /* The import graph reads JS/TS imports; a static page has none. The shared
+       stylesheet is already read page by page (scope rule), which is the root
+       question for CSS. */
+    console.log('ROOT FIRST: not available for plain HTML (the import graph reads JS/TS). Shared CSS is already scoped to each page.');
+  } else if (!lista.length) {
     console.log('ROOT FIRST: no finding in a shared piece. The findings are local to each screen.');
   } else {
     console.log('ROOT FIRST: fix these before the screens (findings x files that import the piece)');

@@ -1,0 +1,13 @@
+:root { --ink: #111111; }
+.card { color: #333333; }
+.nunca-usada { color: #ff0000; transition: all 1s; }
+.btn { transition: all 0.2s; }
+.btn:hover { transform: translateY(-2px); }
+a:hover { transition: color 0.6s; }
+.vidro { backdrop-filter: blur(8px); }
+.rotulo { white-space: nowrap; }
+.mascara { mask-image: linear-gradient(#000, transparent); }
+/* EXCEÇÃO ao token-fallback/raw-hex: cor da marca do cliente, exigida pelo contrato de marca */
+.marca { color: #00aa55; }
+.sombra { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
+.icone { background: url("data:image/svg+xml;utf8,<svg></svg>"); color: var(--ink); }
