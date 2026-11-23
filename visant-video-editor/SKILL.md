@@ -242,4 +242,7 @@ foreground thinking it is fast.
 ## Neighbors
 
 - A Premiere rough-cut skill, if installed: the same cut inside Premiere
+- A HyperFrames-native editor, if the project has one: keeps every overlay (cards, labels, images)
+  as its own editable layer instead of burning it into the MP4. Prefer it over a flat render when
+  the owner will keep tweaking.
 - **[[site-reels]]**: recording a website; this skill starts from raw footage
