@@ -122,3 +122,14 @@ export function MonoEmTudo() {
     </div>
   );
 }
+
+// EXPECTED side-stripe: 3 (one-side stripe as the selected/highlighted mark)
+export function LinhaSelecionada({ ativa }: { ativa: boolean }) {
+  return (
+    <ul>
+      <li className={ativa ? 'border-l-2 pl-3' : 'pl-3'}>direct</li>
+      <li style={{ borderLeft: '2px solid currentColor' }}>instagram</li>
+      <li style={{ boxShadow: 'inset 2px 0 0 currentColor' }}>twitter</li>
+    </ul>
+  );
+}

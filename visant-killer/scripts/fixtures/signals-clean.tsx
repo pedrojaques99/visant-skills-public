@@ -140,3 +140,8 @@ export function MonoNoCodigo({ item }: { item: { id: string; hash: string } }) {
     </div>
   );
 }
+
+// EXPECTED side-stripe: 0 (selection by background + full 1px ring)
+export function LinhaSelecionadaLimpa({ ativa }: { ativa: boolean }) {
+  return <li style={ativa ? { boxShadow: 'inset 0 0 0 1px currentColor', fontWeight: 700 } : undefined}>direct</li>;
+}

@@ -1330,6 +1330,30 @@ REGRAS.push({
 });
 
 /*
+ * A colored stripe on ONE side of a selected or highlighted item.
+ *
+ * `border-l-2`, an inline `borderLeft`, or `box-shadow: inset 2px 0 0` marking
+ * the active row, the chosen card, the official answer, the alert box. It is the
+ * "accent bar on rounded cards" of every AI template. Found on 2026-11-25 in a
+ * funnel dashboard: the selected source row carried a 2px white nail on its
+ * left edge, and the owner called it slop on sight ("nunca fazer"). Selection is
+ * background + weight, or a full 1px ring; an alert is a full border in the
+ * state color. Every gate was green when the owner saw it.
+ */
+REGRAS.push({
+  id: 'side-stripe',
+  descricao: 'colored stripe on one side of a selected/highlighted item (border-l-2, borderLeft, inset Npx 0 0)',
+  piso: 1,
+  achar(src) {
+    const s = semComentarioCod(src);
+    const out = [];
+    const re = /(?<![\w-])border-[ls]-[2-8](?![\w-])|borderLeft(?:Width|Color)?\s*:|inset\s+-?[1-9]\d*px\s+0(?:px)?\s+0(?:px)?\b/g;
+    for (const m of s.matchAll(re)) out.push({ linha: linhaEm(s, m.index), amostra: m[0] });
+    return out;
+  },
+});
+
+/*
  * An invisible native range laid over a piece as its pointer layer. Chromium
  * jumps to the point touched, so every automated check passes; iOS Safari answers
  * only on the native thumb, and an invisible input has none to find. Found on a
@@ -2398,6 +2422,8 @@ function selfTest() {
     'code-crumb': 4,
     'numbered-section': 3,
     'mono-everywhere': 10,
+    /* signals-dirty: className, inline borderLeft and inset shadow = 3; signals-clean uses a full ring and stays silent. */
+    'side-stripe': 3,
   };
 
   let falhou = 0;

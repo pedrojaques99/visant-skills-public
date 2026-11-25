@@ -122,6 +122,7 @@ green. One line of reason each; the full case is in the catalog.
 | `hover-lift` | `hover:-translate-y-*`, `hover:scale` > 1 (not on an icon inside its button), `whileHover` with `y<0` | warn-only, see catalog 31 |
 | `dot-grid` | repeated `radial-gradient`, SVG of circles, `<GridDots>` | template texture; it lived in the page shell and shipped on every route (32) |
 | `blur-on-card` | `backdrop-blur` on an in-flow element | with nothing behind it blurs nothing, it only costs GPU (18) |
+| `side-stripe` | `border-l-2`, inline `borderLeft`, `inset Npx 0 0` on a selected/highlighted item | the template accent bar: selection is background + weight or a full 1px ring (68) |
 | `invisible-range` | `<input type="range">` at opacity 0 that still takes the pointer | iOS Safari answers only on the native thumb, so the piece ignores the finger while Chromium passes; give the input `pointer-events-none` and the box the handlers. Reads the tag only: opacity in a CSS class is caught on screen by `corta-scan` (`range-invisivel`) |
 
 - **Warn-only rules** (catalog 47 to 57 and `hover-lift`) print `[WARN]` and never close the gate: [catalog](slop-catalog.md#warn-only-signals-47-to-57).
@@ -140,7 +141,7 @@ above**, naming scope and rule, with a reason. A mute allowlist is forbidden.
 
 | Scanner | Line | Whole file | Rules |
 |---|---|---|---|
-| `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 25 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
+| `noise-scan` (this skill) | `EXCEPTION to noise-scan/<rule>: reason` | `// noise-ignore-file: <rule>, reason` | the 26 in the script (`usage-instruction`, `repeated-door`, `blur-on-card`...) |
 | `stroke-scan` (this skill) | `EXCEPTION to stroke-scan/<rule>: reason` | `stroke-ignore-file: <rule>, reason` | `heavy-border`, `heavy-ring`, `heavy-outline`, `heavy-focus`. Warn-only until a second case is recorded. Passes without a marker: 0–1px, a 2px `:focus-visible` ring, up to 2px on a selected, checked or invalid state, a transparent border, a ring in the surface color, the `border-2 … animate-spin` spinner |
 | token fallback (this skill) | `EXCEPTION to token-fallback/<rule>: reason` | none (rename to a theme file if the whole file is tokens) | `raw-hex`, `raw-rgb-hsl`, `tailwind-palette` (legacy `hex-cru`, `rgb-hsl-cru`, `paleta-tailwind` still accepted) |
 | repo `scan-ui-slop` | `EXCEÇÃO ao ui-slop/<rule>: reason` (accepts `ruido-scan/<rule>`) | none | `cyan` or `cyan-non-cta`, `mono` or `mono-uppercase` |
