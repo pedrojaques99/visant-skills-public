@@ -209,6 +209,11 @@ cutting the time would destroy a sentence that must stay whole, and even then sa
 exception. Full detail, with the measured why, in
 [references/course-lessons.md](references/course-lessons.md).
 
+Webcam circle dark or yellow in one session, or the lower-left term card off the house look: both
+are fixed on the delivered MP4 without re-editing (grade only the circle, calibrated against an
+approved lesson; new card covers the burned-in one). Recipes in
+[references/course-lessons.md](references/course-lessons.md).
+
 Reel cut from finished lessons: read [pitfalls.md](references/pitfalls.md) #13–#17 first.
 
 ## When the material is speech-heavy

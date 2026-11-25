@@ -669,6 +669,12 @@ From a desktop agents app redesigned in a first-run pass (case in [cases.md](cas
 **Test.** Remove the stripe. If the selected item still reads as selected, the stripe was decoration; if it does not, the selection was never designed.
 **Detector.** `noise-scan`, rule `side-stripe`.
 
+### 69. Drop shadow on type over video
+
+**Symptom.** Display type or captions burned into a video with a soft dark shadow or glow behind the letters "for legibility". The owner rejected it on sight (2026-11-25).
+**Fix.** Legibility comes from position (where the frame is calm), size and weight, or from the frame itself (punch-in, darker flash). Texture belongs to the letter, e.g. ink bleed on the edge, never a halo around it.
+**Test.** Turn the shadow off. If the line stops reading, move or resize it; do not bring the shadow back.
+
 ## Quick sweep
 
 ```bash
