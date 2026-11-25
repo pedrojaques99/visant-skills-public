@@ -3,6 +3,9 @@ node_modules/
 # working/planning notes, not part of the shipped skills
 /FEEDBACK-*.md
 
+# per-machine overlay a skill reads if present (paths, favorite folders): never public
+*/references/local.md
+
 # OS / editor junk
 .DS_Store
 Thumbs.db

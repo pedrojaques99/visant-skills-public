@@ -1,5 +1,14 @@
 # Sound design for showreels: SFX, track and mix
 
+## The owner's favorite folders come first
+
+If the owner keeps a list of favorite sound folders, start there before anything else. The list
+and the paths are machine-specific, so they never live in this public skill: read
+`references/local.md` if it exists (git-ignored, one per machine) or the project's own list (e.g.
+a `som_pastas.json` with a `favoritas` key). The ban list still applies on top: a banned slot stays
+banned even inside a favorite folder. "Never default to the packs" below means the packs outside
+that list.
+
 Music *choice* (genres the user accepts or rejects, structure over beat) is in
 [brand-showreel-playbook.md](brand-showreel-playbook.md) → "Music and sound". This file covers
 where the SFX come from, how to cut them and how they go into the film.
