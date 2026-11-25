@@ -209,6 +209,8 @@ cutting the time would destroy a sentence that must stay whole, and even then sa
 exception. Full detail, with the measured why, in
 [references/course-lessons.md](references/course-lessons.md).
 
+Reel cut from finished lessons: read [pitfalls.md](references/pitfalls.md) #13–#17 first.
+
 ## When the material is speech-heavy
 
 `cutlist.sh` picks takes; it does not clean the middle of a take. That is what `auto-editor` is
