@@ -105,3 +105,54 @@ each). Tell the user explicitly; in practice the sentence context usually covers
 See [audio.md](audio.md#desk-mic) for why NOT to use strong denoise here: it is the opposite of
 what seems intuitive (a desk mic has more room noise than a phone, and the temptation is to clean
 more).
+
+## Webcam circle too dark or yellow: match it to a lesson the owner approved
+
+Symptom: the webcam bubble (a circle composited over the screencast) comes out dark and amber in
+one recording session, while another session looks right. Do not hand-tune a curve by eye, and do
+not re-render from the raw: grade **only the circle** of the delivered MP4, calibrated against a
+reference lesson.
+
+1. **Reference = a finished lesson the owner said is fine.** Sample N frames (8 is enough) of the
+   circle from the reference and from each lesson to fix, stacked into one image per lesson.
+2. **Measure five numbers inside the circle mask**, in YCbCr: mean Cb, mean Cr and mean chroma
+   `hypot(Cb, Cr)` (only on pixels with Y > 60, so dark noise does not count as "saturated"),
+   plus mean Y and the standard deviation of Y (brightness and contrast).
+   HSV saturation lies here: dark noisy pixels read as highly saturated and `eq=saturation` barely
+   moves it. Use YCbCr chroma.
+3. **Coordinate search** over `colorchannelmixer` gains (rr, gg, bb), `eq=saturation`, and a
+   three-point `curves` (black lift, mid, ceiling), steps 0.04 → 0.02 → 0.01, minimizing the sum
+   of absolute differences to the reference. Run the actual ffmpeg chain on the stacked sample at
+   each step; do not emulate it in numpy.
+4. **Normalize the channel gains by luma** (`0.299 r + 0.587 g + 0.114 b`). Otherwise the white
+   balance quietly darkens the image again (one lesson lost ~10 % with gains below 1).
+5. **Calibrate contrast too, not just brightness.** Matching only the mean with a fixed lift curve
+   blew out the wall behind the speaker ("contrast is slightly blown"). With mean and std of Y in
+   the target and the ceiling allowed down to 0.85, it landed within ~1 unit of the reference.
+6. Apply: `split` → `crop` the circle → grade → `alphamerge` with the circle mask → `overlay` back
+   at the same x,y. Audio `-c:a copy`, same duration, so subtitles are reused untouched. Clamp the
+   search (black ≤ 0.08, ceiling ≥ 0.85) so it cannot invent a look.
+
+Show before / after / reference for **every** lesson on one page before rendering. The owner's
+eye found the contrast problem that the color numbers did not.
+
+## Term card (lower-left label): the house look, and replacing it in burned-in lessons
+
+The old card (system UI font, rounded grey box, yellow accent bar) read as generic. The approved
+one: **house typeface** (bold term, medium description), **monochrome**, flat near-black box with
+**chamfered** corners (not rounded), and the text **boiling**: an ink-bleed edge whose turbulence
+changes position 6 times per second (blurred alpha → displaced by low-frequency noise →
+thresholded with paper grain; same recipe as the full-screen quote words). Compute the ink at 3x
+and downscale, or 30 px text turns to mush.
+
+The old card is already burned into the delivered lessons, so the new one **covers** it:
+
+- Compute the old box size with the same formula that drew it; the new box is that size + 6 px on
+  every side, fully opaque. Watch the sign of the y offset: a +6 px box placed 6 px too high leaves
+  the old outline peeking out under it.
+- Same position and same entry motion (slide up + fade) as the old card. But if the new card fades
+  in over the same 0.28 s, the old text **ghosts through** during the fade (leak = a·(1−b)). Make
+  the new card enter and leave in F/3 (~0.09 s); leak stays under 8 %, invisible.
+- Find each old card in the final MP4 by its accent color in a fixed column, not by plan
+  timestamps (later tightening and fixes moved them). Identify which text it is by template-matching
+  the frame against the old PNGs at their known position.
