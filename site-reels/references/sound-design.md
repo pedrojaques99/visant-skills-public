@@ -1,19 +1,13 @@
 # Sound design for showreels: SFX, track and mix
 
-## The owner's favorite folders come first (2026-11-25)
+## The owner's favorite folders come first
 
-Four folders are marked as favorites. Look there before anything else:
-
-- `7panel_studio/backend/assets/samples/Zero-G - CE07 Dream Zone` (textures, pads)
-- `7panel_studio/backend/assets/samples/- VHULTO SAMPLING THE WORLD DRUMKIT -` (drums, percussion)
-- `jaques.dsgn/sfx_music/Jacão Ambients/assets/cc0` (CC0 sounds)
-- `jaques.dsgn/sfx_music/Jacão Ambients/assets/sfx` (own SFX)
-
-The list lives in `7panel_studio/backend/assets/som_pastas.json` (key `favoritas`). Two of
-them sit inside the packs folder: that is fine, they are the approved part of it. The ban list
-(`studio-hf/_motor/sfx-banidos.json`) still applies on top, so a banned slot stays banned even inside
-a favorite folder. "Never default to the packs" below means the rest of the packs.
-
+If the owner keeps a list of favorite sound folders, start there before anything else. The list
+and the paths are machine-specific, so they never live in this public skill: read
+`references/local.md` if it exists (git-ignored, one per machine) or the project's own list (e.g.
+a `som_pastas.json` with a `favoritas` key). The ban list still applies on top: a banned slot stays
+banned even inside a favorite folder. "Never default to the packs" below means the packs outside
+that list.
 
 Music *choice* (genres the user accepts or rejects, structure over beat) is in
 [brand-showreel-playbook.md](brand-showreel-playbook.md) → "Music and sound". This file covers
