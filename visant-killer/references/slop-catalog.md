@@ -662,6 +662,13 @@ From a desktop agents app redesigned in a first-run pass (case in [cases.md](cas
 **Fix.** Canvas + deck: the object large on its own color, standing still; the controls in a deck beside it that changes per step. The same canvas carries the moment it is born.
 **Test.** Squint. Is the biggest thing on screen the thing being made?
 
+### 68. The nail on the selected row
+
+**Symptom.** The active row, chosen card, official answer or alert box marked by a 2–4px colored stripe on one side (`border-l-2`, `inset 2px 0 0`). Found on a funnel dashboard on 2026-11-25; the owner called it slop on sight, with every gate green.
+**Fix.** Selection is background plus weight, or a full 1px ring. An alert gets a full border in the state color. A quote keeps its convention only with a written exception.
+**Test.** Remove the stripe. If the selected item still reads as selected, the stripe was decoration; if it does not, the selection was never designed.
+**Detector.** `noise-scan`, rule `side-stripe`.
+
 ## Quick sweep
 
 ```bash
