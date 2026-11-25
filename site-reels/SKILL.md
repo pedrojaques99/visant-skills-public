@@ -161,5 +161,5 @@ Origin stories, reference projects and machine-specific tips: `references/cases.
 
 - **[[visant-video-editor]]**: footage from a camera
 - A Premiere rough-cut skill, if installed: the same cut inside Premiere
-- **Sound (SFX, track, mix)**: [sound-design.md](references/sound-design.md). Never default to pack whooshes and clicks: the user rejected them.
+- **Sound (SFX, track, mix)**: [sound-design.md](references/sound-design.md). Start from the owner's four favorite folders (listed there, SSoT in `som_pastas.json` › `favoritas`); never default to the other pack whooshes and clicks: the user rejected them.
 - **Render, check and delivery (HyperFrames)**: [render-and-delivery.md](references/render-and-delivery.md)
