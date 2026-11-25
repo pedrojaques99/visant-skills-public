@@ -19,6 +19,11 @@ what stops a relapse.
 - [10. Google Drive for desktop: virtual files](#10)
 - [11. `-v error` swallows the two-pass loudnorm measurement](#11)
 - [12. loudnorm resamples to 192 kHz and mixes cut sample rates](#12)
+- [13. VFR source: cutting by seconds drifts the audio](#13)
+- [14. Fixed silence threshold sees no pause in a mastered file](#14)
+- [15. The master itself can cut inside a word](#15)
+- [16. Burned captions: bigger whisper + script prompt hallucinated](#16)
+- [17. libass picks the font by weight, not by file](#17)
 - [Corrected folklore: ffmpeg eating stdin](#folklore)
 
 ---
@@ -239,6 +244,49 @@ not in separate builds.
 
 And when fixing: the audio chain went into the cache key (`a2`). Without it, the old 96 kHz cut
 would keep being served and the fix would never reach the master. See [#2](#2).
+
+---
+
+<a id="13"></a>
+## 13. VFR source: cutting by seconds drifts the audio
+
+Symptom: video and audio durations differ (47.70 vs 48.32 s); voice lags more each cut. Rule: count
+cuts in frames. `n = round(dur*fps)`; video `setpts=PTS-STARTPTS,fps=F,tpad=stop_mode=clone,trim=end_frame=n`,
+audio `apad,atrim=end_sample=n*48000/F`. Gate: durations equal within AAC padding.
+
+---
+
+<a id="14"></a>
+## 14. Fixed silence threshold sees no pause in a mastered file
+
+Symptom: `silencedetect=n=-35dB` finds nothing (noise floor, room tone). Rule: per segment, 20 ms RMS,
+silence = p90 - 22 dB for >= 0.15 s, 0.05 s margins. Keep the segment's measured in/out: decaying word
+tails fall under the threshold.
+
+---
+
+<a id="15"></a>
+## 15. The master itself can cut inside a word
+
+Symptom: a clipped word your cut did not touch. Check `select='gt(scene,0.08)'` inside the word's span;
+if the master cut there, take the sentence from the raw, match framing with `cv2.matchTemplate` over
+scales and loudness on the same words, and protect that sentence from pause tightening.
+
+---
+
+<a id="16"></a>
+## 16. Burned captions: bigger whisper + script prompt hallucinated
+
+`medium` + `initial_prompt` invented text; `small`, no prompt, `vad_filter=False` was right. Transcribe
+the final audio, fix brand spellings with a dictionary, drop lone fillers at cut borders.
+
+---
+
+<a id="17"></a>
+## 17. libass picks the font by weight, not by file
+
+Static instances all named "Regular": libass asks for 400 and renders the thin one. Set `Bold=-1` in the
+style; confirm with the `fontselect:` line in `-v verbose`.
 
 ---
 
