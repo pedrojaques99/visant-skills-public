@@ -282,6 +282,25 @@ from a distrust the reader did not have yet. When credibility really needs to
 show up, it comes as a number (`160+ lives`, `R$450k`) or a scene (`Um post fala
 uma coisa, o atendimento fala outra`).
 
+### Tail that repeats what the page already shows
+Each card, badge, link and button already says something. A clause at the end
+of the sentence that says it again is filler, and on a landing it reads as AI
+padding. Before keeping a tail, look at what sits next to the sentence: if the
+card has a "Testar agora" button, `cada uma no ar` is said twice; if the card
+carries the `visant.co ↗` link, `os projetos estão no site` is said twice.
+
+| before | after | already shown by |
+|---|---|---|
+| Ferramentas feitas por alunos no primeiro dia de curso. As mais votadas do Tool Jam, cada uma no ar. | Feitas por alunos no primeiro dia de curso. | the "Tool Jam" badge and the "Testar agora" button on each card |
+| 3h09 de aula, direto na tela. Dá pra assistir num fim de semana e passar o resto do tempo fazendo. | 3h09 de aula. Dá pra assistir num fim de semana. | the lesson list right below |
+| O estúdio dos dois. Os projetos de marca estão no site. | O estúdio dos dois. | the `visant.co ↗` link on the same card |
+| Reembolso integral pela própria Hubla, em até 7 dias. | Reembolso integral em até 7 dias. | the checkout, which is already Hubla |
+
+Rule: read the sentence with its neighbors on screen, not alone in the JSON.
+Delete the tail and check the card: if nothing went missing, it stays deleted.
+Related: no vote count or ranking of a student on a public page; "feitas no
+Tool Jam" carries the credit without exposing the score.
+
 ### Guru openings and cliché urgency
 `Imagine que você acabou de fechar um cliente…` → start with the scene or the fact.
 `Últimas vagas, corre!` → `Este lote tem 30 vagas. A cota sobe a cada compra.`
@@ -329,6 +348,7 @@ None of them had a linter tic, which is why they are here.
 - [ ] The fold names the reader's task, not their state
 - [ ] No echo of the old sentence left (social card, `<title>`, description, `alt`)
 - [ ] Only the tics were applied; the rest went as a proposal table
+- [ ] No tail clause repeating what the card, badge, link or button already shows
 - [ ] No sentence over 30 words without a reason
 - [ ] Every number checked against the source of truth
 - [ ] Plan terms match the glossary (Visionário® / Visantista), in Visant's own copy

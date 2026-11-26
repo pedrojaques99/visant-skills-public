@@ -171,6 +171,9 @@ under its own name. In order of importance:
 11. **The specific analogy, announced.** "Um exemplo meio tosco": the Subway order
     with "exatamente 12 azeitonas pretas". Detail too exact to be invented is what
     AI text lacks.
+12. **Read the line next to its card, never alone in the JSON.** A tail that
+    repeats what the badge, link or button already shows is padding ("cada uma
+    no ar" beside "Testar agora"): [cases](references/voice.md#tail-that-repeats-what-the-page-already-shows).
 
 For a long signed piece, follow the skeleton in
 [voice.md §9](references/voice.md#9-structure-of-a-signed-piece-the-skeleton). For text that passes the
