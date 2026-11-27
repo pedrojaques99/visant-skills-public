@@ -1,5 +1,7 @@
 # Brand idiom: where the life comes from
 
+This is the UI chapter of the house rule [tempero](../../visant-methodology/references/tempero.md): every brand has its own seasoning, and every effect is made of it.
+
 Cleaning removes the tells. Done alone, it also pulls every product toward the same neutral kit, and the owner says "it lost its soul". The fix is not decoration back. Spend craft where it pays, and build that craft from the brand's own assets, so two products cleaned by the same skill stop looking alike.
 
 Branding is core: this runs before anything is cut or built.

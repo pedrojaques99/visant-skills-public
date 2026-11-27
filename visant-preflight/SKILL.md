@@ -8,7 +8,7 @@ metadata:
 
 # Visant Preflight
 
-Projects rarely go wrong in execution. They go wrong **in the premise**: the work
+**Tempero:** Check whether the brand's ingredients have been looked at and noted. If they are thin, raise it with the owner. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md). Projects rarely go wrong in execution. They go wrong **in the premise**: the work
 comes out well made on top of data that was wrong from the start, and the rework
 costs days.
 

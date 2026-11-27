@@ -8,6 +8,8 @@ metadata:
 
 # Visant Copy
 
+> **Tempero:** On a client piece, the copy uses that brand's voice and words, never the Visant voice. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md).
+
 Two things live here: **how Visant copy sounds** (valid in any repo) and **how it
 is operated**, which depends on where the text lives. The voice below is for
 Brazilian Portuguese; **for English copy read [english.md](references/english.md)**.

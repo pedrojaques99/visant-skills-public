@@ -7,7 +7,7 @@ metadata:
 
 # Visant Frontend
 
-A decision system for product interfaces, in any repo. The rule that generates
+**Tempero:** A brand moment draws on the brand's ingredients. Work routes take only a pinch. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md). A decision system for product interfaces, in any repo. The rule that generates
 every other rule:
 
 > **A design choice only ships if it names the business variable it moves.**
