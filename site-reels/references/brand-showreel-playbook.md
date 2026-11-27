@@ -132,6 +132,7 @@ Every ref changes subject by **transformation inside the shot** or by a **graphi
 0. Create the client's project in the studio's project app (if one is in use) before the first render; otherwise the film folder is filed under the wrong owner.
 1. Watch the refs' contact sheets again (`docs/refs/frames/<slug>/sheets`) and pick **2 refs** to steal from, by name and timestamp.
 2. Write the story as **transformations**: what becomes what. A list of pictures is not a story.
+2b. **Season with the [tempero](../../visant-methodology/references/tempero.md).** List the brand's own tools, deck textures, type and rhythm before the story. Let that list lead the transitions, overlays and texture. If the material is thin, recutting the brand's own plates usually beats inventing.
 3. Pick the **seed** (symbol or shape), the **fixed axis** for the one burst, and the **signature type gesture**.
 4. Pick the music first. Map the structure (intro / break / riser / drop / tag) to the film's acts, and put a silence before the hit.
 5. Keep one palette and treat the real photos inside brand frames.

@@ -8,6 +8,8 @@ metadata:
 
 # Visant Design
 
+> **Tempero:** The UI applies it through the brand idiom: shine regions and core components are made of the brand's ingredients. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md).
+
 Takes "clean the slop" or "improve the UX" to a finished screen you have looked at. Rulebooks can't see your product or your result; this process makes you see both.
 
 `<skill-dir>` is the folder holding this file. Other playbooks are next to it: read `../<name>/SKILL.md`. If one is missing: `npx skills add pedrojaques99/visant-skills-public --skill <name>`.

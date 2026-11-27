@@ -7,6 +7,8 @@ metadata:
 
 # Visant AI Video
 
+> **Tempero:** Shots, light and grade lean on the brand's material, not on the model's default look. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md).
+
 Generated spots, not edited footage. For raw footage use `visant-video-editor`; for screen
 recordings of a site use `site-reels`.
 

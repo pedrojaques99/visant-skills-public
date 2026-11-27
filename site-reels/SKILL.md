@@ -7,6 +7,8 @@ metadata:
 
 # Site Reels: site → MP4 → deck
 
+> **Tempero:** In a showreel, the transitions, texture and overlays draw on the brand's own tools, deck and plates, and the cuts follow its rhythm. A showreel takes the full dose. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md).
+
 ## Requirements
 
 | Needed for | What | Check |

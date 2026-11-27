@@ -7,6 +7,8 @@ metadata:
 
 # Visant Refine
 
+> **Tempero:** Give charts and panels a light touch of the brand's colour and type, as far as they stay readable. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md).
+
 Finishing. This skill assumes the decision to **include** the element was
 already made and defended elsewhere, and only answers how it is drawn.
 

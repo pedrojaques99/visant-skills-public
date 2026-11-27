@@ -7,6 +7,8 @@ metadata:
 
 # Visant Motion
 
+> **Tempero:** Eases and reveals follow the brand's shape and type gesture. A wordmark is revealed by mask, never by scale. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md).
+
 Build interfaces where motion is invisible-correct: every transition has a purpose, responds instantly, and stays under the perception of "slow". Governing rule: **SSoT, never hardcode a cubic-bezier or a duration in a component.**
 
 **§1 and §2 are the whole skill in practice.** Everything after them is reference for a specific moment; the SSoT bootstrap is at §10 because it only matters once per repo. [references/cases.md](references/cases.md) is optional context, never required reading.

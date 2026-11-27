@@ -7,7 +7,7 @@ metadata:
 
 # Visant Killer
 
-Adversarial UI audit. The screen is the defendant, not the client. Two halves
+**Tempero:** On shine regions and brand pieces, imagine a competitor's logo on the screen. If it still fits, flag that it may lack tempero. Work screens are exempt. Creative direction, with the dose for each piece: [tempero.md](../visant-methodology/references/tempero.md). Adversarial UI audit. The screen is the defendant, not the client. Two halves
 that do not replace each other: the **gate** (deterministic scripts, binary:
 AI tell, token, voice, **chrome noise**) and **judgment** (you, with the skills
 loaded), because AI slop survives any linter: the problem is decision, not syntax.
